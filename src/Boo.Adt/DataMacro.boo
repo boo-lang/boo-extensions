@@ -15,6 +15,9 @@ class DataMacroExpansion:
 	_baseType as TypeReference
 	
 	def constructor(node as MacroStatement):
+		
+		assert 1 == len(node.Arguments)
+		
 		match node.Arguments[0]:
 			case BinaryExpression(
 					Operator: BinaryOperatorType.Assign,
@@ -53,8 +56,8 @@ class DataMacroExpansion:
 						pass
 				|]
 		type.LexicalInfo = node.LexicalInfo
-		for member in membersForArgs(node):
-			type.Members.Add(member)	
+		for arg in node.Arguments:
+			type.Members.Add(fieldForArg(arg))	
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type))
 		type.Members.Add(constructorForInvocation(node))	
@@ -116,10 +119,6 @@ class DataMacroExpansion:
 					|])
 		return ctor
 	
-	def membersForArgs(node as MethodInvocationExpression):
-		for arg in node.Arguments:
-			yield fieldForArg(arg)
-		
 	def fieldForArg(node as TryCastExpression):
 		match node.Target:
 			case ReferenceExpression(Name: name):
