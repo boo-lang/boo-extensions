@@ -27,6 +27,11 @@ class MatchMacroTest:
 	def TestQualifiedReference():
 		Assert.AreEqual("default item", itemByQualifiedReference(Item.Default))
 		Assert.AreEqual("foo", itemByQualifiedReference(Item(Name: "foo")))
+		
+	[Test]
+	def TestImplicitPropertyPattern():
+		Assert.AreEqual("FOO", itemByImplicitNameReference(Item(Name: "foo")))
+	
 											
 	[Test]
 	[ExpectedException(MatchError)]
@@ -56,6 +61,11 @@ class MatchMacroTest:
 				return "default item"
 			case Item(Name: name):
 				return name
+				
+	def itemByImplicitNameReference(o):
+		match o:
+			case Item(Name):
+				return Name.ToUpper()
 	
-		
+
 	

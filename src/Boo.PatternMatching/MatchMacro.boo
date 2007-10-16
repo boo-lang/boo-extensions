@@ -62,12 +62,18 @@ class MatchExpander:
 		
 		typeName = cast(ReferenceExpression, node.Target).Name
 	
-		if len(node.NamedArguments) == 0:
+		if len(node.NamedArguments) == 0 and len(node.Arguments) == 0:
 			return [| $matchValue isa $(typeName) |]
 			
 		temp = newTemp(node)
 		
 		condition = [| ($temp = $matchValue as $(typeName)) is not null |]
+		
+		for member in node.Arguments:
+			assert member isa ReferenceExpression, member.ToCodeString()
+			memberRef = MemberReferenceExpression(member.LexicalInfo, temp.CloneNode(), member.ToString())
+			condition = [| $condition and __eval__($member = $memberRef, true) |]  
+			
 		for member in node.NamedArguments:
 			memberRef = MemberReferenceExpression(member.First.LexicalInfo, temp.CloneNode(), member.First.ToString())	
 			variable = member.Second as ReferenceExpression
