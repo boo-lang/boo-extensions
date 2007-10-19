@@ -28,9 +28,12 @@ class MatchExpander:
 		topLevel = expanded = expandCase(caseList(node)[0])
 		for case in caseList(node)[1:]:
 			expansion = expandCase(case)
+			continue if expansion is null
 			expanded.FalseBlock = expansion.ToBlock()
 			expanded = expansion
-			
+
+		return null if topLevel is null
+					
 		matchError = [| raise MatchError("'" + $(expression.ToCodeString()) + "' failed to match '" + $matchValue + "'") |]
 		matchError.LexicalInfo = node.LexicalInfo
 		
@@ -50,7 +53,7 @@ class MatchExpander:
 		reference = pattern as ReferenceExpression
 		if reference is not null:
 			return expandIrrefutablePattern(reference, node.Block)
-		raise CompilerError(pattern.LexicalInfo, "Unsupported pattern: '${pattern}'")
+		context.Errors.Add(CompilerError(pattern.LexicalInfo, "Unsupported pattern: '${pattern}'"))
 		
 	def expandObjectPattern(node as MethodInvocationExpression, block as Block):
 		condition = expandObjectPattern(matchValue, node)
