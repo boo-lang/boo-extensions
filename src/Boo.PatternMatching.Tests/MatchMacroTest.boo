@@ -31,12 +31,18 @@ class MatchMacroTest:
 	[Test]
 	def TestImplicitPropertyPattern():
 		Assert.AreEqual("FOO", itemByImplicitNameReference(Item(Name: "foo")))
-	
 											
 	[Test]
 	[ExpectedException(MatchError)]
 	def TestMatchErrorOnPropertyPattern():
 		itemByName(42)
+		
+	[Test]
+	def TestMatchErrorMessageIncludesValue():
+		try:
+			itemByName(42)
+		except e as MatchError:
+			Assert.AreEqual("'o' failed to match '42'", e.Message)
 		
 	[Test]
 	[ExpectedException(MatchError)]

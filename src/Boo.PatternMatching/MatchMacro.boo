@@ -4,6 +4,7 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
 class MatchError(System.Exception):
+	
 	def constructor(msg as string):
 		super(msg)
 
@@ -30,7 +31,7 @@ class MatchExpander:
 			expanded.FalseBlock = expansion.ToBlock()
 			expanded = expansion
 			
-		matchError = [| raise MatchError($(expression.ToCodeString())) |]
+		matchError = [| raise MatchError("'" + $(expression.ToCodeString()) + "' failed to match '" + $matchValue + "'") |]
 		matchError.LexicalInfo = node.LexicalInfo
 		
 		expanded.FalseBlock = matchError.ToBlock()
