@@ -48,6 +48,11 @@ class MatchMacroTest:
 	[ExpectedException(MatchError)]
 	def TestMatchErrorOnNestedPropertyPattern():
 		nestedByName(42)
+		
+	[Test]
+	def TestCaseCapture():
+		Assert.AreEqual("foo", caseCapture(Item(Name: "foo")))
+		Assert.AreEqual(42, caseCapture(21))
 
 	def itemByName(o):
 		match o:
@@ -72,6 +77,12 @@ class MatchMacroTest:
 		match o:
 			case Item(Name):
 				return Name.ToUpper()
-	
+				
+	def caseCapture(o):
+		match o:
+			case i = int():
+				return i*2
+			case item = Item():
+				return item.Name
 
 	

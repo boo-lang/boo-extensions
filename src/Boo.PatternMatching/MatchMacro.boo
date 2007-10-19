@@ -53,7 +53,24 @@ class MatchExpander:
 		reference = pattern as ReferenceExpression
 		if reference is not null:
 			return expandIrrefutablePattern(reference, node.Block)
+			
+		capture = pattern as BinaryExpression
+		if isCapture(capture):
+			return expandCapturePattern(capture, node.Block)	
+		
 		context.Errors.Add(CompilerError(pattern.LexicalInfo, "Unsupported pattern: '${pattern}'"))
+		
+	def isCapture(node as BinaryExpression):
+		if node is null: return false
+		if node.Operator != BinaryOperatorType.Assign: return false
+		return node.Left isa ReferenceExpression and node.Right isa MethodInvocationExpression
+		
+	def expandCapturePattern(node as BinaryExpression, block as Block):
+		condition = expandObjectPattern(matchValue, node.Left, node.Right)
+		return [|
+			if $condition:
+				$block
+		|] 
 		
 	def expandObjectPattern(node as MethodInvocationExpression, block as Block):
 		condition = expandObjectPattern(matchValue, node)
@@ -63,15 +80,16 @@ class MatchExpander:
 		|]
 		
 	def expandObjectPattern(matchValue as Expression, node as MethodInvocationExpression) as Expression:
-		
-		typeName = cast(ReferenceExpression, node.Target).Name
 	
 		if len(node.NamedArguments) == 0 and len(node.Arguments) == 0:
-			return [| $matchValue isa $(typeName) |]
-			
-		temp = newTemp(node)
+			return [| $matchValue isa $(typeName(node)) |]
+			 
+		return expandObjectPattern(matchValue, newTemp(node), node)
 		
-		condition = [| ($temp = $matchValue as $(typeName)) is not null |]
+	def expandObjectPattern(matchValue as Expression, temp as ReferenceExpression, node as MethodInvocationExpression) as Expression:
+		
+		condition = [| ($matchValue isa $(typeName(node))) and __eval__($temp = cast($(typeName(node)), $matchValue), true) |]
+		condition.LexicalInfo = node.LexicalInfo
 		
 		for member in node.Arguments:
 			assert member isa ReferenceExpression, member.ToCodeString()
@@ -93,6 +111,9 @@ class MatchExpander:
 				
 			condition = [| $condition and ($memberRef == $(member.Second)) |]
 		return condition
+		
+	def typeName(node as MethodInvocationExpression):
+		return cast(ReferenceExpression, node.Target).Name
 		
 	def expandIrrefutablePattern(node as ReferenceExpression, block as Block):
 		return [| 
