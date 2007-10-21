@@ -3,11 +3,6 @@ namespace Boo.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
-class MatchError(System.Exception):
-	
-	def constructor(msg as string):
-		super(msg)
-
 class MatchMacro(AbstractAstMacro):
 	override def Expand(node as MacroStatement):
 		return MatchExpander(Context).expand(node)
@@ -50,6 +45,11 @@ class MatchExpander:
 		mie = pattern as MethodInvocationExpression
 		if mie is not null:
 			return expandObjectPattern(mie, node.Block)
+			
+		memberRef = pattern as MemberReferenceExpression
+		if memberRef is not null:
+			return expandValuePattern(memberRef, node.Block)
+			
 		reference = pattern as ReferenceExpression
 		if reference is not null:
 			return expandIrrefutablePattern(reference, node.Block)
@@ -64,6 +64,12 @@ class MatchExpander:
 		if node is null: return false
 		if node.Operator != BinaryOperatorType.Assign: return false
 		return node.Left isa ReferenceExpression and node.Right isa MethodInvocationExpression
+		
+	def expandValuePattern(node as Expression, block as Block):
+		return [|
+			if $matchValue == $node:
+				$block
+		|]
 		
 	def expandCapturePattern(node as BinaryExpression, block as Block):
 		condition = expandObjectPattern(matchValue, node.Left, node.Right)
@@ -127,18 +133,3 @@ class MatchExpander:
 				LexicalInfo: e.LexicalInfo,
 				Name: "$match$${context.AllocIndex()}")
 
-class CaseMacro(AbstractAstMacro):
-	override def Expand(node as MacroStatement):
-		
-		match = node.ParentNode.ParentNode as MacroStatement
-		assert match.Name == "match"
-		
-		caseList(match).Add(node)
-		
-		return null
-		
-def caseList(node as MacroStatement) as List:
-	list as List = node["caseList"]
-	if list is null:
-		node["caseList"] = list = []
-	return list

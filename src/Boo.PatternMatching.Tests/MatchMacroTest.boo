@@ -53,6 +53,21 @@ class MatchMacroTest:
 	def TestCaseCapture():
 		Assert.AreEqual("foo", caseCapture(Item(Name: "foo")))
 		Assert.AreEqual(42, caseCapture(21))
+		
+	enum Foo:
+		None
+		Bar
+		Baz
+		
+	[Test]
+	def TestMemberReferenceIsTreatedAsValueComparison():
+		Assert.AreEqual("Bar", matchMemberRef(Foo.Bar))
+		Assert.AreEqual("Bar", matchMemberRef(Foo.Baz))
+		
+	[Test]
+	[ExpectedException(MatchError)]
+	def TestMatchErrorOnMemberReferencePattern():
+		matchMemberRef(Foo.None)
 
 	def itemByName(o):
 		match o:
@@ -84,5 +99,12 @@ class MatchMacroTest:
 				return i*2
 			case item = Item():
 				return item.Name
+				
+	def matchMemberRef(o as Foo):
+		match o:
+			case Foo.Bar:
+				return "Bar"
+			case Foo.Baz:
+				return "Baz"
 
 	
