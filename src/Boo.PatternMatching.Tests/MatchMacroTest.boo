@@ -54,6 +54,11 @@ class MatchMacroTest:
 		Assert.AreEqual("foo", caseCapture(Item(Name: "foo")))
 		Assert.AreEqual(42, caseCapture(21))
 		
+	[Test]
+	def TestOtherwise():
+		Assert.AreEqual("int", matchIntOtherwise(42))
+		Assert.AreEqual("otherwise", matchIntOtherwise("42"))
+		
 	enum Foo:
 		None
 		Bar
@@ -106,5 +111,12 @@ class MatchMacroTest:
 				return "Bar"
 			case Foo.Baz:
 				return "Baz"
+				
+	def matchIntOtherwise(o):
+		match o:
+			case int():
+				return "int"
+			otherwise:
+				return "otherwise"
 
 	

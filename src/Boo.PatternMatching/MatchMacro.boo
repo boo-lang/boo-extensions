@@ -5,23 +5,27 @@ import Boo.Lang.Compiler.Ast
 
 class MatchMacro(AbstractAstMacro):
 """
-Pattern matching facility.
+Pattern matching facility:
 
-    match someValue:
-        case "foo": 
-            print "who would thought"
-        case string(Length: 42):
-            print "beautiful"
-        case null:
-            print "oops"
+	match <expression>:
+		case <Pattern1>:
+			<block1>
+			.
+			.
+			.
+		case <PatternN>:
+			<blockN>
+		otherwise:
+			<blockOtherwise>
 
 The following patterns are supported:
     
     Type() -- type test pattern
     Type(Property1: Pattern1, ...) -- object pattern
-    Pattern1 or Pattern2 -- either pattern
-    Pattern1 and condition -- constrained pattern
-    Pattern1, Pattern2 -- iteration pattern
+    Pattern1 | Pattern2 -- either pattern (NOT IMPLEMENTED)
+    Pattern1 and condition -- constrained pattern  (NOT IMPLEMENTED)
+    Pattern1 or condition -- constrained pattern  (NOT IMPLEMENTED)
+    Pattern1, Pattern2 -- iteration pattern  (NOT IMPLEMENTED)
     x = Pattern -- variable binding
     x -- variable binding
     BinaryOperatorType.Assign -- constant pattern
@@ -32,39 +36,57 @@ The following patterns are supported:
 If no pattern matches MatchError is raised.
 """
 	override def Expand(node as MacroStatement):
-		return MatchExpander(Context).expand(node)
+		assert 0 == len(node.Block.Statements)
+		return MatchExpansion(Context, node).value
 
-class MatchExpander:
+class MatchExpansion:
 	
+	node as MacroStatement
+	expression as Expression
 	matchValue as ReferenceExpression
 	context as CompilerContext
+	public final value as Statement
 	
-	def constructor(context as CompilerContext):
+	def constructor(context as CompilerContext, node as MacroStatement):
 		self.context = context
+		self.node = node
+		self.expression = node.Arguments[0]
+		self.matchValue = newTemp(expression)
+		self.value = expand()
 		
-	def expand(node as MacroStatement):
-		
-		expression = node.Arguments[0]
-		matchValue = newTemp(expression)
+	def expand():
 		
 		topLevel = expanded = expandCase(caseList(node)[0])
 		for case in caseList(node)[1:]:
-			expansion = expandCase(case)
-			continue if expansion is null
-			expanded.FalseBlock = expansion.ToBlock()
-			expanded = expansion
+			caseExpansion = expandCase(case)
+			continue if caseExpansion is null
+			expanded.FalseBlock = caseExpansion.ToBlock()
+			expanded = caseExpansion
 
 		return null if topLevel is null
-					
-		matchError = [| raise MatchError("'" + $(expression.ToCodeString()) + "' failed to match '" + $matchValue + "'") |]
-		matchError.LexicalInfo = node.LexicalInfo
 		
-		expanded.FalseBlock = matchError.ToBlock()
+		expanded.FalseBlock = expandOtherwise()
+		
 		return [|
 			block:
 				$matchValue = $expression
 				$topLevel
 		|].Block
+		
+	def expandOtherwise():
+		node as MacroStatement = node["otherwise"]
+		if node is null:
+			return defaultOtherwise()
+		return expandOtherwise(node)
+		
+	def expandOtherwise(node as MacroStatement):
+		assert 0 == len(node.Arguments)
+		return node.Block
+		
+	def defaultOtherwise():
+		matchError = [| raise MatchError("'" + $(expression.ToCodeString()) + "' failed to match '" + $matchValue + "'") |]
+		matchError.LexicalInfo = node.LexicalInfo
+		return matchError.ToBlock()
 		
 	def expandCase(node as MacroStatement):
 		assert 1 == len(node.Arguments)
