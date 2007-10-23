@@ -74,10 +74,9 @@ class MatchExpansion:
 		|].Block
 		
 	def expandOtherwise():
-		node as MacroStatement = node["otherwise"]
-		if node is null:
-			return defaultOtherwise()
-		return expandOtherwise(node)
+		otherwise as MacroStatement = node["otherwise"]
+		if otherwise is null: return defaultOtherwise()
+		return expandOtherwise(otherwise)
 		
 	def expandOtherwise(node as MacroStatement):
 		assert 0 == len(node.Arguments)
