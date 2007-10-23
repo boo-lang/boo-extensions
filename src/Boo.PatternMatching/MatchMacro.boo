@@ -3,6 +3,8 @@ namespace Boo.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
+
+# TODO: check for unreacheable patterns
 class MatchMacro(AbstractAstMacro):
 """
 Pattern matching facility:
@@ -100,13 +102,13 @@ class MatchExpansion:
 			
 		reference = pattern as ReferenceExpression
 		if reference is not null:
-			return expandIrrefutablePattern(reference, node.Block)
+			return expandBindPattern(reference, node.Block)
 			
 		capture = pattern as BinaryExpression
 		if isCapture(capture):
-			return expandCapturePattern(capture, node.Block)	
-		
-		context.Errors.Add(CompilerError(pattern.LexicalInfo, "Unsupported pattern: '${pattern}'"))
+			return expandCapturePattern(capture, node.Block)
+			
+		return expandValuePattern(pattern, node.Block)
 		
 	def isCapture(node as BinaryExpression):
 		if node is null: return false
@@ -169,7 +171,7 @@ class MatchExpansion:
 	def typeName(node as MethodInvocationExpression):
 		return cast(ReferenceExpression, node.Target).Name
 		
-	def expandIrrefutablePattern(node as ReferenceExpression, block as Block):
+	def expandBindPattern(node as ReferenceExpression, block as Block):
 		return [| 
 			if true:
 				$node = $matchValue

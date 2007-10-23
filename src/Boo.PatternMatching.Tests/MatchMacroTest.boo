@@ -22,6 +22,12 @@ class MatchMacroTest:
 		Assert.AreEqual("foo:bar", nestedByName(
 								Item(Name: "foo",
 									Child: Item(Name: "bar"))))
+									
+	[Test]
+	def TestStringValue():
+		for s in ("foo", "bar"):
+			Assert.AreEqual("*${s}*", matchStringValue(s))
+		
 
 	[Test]
 	def TestQualifiedReference():
@@ -118,5 +124,12 @@ class MatchMacroTest:
 				return "int"
 			otherwise:
 				return "otherwise"
+				
+	def matchStringValue(o):
+		match o:
+			case "foo":
+				return "*foo*"
+			case "bar":
+				return "*bar*"
 
 	
