@@ -1,0 +1,26 @@
+About
+=====
+
+boojay is an attempt at getting the boo compiler to emit java bytecode.
+
+
+Architecture
+============
+
+Thanks to the amazing IKVM project [1] it is possible to use the great ObjectWeb ASM [2]
+library from boo running on mono/ms.net to emit native java bytecodes that
+can be executed by any compliant java virtual machine.
+
+
+Contributing
+============
+
+First, you need to setup your monolipse environment [3].
+
+
+[1] http://www.ikvm.net/
+[2] http://asm.objectweb.org/
+[3] http://monolipse.sourceforge.net/
+
+ 
+

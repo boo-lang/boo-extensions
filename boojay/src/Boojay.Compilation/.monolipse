@@ -1,0 +1,20 @@
+<settings>
+  <language>boo</language>
+  <outputType>library</outputType>
+  <references>
+    <monolipse.core.internal.GlobalAssemblyCacheReference-Remembrance>
+      <name>IKVM.GNU.Classpath</name>
+      <version>0.34.0.2</version>
+      <culture>neutral</culture>
+      <token>13235d27fcbfff58</token>
+    </monolipse.core.internal.GlobalAssemblyCacheReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/boo-extensions/boojay/lib/asm-3.0.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.AssemblySourceReference-Remembrance>
+      <path>/boo-extensions/extensions/src/Boo.PatternMatching</path>
+    </monolipse.core.internal.AssemblySourceReference-Remembrance>
+  </references>
+  <outputFolder>/boo-extensions/bin</outputFolder>
+  <additionalOptions></additionalOptions>
+</settings>
