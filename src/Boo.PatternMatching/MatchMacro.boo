@@ -4,6 +4,33 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
 class MatchMacro(AbstractAstMacro):
+"""
+Pattern matching facility.
+
+    match someValue:
+        case "foo": 
+            print "who would thought"
+        case string(Length: 42):
+            print "beautiful"
+        case null:
+            print "oops"
+
+The following patterns are supported:
+    
+    Type() -- type test pattern
+    Type(Property1: Pattern1, ...) -- object pattern
+    Pattern1 or Pattern2 -- either pattern
+    Pattern1 and condition -- constrained pattern
+    Pattern1, Pattern2 -- iteration pattern
+    x = Pattern -- variable binding
+    x -- variable binding
+    BinaryOperatorType.Assign -- constant pattern
+    42 -- constant pattern
+    "42" -- constant pattern
+    null -- null test pattern
+    
+If no pattern matches the value MatchError is raised.
+"""
 	override def Expand(node as MacroStatement):
 		return MatchExpander(Context).expand(node)
 
