@@ -29,7 +29,7 @@ The following patterns are supported:
     "42" -- constant pattern
     null -- null test pattern
     
-If no pattern matches the value MatchError is raised.
+If no pattern matches MatchError is raised.
 """
 	override def Expand(node as MacroStatement):
 		return MatchExpander(Context).expand(node)
