@@ -62,7 +62,7 @@ class MatchMacroTest:
 	[Test]
 	def TestMemberReferenceIsTreatedAsValueComparison():
 		Assert.AreEqual("Bar", matchMemberRef(Foo.Bar))
-		Assert.AreEqual("Bar", matchMemberRef(Foo.Baz))
+		Assert.AreEqual("Baz", matchMemberRef(Foo.Baz))
 		
 	[Test]
 	[ExpectedException(MatchError)]
