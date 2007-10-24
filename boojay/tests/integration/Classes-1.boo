@@ -1,8 +1,6 @@
 """
 John Cleese
 """
-namespace Classes1
-
 import java.lang
 
 class Person:

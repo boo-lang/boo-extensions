@@ -240,6 +240,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				
 	def emitAssignment(node as BinaryExpression):
 		match node.Left:
+			case memberRef = MemberReferenceExpression():
+				match entity(memberRef):
+                    case field = IField(IsStatic: false):
+                    	emit memberRef.Target
+                    	PUTFIELD field
 			case reference = ReferenceExpression():
 				emit node.Right
 				match entity(reference):
@@ -248,11 +253,15 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 							ASTORE index(local)
 						elif isIntegerOrBool(local.Type):
 							ISTORE index(local)
+						
 	
 	override def OnMemberReferenceExpression(node as MemberReferenceExpression):
 		match entity(node):
 			case field = IField(IsStatic: true):
 				GETSTATIC field
+			case field = IField(IsStatic: false):
+				emit node.Target
+				GETFIELD field
 			case IMethod(IsStatic: false):
 				emit node.Target
 			case IMethod(IsStatic: true):
@@ -368,6 +377,12 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def GETSTATIC(field as IField):
 		emitLoadStaticField(field.DeclaringType, field.Name, field.Type)
 		
+	def GETFIELD(field as IField):
+		emitField Opcodes.GETFIELD, field
+		
+	def PUTFIELD(field as IField):
+		emitField Opcodes.PUTFIELD, field
+		
 	def INVOKESTATIC(method as IMethod):
 		invoke(Opcodes.INVOKESTATIC, method)
 		
@@ -428,8 +443,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	
 		
 	def emitLoadStaticField(declaringType as IType, fieldName as string, fieldType as IType):
+		emitField Opcodes.GETSTATIC, declaringType, fieldName, fieldType
+		
+	def emitField(opcode as int, field as IField):
+		emitField opcode, field.DeclaringType, field.Name, field.Type
+		
+	def emitField(opcode as int, declaringType as IType, fieldName as string, fieldType as IType):
 		_code.visitFieldInsn(
-				Opcodes.GETSTATIC,
+				opcode,
 				javaType(declaringType),
 				fieldName,
 				javaName(fieldType))
