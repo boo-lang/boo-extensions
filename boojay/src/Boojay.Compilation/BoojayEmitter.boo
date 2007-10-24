@@ -140,7 +140,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return entity.Local["index"]
 		
 	override def LeaveExpressionStatement(node as ExpressionStatement):
-		mie = node.Expression as MethodInvocationExpression
+		discardValueOnStack node.Expression
+		
+	def discardValueOnStack(node as Expression):
+		mie = node as MethodInvocationExpression
 		if mie is null: return
 		
 		m = entity(mie.Target) as IMethod
@@ -160,13 +163,29 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
 		
-		method as IMethod = entity(node.Target) 		
+		match entity(node.Target):
+			case ctor = IConstructor():
+				emitObjectCreation ctor, node
+			case method = IMethod():
+				emitMethodInvocation method, node
+			case builtin = BuiltinFunction():
+				emitBuiltinInvocation builtin, node
+				
+	def emitBuiltinInvocation(builtin as BuiltinFunction, node as MethodInvocationExpression):
+		match builtin.FunctionType:
+			case BuiltinFunctionType.Eval:
+				emitEval node
+				
+	def emitEval(node as MethodInvocationExpression):
+		for e in node.Arguments.ToArray()[:-1]:
+			emit e
+			discardValueOnStack e
+		emit node.Arguments[-1]
+				
+	def emitMethodInvocation(method as IMethod, node as MethodInvocationExpression):
+		
 		if isSpecialIkvmGetter(method):
 			emitSpecialIkvmGetter(method)
-			return
-			
-		if method isa IConstructor:
-			emitObjectCreation(node)
 			return
 		
 		emit node.Target
@@ -175,11 +194,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		if method.IsStatic:
 			INVOKESTATIC method
 		else:
-			INVOKEVIRTUAL method
+			INVOKEVIRTUAL method 		
 		
-	def emitObjectCreation(node as MethodInvocationExpression):
-		ctor as IConstructor = entity(node.Target)
 		
+	def emitObjectCreation(ctor as IConstructor, node as MethodInvocationExpression):
 		NEW ctor.DeclaringType
 		DUP
 		emit node.Arguments

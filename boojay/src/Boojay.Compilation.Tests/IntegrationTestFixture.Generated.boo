@@ -10,6 +10,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/Bool-1.boo")
 		
 	[Test]
+	def Classes_1():
+		runTestCase("../boojay/tests/integration/Classes-1.boo")
+		
+	[Test]
 	def HelloWorld():
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
 		
