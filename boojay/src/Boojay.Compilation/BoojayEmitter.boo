@@ -43,7 +43,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_classWriter.visit(
 			Opcodes.V1_5,
 			Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
-			node.FullName, 
+			javaType(node.FullName), 
 			null,
 			typeDescriptor(baseType(node)),
 			null)
@@ -301,6 +301,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				emitLoad param.Type, param.Index
 			case local = ILocalEntity():
 				emitLoad local.Type, index(local)
+			case type = IType():
+				LDC type
 				
 	def emitLoad(type as IType, index as int):
 		if not type.IsValueType:
@@ -358,33 +360,36 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		VisitCollection(nodes)
 		
 	def LDC(value):
-		emitLdcInsn(value)
+		emitLdcInsn value
+		
+	def LDC(type as IType):
+		emitLdcInsn org.objectweb.asm.Type.getType(typeDescriptor(type))
 		
 	def IFEQ(label as Label):
-		emitJumpInsn(Opcodes.IFEQ, label)
+		emitJumpInsn Opcodes.IFEQ, label
 	
 	def IFNE(label as Label):
-        emitJumpInsn(Opcodes.IFNE, label)
+        emitJumpInsn Opcodes.IFNE, label
 
 	def GOTO(label as Label):
-		emitJumpInsn(Opcodes.GOTO, label)
+		emitJumpInsn Opcodes.GOTO, label
 	
 	def ILOAD(index as int):
-		emitVarInsn(Opcodes.ILOAD, index)
+		emitVarInsn Opcodes.ILOAD, index
 		
 	def ICONST(value as int):
 		if value >= -1 and value <= 5:
-			emitInsn(iconstOpcodeFor(value))
+			emitInsn iconstOpcodeFor(value)
 		elif value >= -127 and value <= 127:
 			emitIntInsn Opcodes.BIPUSH, value
 		else:
 			emitIntInsn Opcodes.SIPUSH, value
 			
 	def ICONST_0():
-		emitInsn(Opcodes.ICONST_0)
+		emitInsn Opcodes.ICONST_0
 		
 	def ICONST_1():
-		emitInsn(Opcodes.ICONST_1)
+		emitInsn Opcodes.ICONST_1
 		
 	def iconstOpcodeFor(value as int):
 		if value == 0: return Opcodes.ICONST_0
@@ -493,6 +498,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def javaType(type as IType) as string:
 		if type in _typeMappings: return _typeMappings[type]
-		return type.FullName.Replace('.', '/')
+		return javaType(type.FullName)
+		
+	def javaType(typeName as string):
+		return typeName.Replace('.', '/')
 		
 		

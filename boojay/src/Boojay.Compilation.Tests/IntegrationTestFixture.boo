@@ -29,7 +29,7 @@ partial class IntegrationTestFixture:
 		return BooParser.ParseFile(System.IO.Path.GetFullPath(fname))
 		
 	def moduleClass(module as Module):
-		return module.Name + "Module"
+		return module.FullName + "Module"
 		
 	def runJavaClass(className as string):
 		return shell("java", "-cp . ${className}")

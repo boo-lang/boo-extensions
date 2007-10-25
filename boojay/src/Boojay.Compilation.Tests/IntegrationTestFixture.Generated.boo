@@ -46,6 +46,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/ModuleFunction-2.boo")
 		
 	[Test]
+	def Namespaces():
+		runTestCase("../boojay/tests/integration/Namespaces.boo")
+		
+	[Test]
 	def Objects_1():
 		runTestCase("../boojay/tests/integration/Objects-1.boo")
 		
