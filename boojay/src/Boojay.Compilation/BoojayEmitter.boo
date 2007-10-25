@@ -295,6 +295,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			case IMethod(IsStatic: true):
 				pass
 				
+	override def OnSelfLiteralExpression(node as SelfLiteralExpression):
+		ALOAD 0
+				
 	override def OnReferenceExpression(node as ReferenceExpression):
 		match entity(node):
 			case param = InternalParameter():

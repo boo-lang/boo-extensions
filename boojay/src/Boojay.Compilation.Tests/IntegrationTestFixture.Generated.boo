@@ -14,6 +14,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/Classes-1.boo")
 		
 	[Test]
+	def Constructors_1():
+		runTestCase("../boojay/tests/integration/Constructors-1.boo")
+		
+	[Test]
 	def HelloWorld():
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
 		
