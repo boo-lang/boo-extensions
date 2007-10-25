@@ -17,6 +17,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	_classWriter as ClassWriter
 	_code as MethodVisitor
 	_typeMappings as Hash
+	_primitiveMappings as Hash
 	
 	override def Initialize(context as CompilerContext):
 		super(context)		
@@ -27,8 +28,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def initializeTypeMappings():
 		_typeMappings = {
-			typeSystem.ObjectType: "Ljava/lang/Object;",
-			typeSystem.StringType: "Ljava/lang/String;",
+			typeSystem.ObjectType: "java/lang/Object",
+			typeSystem.StringType: "java/lang/String",
+		}
+		
+		_primitiveMappings = {
 			typeSystem.BoolType: BOOLEAN_TYPE.getDescriptor(),
 			typeSystem.IntType: INT_TYPE.getDescriptor(),
 			typeSystem.VoidType: VOID_TYPE.getDescriptor(),
@@ -41,7 +45,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
 			node.FullName, 
 			null,
-			javaName(baseType(node)),
+			typeDescriptor(baseType(node)),
 			null)
 		return true
 		
@@ -51,9 +55,6 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		fname = classFullFileName(node)
 		ensurePath(fname)
 		File.WriteAllBytes(fname, _classWriter.toByteArray())
-		
-	override def OnConstructor(node as Constructor):
-		pass
 		
 	override def OnIfStatement(node as IfStatement):
 		
@@ -99,10 +100,26 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		mark testLabel
 		emitBranchTrue node.Condition, bodyLabel
 		
+	override def OnField(node as Field):
+		field = _classWriter.visitField(
+					memberAttributes(node),
+					node.Name,
+					typeDescriptor(entity(node.Type)),
+					null,
+					null)
+		field.visitEnd() 
+		
+	override def OnConstructor(node as Constructor):
+		emitMethod "<init>", node
+		
 	override def OnMethod(node as Method):
+		methodName = ("main" if node.Name == "Main" else node.Name)
+		emitMethod methodName, node
+		
+	def emitMethod(methodName as string, node as Method):
 		_code = _classWriter.visitMethod(
-					Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
-					("main" if node.Name == "Main" else node.Name),
+					memberAttributes(node),
+					methodName,
 					javaSignature(node),
 					null,
 					null)
@@ -113,9 +130,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 		emit node.Body		
 		RETURN
-		
+	
 		_code.visitMaxs(0, 0)
 		_code.visitEnd()
+		
+	def memberAttributes(node as TypeMember):
+		attributes = Opcodes.ACC_PUBLIC
+		if node.IsStatic: attributes += Opcodes.ACC_STATIC
+		return attributes
 		
 	def prepareLocalVariables(node as Method):
 		i = firstLocalIndex(node)
@@ -165,7 +187,12 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 		match entity(node.Target):
 			case ctor = IConstructor():
-				emitObjectCreation ctor, node
+				match node.Target:
+					case SuperLiteralExpression():
+						ALOAD 0
+						INVOKESPECIAL ctor
+					otherwise:
+						emitObjectCreation ctor, node
 			case method = IMethod():
 				emitMethodInvocation method, node
 			case builtin = BuiltinFunction():
@@ -244,6 +271,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				match entity(memberRef):
                     case field = IField(IsStatic: false):
                     	emit memberRef.Target
+                    	emit node.Right
                     	PUTFIELD field
 			case reference = ReferenceExpression():
 				emit node.Right
@@ -308,9 +336,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def javaSignature(method as IMethod):
 		return ("("
-			+ join(javaName(p.Type) for p in method.GetParameters(), "")
+			+ join(typeDescriptor(p.Type) for p in method.GetParameters(), "")
 			+ ")"
-			+ javaName(method.ReturnType))
+			+ typeDescriptor(method.ReturnType))
 		
 	def javaSignature(node as Method):
 		return javaSignature(entity(node) as IMethod)
@@ -453,17 +481,18 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				opcode,
 				javaType(declaringType),
 				fieldName,
-				javaName(fieldType))
+				typeDescriptor(fieldType))
 				
 	def entity(node as Node):
 		return GetEntity(node)
 		
-	def javaName(type as IType) as string:
-		if type in _typeMappings: return _typeMappings[type]
-		if type.IsArray: return "[" + javaName(type.GetElementType())
+	def typeDescriptor(type as IType) as string:
+		if type in _primitiveMappings: return _primitiveMappings[type]
+		if type.IsArray: return "[" + typeDescriptor(type.GetElementType())
 		return "L" + javaType(type) + ";"
 		
 	def javaType(type as IType) as string:
+		if type in _typeMappings: return _typeMappings[type]
 		return type.FullName.Replace('.', '/')
 		
 		
