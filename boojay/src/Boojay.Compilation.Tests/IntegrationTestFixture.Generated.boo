@@ -42,6 +42,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/Locals-2.boo")
 		
 	[Test]
+	def Methods_1():
+		runTestCase("../boojay/tests/integration/Methods-1.boo")
+		
+	[Test]
 	def ModuleFunction_1():
 		runTestCase("../boojay/tests/integration/ModuleFunction-1.boo")
 		
