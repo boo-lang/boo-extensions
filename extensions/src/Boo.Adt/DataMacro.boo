@@ -8,7 +8,7 @@ class DataMacro(AbstractAstMacro):
 	
 	override def Expand(node as MacroStatement):
 		DataMacroExpansion(node)
-		
+
 class DataMacroExpansion:
 	
 	_module as Module
@@ -30,13 +30,40 @@ class DataMacroExpansion:
 	def enclosingModule(node as Node):
 		return node.GetAncestor(NodeType.Module)
 		
-	def createBaseType(node as ReferenceExpression):
-		type = [|
-			abstract class $node:
-				pass
-		|]
+	def createBaseType(node as Expression):
+		type = baseTypeForExpression(node)
 		registerType(type)
-		return SimpleTypeReference(LexicalInfo: node.LexicalInfo, Name: node.Name)
+		
+		typeRef = TypeReference.Lift(type)
+		typeRef.LexicalInfo = node.LexicalInfo
+		return typeRef
+		
+	def baseTypeForExpression(node as Expression):
+		match node:
+			case re=ReferenceExpression():
+				type = [|
+					abstract class $re:
+						pass
+				|]
+				return type
+				
+			case gre=SlicingExpression(
+						Target: ReferenceExpression(Name: name)):
+				type = [|
+					abstract class $name[of T]:
+						pass
+				|]
+				type.GenericParameters.Clear()
+				for index in gre.Indices:
+					match index:
+						case Slice(
+							Begin: ReferenceExpression(Name: name),
+							End: null,
+							Step: null):
+							type.GenericParameters.Add(
+								GenericParameterDeclaration(Name: name))
+				return type
+			
 		
 	def expandDataConstructors(node as Expression):
 		match node:
@@ -49,12 +76,7 @@ class DataMacroExpansion:
 				expandDataConstructor(node)
 				
 	def expandDataConstructor(node as MethodInvocationExpression):
-		match node.Target:
-			case ReferenceExpression(Name: name):
-				type = [|
-					class $name($_baseType):
-						pass
-				|]
+		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
 		for arg in node.Arguments:
 			type.Members.Add(fieldForArg(arg))	
@@ -63,15 +85,34 @@ class DataMacroExpansion:
 		type.Members.Add(constructorForInvocation(node))	
 		registerType(type)
 		
+	def dataConstructorTypeForExpression(node as Expression):
+		match node:
+			case ReferenceExpression(Name: name):
+				type = [|
+					class $name($_baseType):
+						pass
+				|]
+				genericBaseType = _baseType as GenericTypeReference
+				if genericBaseType is null: return type
+				
+				for arg in genericBaseType.GenericArguments:
+					match arg:
+						case SimpleTypeReference(Name: name):
+							type.GenericParameters.Add(
+								GenericParameterDeclaration(Name: name))
+				return type
+						
+		
 	def equalsForType(type as TypeDefinition):
 			
 		method = [|
 			override def Equals(o):
 				if o is null: return false
-				if GetType() != o.GetType(): return false
-				other as $(type.Name) = o
+				// (self as object) to workaround a generic type emission bug
+				if (self as object).GetType() != o.GetType(): return false
+				other as $type = o
 		|]
-		
+	
 		for field in fields(type):
 			comparison = [|
 				if self.$(field.Name) != other.$(field.Name):
