@@ -9,8 +9,16 @@ class Item:
 	[property(Name)] _name = ""
 	[property(Child)] _child as Item
 	
+class Container of T:
+	public value as T
+	
 [TestFixture]
 class MatchMacroTest:
+	
+	[Test]
+	def TestGenericMatch():
+		Assert.AreEqual(42, genericMatch(Container of int(value: 21)))
+		Assert.AreEqual("BOO", genericMatch(Container of string(value: 'boo')))
 	
 	[Test]
 	def TestPropertyPattern():
@@ -131,5 +139,12 @@ class MatchMacroTest:
 				return "*foo*"
 			case "bar":
 				return "*bar*"
+				
+	def genericMatch(o):
+		match o:
+			case Container of int(value: i):
+				return i*2
+			case Container of string(value: s):
+				return s.ToUpper()
 
 	

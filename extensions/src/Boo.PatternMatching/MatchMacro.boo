@@ -3,7 +3,6 @@ namespace Boo.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
-
 # TODO: check for unreacheable patterns
 class MatchMacro(AbstractAstMacro):
 """
@@ -138,13 +137,13 @@ class MatchExpansion:
 	def expandObjectPattern(matchValue as Expression, node as MethodInvocationExpression) as Expression:
 	
 		if len(node.NamedArguments) == 0 and len(node.Arguments) == 0:
-			return [| $matchValue isa $(typeName(node)) |]
+			return [| $matchValue isa $(typeRef(node)) |]
 			 
 		return expandObjectPattern(matchValue, newTemp(node), node)
 		
 	def expandObjectPattern(matchValue as Expression, temp as ReferenceExpression, node as MethodInvocationExpression) as Expression:
 		
-		condition = [| ($matchValue isa $(typeName(node))) and __eval__($temp = cast($(typeName(node)), $matchValue), true) |]
+		condition = [| ($matchValue isa $(typeRef(node))) and __eval__($temp = cast($(typeRef(node)), $matchValue), true) |]
 		condition.LexicalInfo = node.LexicalInfo
 		
 		for member in node.Arguments:
@@ -168,8 +167,8 @@ class MatchExpansion:
 			condition = [| $condition and ($memberRef == $(member.Second)) |]
 		return condition
 		
-	def typeName(node as MethodInvocationExpression):
-		return cast(ReferenceExpression, node.Target).Name
+	def typeRef(node as MethodInvocationExpression):
+		return node.Target
 		
 	def expandBindPattern(node as ReferenceExpression, block as Block):
 		return [| 
