@@ -34,6 +34,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/Integers-1.boo")
 		
 	[Test]
+	def Interfaces_1():
+		runTestCase("../boojay/tests/integration/Interfaces-1.boo")
+		
+	[Test]
 	def Locals_1():
 		runTestCase("../boojay/tests/integration/Locals-1.boo")
 		

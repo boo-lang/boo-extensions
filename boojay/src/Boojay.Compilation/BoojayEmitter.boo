@@ -37,21 +37,53 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.IntType: INT_TYPE.getDescriptor(),
 			typeSystem.VoidType: VOID_TYPE.getDescriptor(),
 		}
+		
+		
+	override def OnInterfaceDefinition(node as InterfaceDefinition):
+		emitTypeDefinition node
 	
-	override def EnterClassDefinition(node as ClassDefinition):
+	override def OnClassDefinition(node as ClassDefinition):
+		emitTypeDefinition node
+		
+	def emitTypeDefinition(node as TypeDefinition):
 		_classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
 		_classWriter.visit(
 			Opcodes.V1_5,
-			Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
+			typeAttributes(node),
 			javaType(node.FullName), 
 			null,
-			typeDescriptor(baseType(node)),
-			null)
-		return true
+			javaType(baseType(node)),
+			implementedInterfaces(node))
+			
+		emit node.Members
 		
-	override def LeaveClassDefinition(node as ClassDefinition):
 		_classWriter.visitEnd()
 		
+		writeClassFile node
+		
+	def implementedInterfaces(node as TypeDefinition):
+		interfaces = array(
+				javaType(itf)
+				for itf in node.BaseTypes
+				if isInterface(itf))
+		if len(interfaces) == 0: return null
+		return interfaces
+		
+	def isInterface(typeRef as TypeReference):
+		return (entity(typeRef) as IType).IsInterface
+		
+	def typeAttributes(node as TypeDefinition):
+		attrs = 0
+		match node.NodeType:
+			case NodeType.ClassDefinition:
+				attrs += Opcodes.ACC_SUPER
+			case NodeType.InterfaceDefinition:
+				attrs += (Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT)
+		if node.IsPublic:
+			attrs += Opcodes.ACC_PUBLIC
+		return attrs
+		
+	def writeClassFile(node as TypeDefinition):
 		fname = classFullFileName(node)
 		ensurePath(fname)
 		File.WriteAllBytes(fname, _classWriter.toByteArray())
@@ -124,6 +156,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					null,
 					null)
 					
+		if not node.IsAbstract:
+			emitMethodBody node 
+		_code.visitEnd()
+		
+	def emitMethodBody(node as Method):
 		prepareLocalVariables node
 		
 		_code.visitCode()
@@ -132,11 +169,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		RETURN
 	
 		_code.visitMaxs(0, 0)
-		_code.visitEnd()
 		
 	def memberAttributes(node as TypeMember):
 		attributes = Opcodes.ACC_PUBLIC
 		if node.IsStatic: attributes += Opcodes.ACC_STATIC
+		if node.IsAbstract: attributes += Opcodes.ACC_ABSTRACT
 		return attributes
 		
 	def prepareLocalVariables(node as Method):
@@ -220,6 +257,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 		if method.IsStatic:
 			INVOKESTATIC method
+		elif method.DeclaringType.IsInterface:
+			INVOKEINTERFACE method
 		else:
 			INVOKEVIRTUAL method 		
 		
@@ -333,7 +372,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		else:
 			ICONST_0 
 		
-	def baseType(node as ClassDefinition):
+	def baseType(node as TypeDefinition):
+		if node isa InterfaceDefinition: return TypeSystemServices.ObjectType
 		return self.GetType(node).BaseType
 		
 	typeSystem as JavaTypeSystem:
@@ -428,6 +468,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def INVOKESPECIAL(method as IMethod):
 		invoke(Opcodes.INVOKESPECIAL, method)
 		
+	def INVOKEINTERFACE(method as IMethod):
+		invoke(Opcodes.INVOKEINTERFACE, method)
+		
 	def RETURN():
 	   emitInsn(Opcodes.RETURN)
 		
@@ -493,6 +536,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				
 	def entity(node as Node):
 		return GetEntity(node)
+		
+	def javaType(typeRef as TypeReference):
+		return typeDescriptor(entity(typeRef) as IType)
 		
 	def typeDescriptor(type as IType) as string:
 		if type in _primitiveMappings: return _primitiveMappings[type]
