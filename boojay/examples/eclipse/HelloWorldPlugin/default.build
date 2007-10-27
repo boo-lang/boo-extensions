@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<project name="HelloWorldPlugin" default="deploy">
+
+	<!--
+	First you have to generate the eclipse-3.3.dll lib used as reference
+	in this project.
+	Open a shell and cd to your eclipse/plugins folder then issue the following command:
+	
+	$ ikvmc -out:eclipse-3.3.dll org.eclipse.core.*jar org.eclipse.ui_3.3.0.I200706
+14-0800.jar org.eclipse.jface_3.3.0.I20070606-0010.jar org.eclipse.ui.workbench
+*jar $SWT_HOME/swt.jar
+
+	$SWT_HOME should point to the folder where you have the latest swt-3.3 jar.
+	
+	After that you should have a eclipse-3.3.dll sitting in the current folder. Copy 
+	it to boojay/examples/eclipse/lib/
+	-->
+	
+	<property name="eclipse.home" value="c:/java/eclipse" />
+	<property name="build.dir" value="../bin" />
+	<property name="boojay.exe" value="../../../../bin/boojay.exe" />
+	
+	<target name="deploy" depends="package">
+		<property name="plugin.dir" value="${eclipse.home}/plugins/HelloWorldPlugin_0.0.0" />		
+		<mkdir dir="${plugin.dir}" />
+		<copy file="plugin.xml" todir="${plugin.dir}" />
+		<copy file="HelloWorldPlugin.jar" todir="${plugin.dir}" />
+		<delete file="HelloWorldPlugin.jar" />
+	</target>
+	
+	<target name="package" depends="build">
+		
+		<zip zipfile="HelloWorldPlugin.jar" ziplevel="9">
+			<fileset basedir="${build.dir}">
+				<include name="**" />
+			</fileset>
+		</zip>
+	</target>
+	
+	<target name="build" depends="init">
+	
+		<exec program="${boojay.exe}" useruntimeengine="true" workingdir="${build.dir}">
+			<arg value="-r:../lib/eclipse-3.3.dll" />
+			<arg value="../HelloWorldPlugin/HelloWorldAction.boo" />
+		</exec>
+		
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+	</target>
+	
+</project>
