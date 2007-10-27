@@ -538,7 +538,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return GetEntity(node)
 		
 	def javaType(typeRef as TypeReference):
-		return typeDescriptor(entity(typeRef) as IType)
+		return javaType(entity(typeRef) as IType)
 		
 	def typeDescriptor(type as IType) as string:
 		if type in _primitiveMappings: return _primitiveMappings[type]
