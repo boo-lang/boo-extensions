@@ -12,8 +12,26 @@ class Item:
 class Container of T:
 	public value as T
 	
+class Collection:
+	public Items as List
+	
 [TestFixture]
 class MatchMacroTest:
+	
+	[Test]
+	def TestFixedSizeCollection():
+		Assert.AreEqual(1, lastItem(Collection(Items: [1])))
+		Assert.AreEqual(2, lastItem(Collection(Items: [1, 2])))
+		
+	[Test]
+	def TestNestedFixedSize():
+		c = Collection(Items: [Collection(Items: [1, 2])])
+		Assert.AreEqual(2, nestedLastItem(c))
+		
+	[Test]
+	[ExpectedException(MatchError)]
+	def TestMatchErrorOnFixedSize():
+		lastItem(Collection(Items: [1, 2, 3]))
 	
 	[Test]
 	def TestGenericMatch():
@@ -146,5 +164,15 @@ class MatchMacroTest:
 				return i*2
 			case Container of string(value: s):
 				return s.ToUpper()
-
-	
+				
+	def lastItem(o):
+		match o:
+			case Collection(Items: (last,)):
+				return last
+			case Collection(Items: (first, last)):
+				return last	
+				
+	def nestedLastItem(o):
+		match o:
+			case Collection(Items: (Collection(Items: (first, last)),)):
+				return last

@@ -26,7 +26,8 @@ The following patterns are supported:
     Pattern1 | Pattern2 -- either pattern (NOT IMPLEMENTED)
     Pattern1 and condition -- constrained pattern  (NOT IMPLEMENTED)
     Pattern1 or condition -- constrained pattern  (NOT IMPLEMENTED)
-    Pattern1, Pattern2 -- iteration pattern  (NOT IMPLEMENTED)
+    (Pattern1, Pattern2) -- fixed size iteration pattern
+    [Pattern1, Pattern2] -- arbitrary size iteration pattern (NOT IMPLEMENTED)
     x = Pattern -- variable binding
     x -- variable binding
     BinaryOperatorType.Assign -- constant pattern
@@ -44,7 +45,6 @@ class MatchExpansion:
 	
 	node as MacroStatement
 	expression as Expression
-	matchValue as ReferenceExpression
 	context as CompilerContext
 	public final value as Statement
 	
@@ -52,21 +52,16 @@ class MatchExpansion:
 		self.context = context
 		self.node = node
 		self.expression = node.Arguments[0]
-		self.matchValue = newTemp(expression)
-		self.value = expand()
+		self.value = expand(newTemp(expression))
 		
-	def expand():
+	def expand(matchValue as Expression):
 		
-		topLevel = expanded = expandCase(caseList(node)[0])
+		topLevel = expanded = expandCase(matchValue, caseList(node)[0])
 		for case in caseList(node)[1:]:
-			caseExpansion = expandCase(case)
-			continue if caseExpansion is null
+			caseExpansion = expandCase(matchValue, case)
 			expanded.FalseBlock = caseExpansion.ToBlock()
-			expanded = caseExpansion
-
-		return null if topLevel is null
-		
-		expanded.FalseBlock = expandOtherwise()
+			expanded = caseExpansion		
+		expanded.FalseBlock = expandOtherwise(matchValue)
 		
 		return [|
 			block:
@@ -74,65 +69,65 @@ class MatchExpansion:
 				$topLevel
 		|].Block
 		
-	def expandOtherwise():
+	def expandOtherwise(matchValue as Expression):
 		otherwise as MacroStatement = node["otherwise"]
-		if otherwise is null: return defaultOtherwise()
+		if otherwise is null: return defaultOtherwise(matchValue)
 		return expandOtherwise(otherwise)
 		
 	def expandOtherwise(node as MacroStatement):
 		assert 0 == len(node.Arguments)
 		return node.Block
 		
-	def defaultOtherwise():
+	def defaultOtherwise(matchValue as Expression):
 		matchError = [| raise MatchError("'" + $(expression.ToCodeString()) + "' failed to match '" + $matchValue + "'") |]
 		matchError.LexicalInfo = node.LexicalInfo
 		return matchError.ToBlock()
 		
-	def expandCase(node as MacroStatement):
+	def expandCase(matchValue as Expression, node as MacroStatement):
 		assert 1 == len(node.Arguments)
 		pattern = node.Arguments[0]
+		condition = expandPattern(matchValue, pattern)
+		return [| 
+			if $condition:
+				$(node.Block)
+		|]
+		
+	def expandPattern(matchValue as Expression, pattern as Expression) as Expression:
 		mie = pattern as MethodInvocationExpression
 		if mie is not null:
-			return expandObjectPattern(mie, node.Block)
+			return expandObjectPattern(matchValue, mie)
 			
 		memberRef = pattern as MemberReferenceExpression
 		if memberRef is not null:
-			return expandValuePattern(memberRef, node.Block)
+			return expandValuePattern(matchValue, memberRef)
 			
 		reference = pattern as ReferenceExpression
 		if reference is not null:
-			return expandBindPattern(reference, node.Block)
+			return expandBindPattern(matchValue, reference)
 			
 		capture = pattern as BinaryExpression
 		if isCapture(capture):
-			return expandCapturePattern(capture, node.Block)
+			return expandCapturePattern(matchValue, capture)
 			
-		return expandValuePattern(pattern, node.Block)
+		fixedSize = pattern as ArrayLiteralExpression
+		if fixedSize is not null:
+			return expandFixedSizePattern(matchValue, fixedSize)
+			
+		return expandValuePattern(matchValue, pattern)
 		
 	def isCapture(node as BinaryExpression):
 		if node is null: return false
 		if node.Operator != BinaryOperatorType.Assign: return false
 		return node.Left isa ReferenceExpression and node.Right isa MethodInvocationExpression
 		
-	def expandValuePattern(node as Expression, block as Block):
-		return [|
-			if $matchValue == $node:
-				$block
-		|]
+	def expandBindPattern(matchValue as Expression, node as ReferenceExpression):
+		return [| __eval__($node = $matchValue, true) |]
 		
-	def expandCapturePattern(node as BinaryExpression, block as Block):
-		condition = expandObjectPattern(matchValue, node.Left, node.Right)
-		return [|
-			if $condition:
-				$block
-		|] 
+	def expandValuePattern(matchValue as Expression, node as Expression):
+		return [| $matchValue == $node |]
 		
-	def expandObjectPattern(node as MethodInvocationExpression, block as Block):
-		condition = expandObjectPattern(matchValue, node)
-		return [|
-			if $condition:
-				$block
-		|]
+	def expandCapturePattern(matchValue as Expression, node as BinaryExpression):
+		return expandObjectPattern(matchValue, node.Left, node.Right)
 		
 	def expandObjectPattern(matchValue as Expression, node as MethodInvocationExpression) as Expression:
 	
@@ -152,30 +147,27 @@ class MatchExpansion:
 			condition = [| $condition and __eval__($member = $memberRef, true) |]  
 			
 		for member in node.NamedArguments:
-			memberRef = MemberReferenceExpression(member.First.LexicalInfo, temp.CloneNode(), member.First.ToString())	
-			variable = member.Second as ReferenceExpression
-			if variable is not null and variable.NodeType == NodeType.ReferenceExpression:
-				condition = [| $condition and __eval__($variable = $memberRef, true) |]
-				continue
-				
-			nestedPattern = member.Second as MethodInvocationExpression
-			if nestedPattern is not null:
-				nestedCondition = expandObjectPattern(memberRef, nestedPattern)
-				condition = [| $condition and $nestedCondition |]
-				continue
-				
-			condition = [| $condition and ($memberRef == $(member.Second)) |]
+			namedArgCondition = expandMemberPattern(temp.CloneNode(), member)
+			condition = [| $condition and $namedArgCondition |]
+			
+		return condition
+		
+	def expandMemberPattern(matchValue as Expression, member as ExpressionPair):
+		memberRef = MemberReferenceExpression(member.First.LexicalInfo, matchValue, member.First.ToString())	
+		return expandPattern(memberRef, member.Second)
+		
+	def expandFixedSizePattern(matchValue as Expression, pattern as ArrayLiteralExpression):
+		condition = [| $(len(pattern.Items)) == len($matchValue) |]
+		i = 0
+		for item in pattern.Items:
+			itemValue = [| $matchValue[$i] |]
+			itemPattern = expandPattern(itemValue, item)
+			condition = [| $condition and $itemPattern |]
+			++i
 		return condition
 		
 	def typeRef(node as MethodInvocationExpression):
 		return node.Target
-		
-	def expandBindPattern(node as ReferenceExpression, block as Block):
-		return [| 
-			if true:
-				$node = $matchValue
-				$block
-		|]
 		
 	def newTemp(e as Expression):
 		return ReferenceExpression(
