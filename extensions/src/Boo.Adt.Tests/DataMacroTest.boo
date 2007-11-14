@@ -14,6 +14,10 @@ class DataMacroTest:
 		for type in Const, Add:
 			assert not type.IsAbstract
 			assert not type.IsSealed
+			assert Expression is type.BaseType
+			
+		assert Expression is typeof(ExpressionX).BaseType
+		assert ExpressionX is typeof(Mult).BaseType
 			
 	[Test]
 	def TestToString():
@@ -34,3 +38,5 @@ class DataMacroTest:
 		# macros at the top level
 		data Expression = Const(value as int) \
 			| Add(left as Expression, right as Expression)
+			
+		data ExpressionX(Expression) = Mult(left as Expression, right as Expression)

@@ -26,9 +26,6 @@ class DataMacroExpansion:
 				_module = enclosingModule(node)
 				_baseType = createBaseType(left)
 				expandDataConstructors(right)
-				
-	def enclosingModule(node as Node):
-		return node.GetAncestor(NodeType.Module)
 		
 	def createBaseType(node as Expression):
 		type = baseTypeForExpression(node)
@@ -43,6 +40,15 @@ class DataMacroExpansion:
 			case re=ReferenceExpression():
 				type = [|
 					abstract class $re:
+						pass
+				|]
+				return type
+				
+			case mie=MethodInvocationExpression(
+						Target: ReferenceExpression(Name: name),
+						Arguments: (ReferenceExpression(Name: baseType),)):
+				type = [|
+					abstract class $name($baseType):
 						pass
 				|]
 				return type
@@ -169,3 +175,6 @@ class DataMacroExpansion:
 		
 	def registerType(type as TypeDefinition):
 		_module.Members.Add(type)
+
+def enclosingModule(node as Node) as Module:
+	return node.GetAncestor(NodeType.Module)
