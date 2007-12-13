@@ -2,6 +2,7 @@ namespace Boojay.Compilation.Tests
 
 import NUnit.Framework
 import Boo.Lang.Parser
+import Boo.Lang.Compiler
 import Boo.Lang.Compiler.IO
 import Boo.Lang.Compiler.Ast
 import Boojay.Compilation
