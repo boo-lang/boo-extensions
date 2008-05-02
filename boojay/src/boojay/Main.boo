@@ -2,7 +2,6 @@ namespace boojay
 
 import System.Reflection
 import System.IO
-import Boo.Lang.Compiler
 import Boo.Lang.Compiler.IO
 import Boojay.Compilation
 

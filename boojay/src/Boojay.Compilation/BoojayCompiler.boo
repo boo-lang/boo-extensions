@@ -8,5 +8,3 @@ def newBoojayCompiler():
 	compiler.Parameters.Pipeline = BoojayPipeline()
 	compiler.Parameters.References.Add(typeof(lang.Object).Assembly)
 	return compiler
-
-

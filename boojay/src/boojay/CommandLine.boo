@@ -1,7 +1,6 @@
 namespace boojay
 
 import System.IO
-import Boo.Lang.Compiler
 import Boo.Lang.Useful.CommandLine from Boo.Lang.Useful
 
 class CommandLine(AbstractCommandLine):
@@ -12,7 +11,7 @@ class CommandLine(AbstractCommandLine):
 	_sourceFiles = []
 	
 	_srcDirs = []
-	
+
 	def constructor(argv):
 		Parse(argv)
 		

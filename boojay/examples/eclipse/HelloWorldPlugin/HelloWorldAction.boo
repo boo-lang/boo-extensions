@@ -19,7 +19,7 @@ class HelloWorldAction(IWorkbenchWindowActionDelegate):
 	def run(proxyAction as IAction):
 		shell = activeWindow.getShell()
 		MessageDialog.openInformation(shell, "Hello from boojay!", "Hello World!")
-		
+	
 	def init(window as IWorkbenchWindow):
 		activeWindow = window
 	
