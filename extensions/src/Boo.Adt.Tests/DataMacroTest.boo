@@ -5,7 +5,7 @@ import Boo.Adt
 
 [TestFixture]
 class DataMacroTest:
-	
+
 	[Test]
 	def TestClassHierarchy():
 		type = Expression
