@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project name="boojay" default="build">
+
+	<!--
+	-->
+	
+	<property name="ikvmc.exe" value="/Users/rodrigob/mono/ikvm-0.36.0.11/bin/ikvmc.exe" />
+	<property name="asm.lib.dir" value="/Users/rodrigob/java/asm-3.1/lib" />
+	<property name="build.dir" value="../bin" />
+	<property name="boo.dir" value="../../boo/build" />
+	
+	<target name="asm.dll" depends="init">
+		<fileset id="asm.jars" basedir="${asm.lib.dir}">
+			<include name="asm-3.1.jar" />
+			<include name="asm-commons-3.1.jar" />
+			<include name="asm-util-3.1.jar" />
+			<include name="asm-tree-3.1.jar" />
+		</fileset>
+		
+		<boo>
+		jars as duck = Project.DataTypeReferences["asm.jars"]
+		Project.Properties["asm.jars.list"] = join(jars.FileNames)
+		</boo>
+		
+		<exec program="${ikvmc.exe}" useruntimeengine="true" workingdir="lib">
+			<arg line="-out:asm.dll ${asm.jars.list}" />
+		</exec>
+	</target>
+	
+	<target name="build" depends="copy-libs">
+	
+		<booc target="library" output="${build.dir}/Boojay.Compilation.dll">
+			<sources basedir="src/Boojay.Compilation">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="asm.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+		<booc target="exe" output="${build.dir}/boojay.exe">
+			<sources basedir="src/boojay">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="*.dll" />
+			</references>
+		</booc>
+		
+	</target>
+	
+	<target name="copy-libs" depends="init">
+		<copy todir="${build.dir}" file="lib/asm.dll" />
+		<copy todir="${build.dir}" file="../bin/Boo.PatternMatching.dll" />
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}" />	
+		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
+	</target>
+	
+</project>
