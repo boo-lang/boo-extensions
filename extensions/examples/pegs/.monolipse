@@ -1,0 +1,9 @@
+<settings>
+  <outputType>exe</outputType>
+  <references>
+    <monolipse.core.internal.AssemblySourceReference-Remembrance>
+      <path>/boo-extensions/extensions/src/Boo.Pegs</path>
+    </monolipse.core.internal.AssemblySourceReference-Remembrance>
+  </references>
+  <outputFolder>/boo-extensions/bin</outputFolder>
+</settings>

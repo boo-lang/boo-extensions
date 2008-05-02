@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<project name="boo-extensions" default="test">
+
+	<property name="build.dir" value="bin" />
+	<property name="boo.dir" value="../../boo/bin" />
+	
+	<target name="test" depends="build">
+		<nunit2>
+			<formatter type="Plain" />
+			<test>
+				<assemblies basedir="${build.dir}">
+					<include name="*.Tests.dll" />
+				</assemblies>
+			</test>
+		</nunit2>
+	</target>
+	
+	<target name="build" depends="Boo.Pegs, Boo.PatternMatching, Boo.Adt">
+	</target>
+	
+	<target name="Boo.Pegs" depends="Boo.PatternMatching">
+	
+		<booc target="library" output="${build.dir}/Boo.Pegs.dll">
+			<sources basedir="src/Boo.Pegs">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.Pegs.Tests.dll">
+			<sources basedir="src/Boo.Pegs.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.Pegs.dll" />
+			</references>
+		</booc>
+		
+	</target>
+	
+	<target name="Boo.PatternMatching" depends="init">
+	
+		<booc target="library" output="${build.dir}/Boo.PatternMatching.dll">
+			<sources basedir="src/Boo.PatternMatching">
+				<include name="*.boo" />
+			</sources>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.PatternMatching.Tests.dll">
+			<sources basedir="src/Boo.PatternMatching.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+	</target>
+	
+	<target name="Boo.Adt" depends="Boo.PatternMatching">
+		<booc target="library" output="${build.dir}/Boo.Adt.dll">
+			<sources basedir="src/Boo.Adt">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.Adt.Tests.dll">
+			<sources basedir="src/Boo.Adt.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}" />	
+		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
+	</target>
+	
+</project>
