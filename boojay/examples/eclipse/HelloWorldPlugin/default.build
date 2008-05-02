@@ -20,6 +20,26 @@
 	<property name="build.dir" value="../bin" />
 	<property name="boojay.exe" value="../../../../bin/boojay.exe" />
 	
+	<target name="eclipse.dll" depends="init">
+		<fileset id="eclipse.jars" basedir="${eclipse.home}/plugins">
+			<include name="org.eclipse.core*jar" />
+			<include name="org.eclipse.ui*jar" />
+			<include name="org.eclipse.jface_*jar" />
+			<include name="org.eclipse.swt*jar" />
+		</fileset>
+		
+		<loadtasks assembly="../../../../../boo/build/Boo.NAnt.Tasks.dll" />
+		
+		<boo>
+		jars as duck = Project.DataTypeReferences["eclipse.jars"]
+		Project.Properties["eclipse.jars.list"] = join(jars.FileNames)
+		</boo>
+		
+		<exec program="${ikvmc.exe}" useruntimeengine="true" workingdir="${build.dir}">
+			<arg line="-out:eclipse-3.3.dll ${eclipse.jars.list}" />
+		</exec>
+	</target>
+	
 	<target name="deploy" depends="package">
 		<property name="plugin.dir" value="${eclipse.home}/plugins/HelloWorldPlugin_0.0.0" />		
 		<mkdir dir="${plugin.dir}" />
