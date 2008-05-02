@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="boojay" default="build">
+<project name="boojay" default="test">
 
 	<!--
 	-->
