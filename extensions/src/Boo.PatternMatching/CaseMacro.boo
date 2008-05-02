@@ -1,6 +1,5 @@
 namespace Boo.PatternMatching
 
-import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 		
 def caseList(node as MacroStatement) as List:
@@ -8,7 +7,7 @@ def caseList(node as MacroStatement) as List:
 	if list is null:
 		node["caseList"] = list = []
 	return list
-	
+
 def parentMatch(node as MacroStatement):
 	match = node.ParentNode.ParentNode as MacroStatement
 	assert match.Name == "match"
