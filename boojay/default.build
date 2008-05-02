@@ -27,6 +27,17 @@
 		</exec>
 	</target>
 	
+	<target name="test" depends="build">
+		<nunit2>
+			<formatter type="Plain" />
+			<test>
+				<assemblies basedir="${build.dir}">
+					<include name="Boojay.Compilation.Tests.dll" />
+				</assemblies>
+			</test>
+		</nunit2>
+	</target>
+	
 	<target name="build" depends="copy-libs">
 	
 		<booc target="library" output="${build.dir}/Boojay.Compilation.dll">
@@ -45,6 +56,15 @@
 			</sources>
 			<references basedir="${build.dir}">
 				<include name="*.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boojay.Compilation.Tests.dll">
+			<sources basedir="src/Boojay.Compilation.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boojay.Compilation.dll" />
 			</references>
 		</booc>
 		
