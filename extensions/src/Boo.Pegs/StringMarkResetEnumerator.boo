@@ -12,6 +12,10 @@ class StringMarkResetEnumerator(IEnumerator):
 	def constructor(text as string):
 		_text = text
 		
+	def TextFrom(startIndex as int):
+		if _next: return _text[startIndex:_next]
+		return string.Empty
+		
 	Position:
 		get:
 			return _next-1

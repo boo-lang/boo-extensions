@@ -41,7 +41,13 @@ class TopLevel(PegTransaction):
 		Context.Input.Reset(_inputMark)
 		
 	override def OnAction(action as PegAction):
-		_action = System.Delegate.Combine(_action, action)
+		_action = System.Delegate.Combine(_action, contextful(action))
+		
+	def contextful(action as PegAction) as PegAction:
+		memento = _context.GetMemento()
+		return do (context as PegContext):
+			context.WithMemento(memento, action)
+		
 			
 class Nested(TopLevel):
 	

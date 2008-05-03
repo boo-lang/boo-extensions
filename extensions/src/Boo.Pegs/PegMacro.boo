@@ -16,6 +16,9 @@ def expand(e as Expression) as Expression:
 			return [| repetition($(expand(expression))) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.Decrement, Operand: expression):
+			return [| choice(repetition($(expand(expression))), empty()) |]
+			
+		case UnaryExpression(Operator: UnaryOperatorType.OnesComplement, Operand: expression):
 			return [| choice($(expand(expression)), empty()) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.LogicalNot, Operand: expression):
@@ -79,11 +82,17 @@ Usage:
 		MyRule2 = [Choice1, Choice2] 
 		MyRule3 = Choice1 | Choice2
 		
-		// repeatition
+		// repetition (one or many)
 		MyRule4 = ++Rule
 		
+		// repetition (zero or many)
+		MyRule5 = --ZeroOrMany
+		
 		// optional
-		MyRule5 = --OptionalPrefix, Suffix
+		MyRule6 = ~OptionalPrefix, Suffix
+		
+		// semantic action
+		MyRule7 = { print $text }
 		
 Example:
 		
@@ -96,14 +105,15 @@ Example:
 		Invocation = ++Expression
 		Expression = Identifier | String
 		String = "'", ++(not "'"), "'", Spacing 
-		Identifier = ++[a-z, A-Z], --Spacing
+		Identifier = ++[a-z, A-Z], OptionalSpacing
 		Begin = ":", Spacing
 		End = empty()
 		Spacing = ++[' ', '\t', '\r', '\n']
+		OptionalSpacing = ~Spacing
 		CLASS = "class", Spacing
 		DEF = "def", Spacing
-		LPAREN = "(", --Spacing
-		RPAREN = ")", --Spacing
+		LPAREN = "(", OptionalSpacing
+		RPAREN = ")", OptionalSpacing
 		EndOfFile = not any()
 """*/
 	
