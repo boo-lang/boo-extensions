@@ -10,12 +10,17 @@ def pop(ctx as PegContextWithPayload[of List]) as int:
 	
 peg:
 	evaluate = spacing, addition, eof
-	addition = term, --("+", term, { $push($pop + $pop) })
-	term = factor, --("*", factor, { $push($pop * $pop) })
+	addition = term, --("+", spacing, term, { $push($pop + $pop) })
+	term = factor, --("*", spacing, factor, { $push($pop * $pop) })
 	factor = ++digit(), { $push(int.Parse($text)) }, spacing
 	spacing = --whitespace()
 	eof = not any()
 
-ctx = PegContextWithPayload[of List]("3+2*4", [])
-print evaluate.Eval(ctx)
-print pop(ctx)
+while true:
+	expression = prompt("> ")
+	if string.IsNullOrEmpty(expression): break
+	ctx = PegContextWithPayload[of List](expression, [])
+	if evaluate.Eval(ctx):
+		print pop(ctx)
+	else:
+		print "DOES NOT COMPUTE!"
