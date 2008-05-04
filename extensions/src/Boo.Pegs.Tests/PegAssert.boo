@@ -12,8 +12,8 @@ static class PegAssert:
 		return Matches(PegContext(text), e)
 		
 	def Matches(context as PegContext, e as PegExpression):
-		assert e.Eval(context)
+		assert context.Match(e), "Position: " + context.Input.Position
 		return context
 		
 	def DoesNotMatch(text as string, e as PegExpression):
-		assert not e.Eval(PegContext(text))
+		assert not PegContext(text).Match(e)

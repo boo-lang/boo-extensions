@@ -15,11 +15,27 @@ class PegContext:
 	def constructor(text as string):
 		_input = StringMarkResetEnumerator(text)
 		
+	def Match(e as PegExpression):
+		return e.Match(self)
+		
+	def MatchRule(rule as PegRule):
+		EnterRule()
+		return Match(rule.Expression)
+		
 	def Try(e as PegExpression):
+		return WithTransaction(_transaction.BeginNested(), e)
+		
+	def Test(e as PegExpression):
+		return WithTransaction(TestTransaction(self), e)
+		
+	CanBacktrack:
+		get: return _transaction.CanBacktrack
+
+	def WithTransaction(transaction as PegTransaction, e as PegExpression):
 		old = _transaction
-		_transaction = _transaction.BeginNested()
+		_transaction = transaction
 		try:
-			if e.Eval(self):
+			if e.Match(self):
 				_transaction.Commit()
 				return true
 			else:
@@ -27,7 +43,7 @@ class PegContext:
 				return false		
 		ensure:
 			_transaction = old
-			
+						
 	def GetMemento():
 		return (_ruleMarker, _input.Mark())
 		

@@ -7,17 +7,23 @@ import Boo.Pegs
 class PegMacroTests:
 	
 	[Test]
-	def TestRepetion():
+	def TestZeroOrMany():
 		
 		value = ""
 		peg:
 			zeroOrMany = --"foo", { value = $text }, eof
-			oneOrMany = ++"foo", eof
 			eof = not any()
 		
 		for i in range(5):
 			PegAssert.Matches("foo" * i, zeroOrMany)
 			Assert.AreEqual("foo" * i, value)
+			
+	[Test]
+	def TestOneOrMany():
+		
+		peg:
+			oneOrMany = ++"foo", eof
+			eof = not any()
 		
 		PegAssert.DoesNotMatch("", oneOrMany)
 		for i in range(1, 5):
@@ -37,10 +43,13 @@ class PegMacroTests:
 	[Test]
 	def TestActionOrdering():
 		trace = []
+		add = trace.Add
 		peg:
 			main = ++[foo, bar]
-			foo = "foo", { trace.Add("foo") }, --({ trace.Add("baz") }, "baz")
-			bar = "bar", { trace.Add("bar") }
+			foo = "foo", { add("foo") }, --("baz", { add("baz") })
+			bar = "bar", { add("bar") }
 			
-		PegAssert.Matches("foobarbarfoobazbar", main)
+		s = "foobarbarfoobazbar"
+		ctx = PegAssert.Matches(s, main)
+		Assert.AreEqual(ctx.Input.Position, s.Length)
 		Assert.AreEqual(["foo", "bar", "bar", "foo", "baz", "bar"], trace)

@@ -1,8 +1,6 @@
 ﻿namespace Boo.Pegs
 
-import System.Collections
-
-class StringMarkResetEnumerator(IEnumerator):
+class StringMarkResetEnumerator:
 	
 	_next = 0
 
@@ -18,15 +16,11 @@ class StringMarkResetEnumerator(IEnumerator):
 		
 	Position:
 		get:
-			return _next-1
+			return _next
 		
-	System.Collections.IEnumerator.Current:
-		get:
-			return _text[Position]
-			
 	CurrentChar:
 		get:
-			return _text[Position]
+			return _text[_next-1]
 			
 	def MoveNext():
 		if _next < len(_text):
@@ -34,12 +28,10 @@ class StringMarkResetEnumerator(IEnumerator):
 			return true
 		return false
 		
-	def Dispose():
-		pass
-		
-	def Reset():
-		Reset(0)
-		
+	def MovePrevious():
+		assert _next > 0
+		--_next
+
 	def Mark():
 		return _next
 		

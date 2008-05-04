@@ -169,10 +169,10 @@ class MatchMacroTest:
 		match o:
 			case Collection(Items: (last,)):
 				return last
-			case Collection(Items: (first, last)):
+			case Collection(Items: (_, last)):
 				return last	
 				
 	def nestedLastItem(o):
 		match o:
-			case Collection(Items: (Collection(Items: (first, last)),)):
+			case Collection(Items: (Collection(Items: (_, last)),)):
 				return last

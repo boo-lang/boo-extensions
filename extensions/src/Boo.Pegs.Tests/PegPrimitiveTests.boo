@@ -44,5 +44,5 @@ class PrimitiveTests:
 		PegAssert.NextChar("e", context)
 		PegAssert.Matches(context, e)
 		PegAssert.NextChar("o", context)
-		assert not e.Eval(context)
+		assert not e.Match(context)
 		PegAssert.NextChar("o", context)

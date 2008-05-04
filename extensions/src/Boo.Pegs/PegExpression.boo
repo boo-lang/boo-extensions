@@ -1,15 +1,15 @@
 namespace Boo.Pegs
 
 abstract class PegExpression:
-	abstract def Eval(context as PegContext) as bool:
+	abstract def Match(context as PegContext) as bool:
 		pass
 	
 class EmptyExpression(PegExpression):	
-	override def Eval(context as PegContext):
+	override def Match(context as PegContext):
 		return true
 		
 class AnyExpression(PegExpression):
-	override def Eval(context as PegContext):
+	override def Match(context as PegContext):
 		return context.Input.MoveNext()
 		
 class CharPredicateExpression(PegExpression):
@@ -21,9 +21,15 @@ class CharPredicateExpression(PegExpression):
 	def constructor(predicate as CharPredicate):
 		_predicate = predicate
 		
-	override def Eval(context as PegContext):
+	override def Match(context as PegContext):
 		input = context.Input
-		return input.MoveNext() and _predicate(input.CurrentChar)
+		if not input.MoveNext():
+			return false
+		if not _predicate(input.CurrentChar):
+			if not context.CanBacktrack:
+				input.MovePrevious()
+			return false
+		return true
 
 class FunctionExpression(PegExpression):
 	
@@ -34,5 +40,5 @@ class FunctionExpression(PegExpression):
 	def constructor(function as PegFunction):
 		_function = function
 		
-	override def Eval(context as PegContext):
+	override def Match(context as PegContext):
 		return _function(context) 

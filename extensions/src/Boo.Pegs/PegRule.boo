@@ -2,9 +2,8 @@ namespace Boo.Pegs
 
 class PegRule(PegExpression):
 	
-	[property(expression)]
+	[property(Expression)]
 	_e as PegExpression
 	
-	override def Eval(context as PegContext):
-		context.EnterRule()
-		return _e.Eval(context)
+	override def Match(context as PegContext):
+		return context.MatchRule(self)

@@ -16,7 +16,7 @@ def expand(e as Expression) as Expression:
 			return [| repetition($(expand(expression))) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.Decrement, Operand: expression):
-			return [| choice(repetition($(expand(expression))), empty()) |]
+			return [| zero_or_many($(expand(expression))) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.OnesComplement, Operand: expression):
 			return [| choice($(expand(expression)), empty()) |]
@@ -34,10 +34,11 @@ def expand(e as Expression) as Expression:
 			
 			return [| choice($(expand(l)), $(expand(r))) |]
 			
-		case BinaryExpression(Operator: BinaryOperatorType.Subtraction,
+		case BinaryExpression(
+				Operator: BinaryOperatorType.Subtraction,
 				Left: l=ReferenceExpression(),
 				Right: r=ReferenceExpression()):
-			return [| charRange($(charFor(l)), $(charFor(r))) |]
+			return [| char_range($(charFor(l)), $(charFor(r))) |]
 			
 		case block=BlockExpression():
 			template = [| { context as PegContext | _ } |]
@@ -137,7 +138,7 @@ Example:
 	# expand all the expressions
 	for rule as ReferenceExpression, expression as Expression in rules:
 		try:
-			result.Add([| $rule.expression = $(expand(expression)) |])
+			result.Add([| $rule.Expression = $(expand(expression)) |])
 		except x:
 			Context.Errors.Add(CompilerErrorFactory.MacroExpansionError(rule, x))
 	
