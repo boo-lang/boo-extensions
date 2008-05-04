@@ -51,5 +51,6 @@ class PegMacroTests:
 			
 		s = "foobarbarfoobazbar"
 		ctx = PegAssert.Matches(s, main)
-		Assert.AreEqual(ctx.Input.Position, s.Length)
 		Assert.AreEqual(["foo", "bar", "bar", "foo", "baz", "bar"], trace)
+		Assert.AreEqual(s.Length, ctx.Input.Position)
+		

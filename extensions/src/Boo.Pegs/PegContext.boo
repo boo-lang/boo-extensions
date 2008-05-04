@@ -7,7 +7,7 @@ class PegContext:
 	[getter(Input)]
 	_input as StringMarkResetEnumerator
 	
-	_transaction = PegTransaction(self)
+	_state = PegState(self)
 	
 	[getter(EnterRuleMarker)]
 	_ruleMarker = -1
@@ -23,26 +23,26 @@ class PegContext:
 		return Match(rule.Expression)
 		
 	def Try(e as PegExpression):
-		return WithTransaction(_transaction.BeginNested(), e)
+		return WithState(_state.BeginChoice(), e)
 		
-	def Test(e as PegExpression):
-		return WithTransaction(TestTransaction(self), e)
+	def TestNot(e as PegExpression):
+		return WithState(NotPredicateState(self), e)
 		
-	CanBacktrack:
-		get: return _transaction.CanBacktrack
+	InNotPredicate:
+		get: return _state.InNotPredicate
 
-	def WithTransaction(transaction as PegTransaction, e as PegExpression):
-		old = _transaction
-		_transaction = transaction
+	def WithState(state as PegState, e as PegExpression):
+		old = _state
+		_state = state
 		try:
 			if e.Match(self):
-				_transaction.Commit()
+				_state.Commit()
 				return true
 			else:
-				_transaction.Rollback()
+				_state.Rollback()
 				return false		
 		ensure:
-			_transaction = old
+			_state = old
 						
 	def GetMemento():
 		return (_ruleMarker, _input.Mark())
@@ -61,7 +61,7 @@ class PegContext:
 		_input.Reset(inputMarker)
 		
 	def OnAction(action as PegAction):
-		_transaction.OnAction(action)
+		_state.OnAction(action)
 				
 	def EnterRule():
 		_ruleMarker = _input.Mark()

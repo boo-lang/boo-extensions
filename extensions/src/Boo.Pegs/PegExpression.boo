@@ -26,10 +26,61 @@ class CharPredicateExpression(PegExpression):
 		if not input.MoveNext():
 			return false
 		if not _predicate(input.CurrentChar):
-			if not context.CanBacktrack:
+			if not context.InNotPredicate:
 				input.MovePrevious()
 			return false
 		return true
+		
+class ActionExpression(PegExpression):
+	
+	_action as PegAction
+	
+	def constructor(action as PegAction):
+		_action = action
+		
+	override def Match(ctx as PegContext):
+		ctx.OnAction(_action)
+		return true
+		
+class ZeroOrMany(PegExpression):
+	
+	_e as PegExpression
+	
+	def constructor(e as PegExpression):
+		_e = e
+
+	override def Match(ctx as PegContext):
+		while ctx.Try(_e):
+			pass
+		return true
+
+abstract class CompositeExpression(PegExpression):
+
+	_expressions as (PegExpression)
+
+	def constructor(expressions as (PegExpression)):
+		_expressions = expressions
+		
+class SequenceExpression(CompositeExpression):
+	
+	def constructor(expressions as (PegExpression)):
+		super(expressions)
+		
+	override def Match(ctx as PegContext):
+		for e in _expressions:
+			if not ctx.Match(e): return false
+		return true
+		
+class ChoiceExpression(CompositeExpression):
+
+	def constructor(expressions as (PegExpression)):
+		super(expressions)
+			
+	override def Match(ctx as PegContext):
+		for i in range(len(_expressions)-1):
+			if ctx.Try(_expressions[i]):
+				return true
+		return ctx.Match(_expressions[-1])
 
 class FunctionExpression(PegExpression):
 	

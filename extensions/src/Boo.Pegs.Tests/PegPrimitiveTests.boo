@@ -17,7 +17,7 @@ class PrimitiveTests:
 		
 	[Test]
 	def TestRepetition():
-		e = repetition(terminal("foo"))
+		e = one_or_many(terminal("foo"))
 		PegAssert.Matches("foo", e)
 		context = PegAssert.Matches("foofoobar", e)
 		PegAssert.NextChar("b", context)
@@ -38,8 +38,8 @@ class PrimitiveTests:
 		PegAssert.Matches(context, e)
 		
 	[Test]
-	def TestNegation():
-		e = negation(terminal("o"))
+	def TestNotPredicate():
+		e = not_predicate(terminal("o"))
 		context = PegAssert.Matches("aeioou", e)
 		PegAssert.NextChar("e", context)
 		PegAssert.Matches(context, e)

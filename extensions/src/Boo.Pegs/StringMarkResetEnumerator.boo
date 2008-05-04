@@ -1,5 +1,9 @@
 ﻿namespace Boo.Pegs
 
+# TODO: generalize the MarkResetEnumerator interface
+# to be able to parse other structures as well
+# (it should be possible to build a peg to recognize IL bytecode
+# sequences, for instance)
 class StringMarkResetEnumerator:
 	
 	_next = 0

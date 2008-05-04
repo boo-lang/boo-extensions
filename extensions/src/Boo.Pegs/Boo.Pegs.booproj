@@ -1,0 +1,43 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{89A65375-A2D9-40CD-84DA-BA7EC539E483}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.Pegs</RootNamespace>
+    <AssemblyName>Boo.Pegs</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Boo.Lang.Useful" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.boo" />
+    <Compile Include="PegContext.boo" />
+    <Compile Include="PegContextWithPayload.boo" />
+    <Compile Include="PegExpression.boo" />
+    <Compile Include="PegMacro.boo" />
+    <Compile Include="PegRule.boo" />
+    <Compile Include="PegState.boo" />
+    <Compile Include="PegPrimitives.boo" />
+    <Compile Include="StringMarkResetEnumerator.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.PatternMatching\Boo.PatternMatching.booproj">
+      <Project>{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}</Project>
+      <Name>Boo.PatternMatching</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
+</Project>

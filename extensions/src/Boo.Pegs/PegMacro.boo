@@ -13,7 +13,7 @@ def expand(e as Expression) as Expression:
 			return expandArguments([| choice() |], items)
 			
 		case UnaryExpression(Operator: UnaryOperatorType.Increment, Operand: expression):
-			return [| repetition($(expand(expression))) |]
+			return [| one_or_many($(expand(expression))) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.Decrement, Operand: expression):
 			return [| zero_or_many($(expand(expression))) |]
@@ -22,7 +22,7 @@ def expand(e as Expression) as Expression:
 			return [| choice($(expand(expression)), empty()) |]
 			
 		case UnaryExpression(Operator: UnaryOperatorType.LogicalNot, Operand: expression):
-			return [| negation($(expand(expression))) |]
+			return [| not_predicate($(expand(expression))) |]
 			 
 		case s=StringLiteralExpression():
 			return [| terminal($s) |]
@@ -77,17 +77,17 @@ Usage:
 	peg MyGrammar:
 	
 		// sequence
-		MyRule1 = Foo, Bar 
+		MyRule1 = E1, E2, EN 
 		
 		// choice
-		MyRule2 = [Choice1, Choice2] 
+		MyRule2 = [Choice1, Choice2, ChoiceN] 
 		MyRule3 = Choice1 | Choice2
 		
 		// repetition (one or many)
-		MyRule4 = ++Rule
+		MyRule4 = ++E
 		
 		// repetition (zero or many)
-		MyRule5 = --ZeroOrMany
+		MyRule5 = --E
 		
 		// optional
 		MyRule6 = ~OptionalPrefix, Suffix
@@ -97,7 +97,7 @@ Usage:
 		
 Example:
 		
-	peg boo:
+	peg miniboo:
 		Module = Spacing, ++Class, EndOfFile
 		Class = CLASS, Identifier, Begin, ++Member, End
 		Member = DEF, Identifier, LPAREN, RPAREN, Block

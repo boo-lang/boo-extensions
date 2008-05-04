@@ -1,0 +1,39 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{C1A0CCD0-676F-4BF8-8018-9B960E614B74}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.Pegs.Tests</RootNamespace>
+    <AssemblyName>Boo.Pegs.Tests</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Boo.Lang.Useful" />
+    <Reference Include="nunit.framework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.boo" />
+    <Compile Include="PegAssert.boo" />
+    <Compile Include="PegMacroTests.boo" />
+    <Compile Include="PegPrimitiveTests.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.Pegs\Boo.Pegs.booproj">
+      <Project>{89A65375-A2D9-40CD-84DA-BA7EC539E483}</Project>
+      <Name>Boo.Pegs</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
+</Project>

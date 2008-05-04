@@ -12,6 +12,9 @@ class ActionList:
 	virtual def Execute(ctx as PegContext):
 		pass
 		
+	virtual IsEmpty:
+		get: return true
+		
 class NonEmptyActionList(ActionList):
 	
 	_action as PegAction
@@ -24,20 +27,23 @@ class NonEmptyActionList(ActionList):
 	override def Execute(ctx as PegContext):
 		_tail.Execute(ctx)
 		_action(ctx)
+		
+	override IsEmpty:
+		get: return false
 
-class PegTransaction:
+class PegState:
 	
 	[getter(Context)]
-	_context as PegContext
+	_ctx as PegContext
 	
-	def constructor(context as PegContext):
-		_context = context
+	def constructor(ctx as PegContext):
+		_ctx = ctx
 		
-	virtual CanBacktrack:
+	virtual InNotPredicate:
 		get: return false
 		
-	virtual def BeginNested() as PegTransaction:
-		return TopLevel(_context)
+	virtual def BeginChoice() as PegState:
+		return TopLevelChoice(_ctx)
 		
 	virtual def Commit():
 		raise InvalidOperationException()
@@ -48,16 +54,13 @@ class PegTransaction:
 	virtual def OnAction(action as PegAction):
 		action(Context)
 
-class StateTransaction(PegTransaction):
+class AbstractChoiceState(PegState):
 	
 	_state as (int)
 	
-	def constructor(context as PegContext):
-		super(context)
-		_state = context.GetMemento()
-		
-	override CanBacktrack:
-		get: return true
+	def constructor(ctx as PegContext):
+		super(ctx)
+		_state = ctx.GetMemento()
 		
 	override def Commit():
 		pass
@@ -65,26 +68,29 @@ class StateTransaction(PegTransaction):
 	override def Rollback():
 		Context.Restore(_state)
 		
-class TestTransaction(StateTransaction):
+class NotPredicateState(AbstractChoiceState):
 	
-	def constructor(context as PegContext):
-		super(context)
+	def constructor(ctx as PegContext):
+		super(ctx)
 		
-	override def BeginNested():
-		return TestTransaction(Context)
+	override InNotPredicate:
+		get: return true
+
+	override def BeginChoice():
+		return NotPredicateState(Context)
 		
 	override def OnAction(_ as PegAction):
 		pass
 	
-class TopLevel(StateTransaction):
+class TopLevelChoice(AbstractChoiceState):
 		
 	_action = ActionList.Empty
 	
-	def constructor(context as PegContext):
-		super(context)
+	def constructor(ctx as PegContext):
+		super(ctx)
 	
-	override def BeginNested():
-		return Nested(self)
+	override def BeginChoice():
+		return NestedChoice(self)
 		
 	override def Commit():
 		_action.Execute(Context)
@@ -93,17 +99,18 @@ class TopLevel(StateTransaction):
 		_action = _action.Add(contextful(action))
 		
 	def contextful(action as PegAction) as PegAction:
-		memento = _context.GetMemento()
-		return do (context as PegContext):
-			context.WithMemento(memento, action)
+		memento = _ctx.GetMemento()
+		return do (ctx as PegContext):
+			ctx.WithMemento(memento, action)
 			
-class Nested(TopLevel):
+class NestedChoice(TopLevelChoice):
 	
-	_parent as PegTransaction
+	_parent as PegState
 	
-	def constructor(parent as PegTransaction):
+	def constructor(parent as PegState):
 		super(parent.Context)
 		_parent = parent
 		
 	override def Commit():
+		if _action.IsEmpty: return
 		_parent.OnAction(_action.Execute)
