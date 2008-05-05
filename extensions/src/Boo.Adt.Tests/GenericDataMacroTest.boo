@@ -31,4 +31,4 @@ class GenericDataMacroTest:
 	
 	def DefineData():
 		data GExpression[T] = GConst(value as T) \
-			| GAdd(left as GExpression[T], right as GExpression[T])
+			| GAdd(left as GExpression[of T], right as GExpression[of T])
