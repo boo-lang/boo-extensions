@@ -8,6 +8,10 @@ def push(ctx as PegContextWithPayload[of List], value as int):
 def pop(ctx as PegContextWithPayload[of List]) as int:
 	return ctx.Payload.Pop()
 	
+// the $ operator inside actions means
+// "access the function specified passing the context as the first argument"
+// in other words, $pop means pop(context)
+
 peg:
 	calculator = spacing, addition, eof
 	addition = term, --("+", spacing, term, { $push($pop + $pop) })
