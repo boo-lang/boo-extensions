@@ -35,6 +35,13 @@ def expand(e as Expression) as Expression:
 			return [| choice($(expand(l)), $(expand(r))) |]
 			
 		case BinaryExpression(
+				Operator: BinaryOperatorType.BitwiseAnd,
+				Left: l,
+				Right: r):
+					
+			return [| predict($(expand(l)), $(expand(r))) |]
+			
+		case BinaryExpression(
 				Operator: BinaryOperatorType.Subtraction,
 				Left: l=ReferenceExpression(),
 				Right: r=ReferenceExpression()):
@@ -44,6 +51,12 @@ def expand(e as Expression) as Expression:
 			template = [| { context as PegContext | _ } |]
 			block.Parameters = template.Parameters
 			return SpliceExpander().Expand([| action($block) |])
+			
+		case reference=ReferenceExpression(Name: name):
+			if name.StartsWith("@"):
+				reference.Name = name[1:]
+				return [| same_match($reference) |]
+			return reference
 			
 		otherwise:
 			return e

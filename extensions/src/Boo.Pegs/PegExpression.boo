@@ -68,7 +68,7 @@ class SequenceExpression(CompositeExpression):
 		
 	override def Match(ctx as PegContext):
 		for e in _expressions:
-			if not ctx.Match(e): return false
+			if not e.Match(ctx): return false
 		return true
 		
 class ChoiceExpression(CompositeExpression):
@@ -92,4 +92,4 @@ class FunctionExpression(PegExpression):
 		_function = function
 		
 	override def Match(context as PegContext):
-		return _function(context) 
+		return _function(context)

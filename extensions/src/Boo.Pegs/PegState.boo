@@ -56,7 +56,7 @@ class PegState:
 
 class AbstractChoiceState(PegState):
 	
-	_state as (int)
+	_state as (object)
 	
 	def constructor(ctx as PegContext):
 		super(ctx)
@@ -67,6 +67,20 @@ class AbstractChoiceState(PegState):
 		
 	override def Rollback():
 		Context.Restore(_state)
+		
+class PredicateState(AbstractChoiceState):
+
+	def constructor(ctx as PegContext):
+		super(ctx)
+		
+	override def BeginChoice():
+		return PredicateState(Context)
+		
+	override def Commit():
+		Context.Restore(_state)
+		
+	override def OnAction(_ as PegAction):
+		pass
 		
 class NotPredicateState(AbstractChoiceState):
 	

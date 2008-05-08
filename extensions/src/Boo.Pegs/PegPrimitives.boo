@@ -29,13 +29,22 @@ def zero_or_many(e as PegExpression):
 
 def not_predicate(e as PegExpression):
 	ne = FunctionExpression() do (ctx as PegContext):
-		return not ctx.Match(e)
+		return not e.Match(ctx)
 	return FunctionExpression() do (ctx as PegContext):
 		return ctx.TestNot(ne)
+		
+def predict(test as PegExpression, e as PegExpression):
+	return FunctionExpression() do (ctx as PegContext):
+		return ctx.Test(test) and e.Match(ctx)
 	
 def char_range(begin as char, end as char):
 	return CharPredicateExpression() do (current as char):
 		return current >= begin and current <= end
+		
+def same_match(rule as PegRule):
+	return FunctionExpression() do (ctx as PegContext):
+		lastMatch = ctx.RuleState.LastMatchFor(rule)
+		return terminal(lastMatch).Match(ctx)
 		
 def digit():
 	return CharPredicateExpression(char.IsDigit)

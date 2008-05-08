@@ -7,6 +7,18 @@ import Boo.Pegs
 class PegMacroTests:
 	
 	[Test]
+	def TestSameRule():
+		peg:
+			element = '<', tag, '>', content, '</', @tag, '>'
+			tag = ++(a-z)
+			content = --(element | text)
+			text = not "<"
+		
+		PegAssert.Matches("<foo></foo>", element)
+		PegAssert.DoesNotMatch("<foo></bar>", 7, element)
+		PegAssert.Matches("<foo><bar></bar><baz></baz></foo>", element)
+	
+	[Test]
 	def TestZeroOrMany():
 		
 		value = ""
