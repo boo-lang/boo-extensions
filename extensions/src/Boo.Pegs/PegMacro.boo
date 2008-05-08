@@ -43,14 +43,17 @@ def expand(e as Expression) as Expression:
 			
 		case BinaryExpression(
 				Operator: BinaryOperatorType.Subtraction,
-				Left: l=ReferenceExpression(),
-				Right: r=ReferenceExpression()):
+				Left: l,
+				Right: r):
 			return [| char_range($(charFor(l)), $(charFor(r))) |]
 			
 		case block=BlockExpression():
 			template = [| { context as PegContext | _ } |]
 			block.Parameters = template.Parameters
 			return SpliceExpander().Expand([| action($block) |])
+			
+		case MemberReferenceExpression():
+			return e
 			
 		case reference=ReferenceExpression(Name: name):
 			if name.StartsWith("@"):
@@ -150,6 +153,7 @@ Example:
 				
 	# declare all rules
 	for rule as ReferenceExpression, _ in rules:
+		if rule.NodeType != NodeType.ReferenceExpression: continue
 		decl = DeclarationStatement(
 			Declaration(Name: rule.Name, Type: SimpleTypeReference("PegRule")),
 			[| PegRule($(rule.Name)) |])
@@ -158,7 +162,11 @@ Example:
 	# expand all the expressions
 	for rule as ReferenceExpression, expression as Expression in rules:
 		try:
-			result.Add([| $rule.Expression = $(expand(expression)) |])
+			expansion = expand(expression)
+			if rule.NodeType == NodeType.ReferenceExpression:
+				result.Add([| $rule.Expression = $expansion |])
+			else:
+				result.Add([| $rule = $expansion |])
 		except x:
 			Context.Errors.Add(CompilerErrorFactory.MacroExpansionError(rule, x))
 	
