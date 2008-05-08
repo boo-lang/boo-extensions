@@ -28,7 +28,7 @@ def expand(e as Expression) as Expression:
 			return [| terminal($s) |]
 			
 		case BinaryExpression(
-				Operator: BinaryOperatorType.BitwiseOr,
+				Operator: BinaryOperatorType.Division,
 				Left: l,
 				Right: r):
 			
@@ -75,8 +75,12 @@ class SpliceExpander(DepthFirstTransformer):
 				else:
 					ReplaceCurrentNode([| $function(context) |])
 			
-def charFor(e as ReferenceExpression):
-	return CharLiteralExpression(e.LexicalInfo, e.Name)
+def charFor(e as Expression):
+	match e:
+		case r=ReferenceExpression():
+			return CharLiteralExpression(e.LexicalInfo, r.Name)
+		case i=IntegerLiteralExpression():
+			return CharLiteralExpression(e.LexicalInfo, cast(char, cast(int, char('0')) + i.Value))
 			
 def expandArguments(invocation as MethodInvocationExpression, args):
 	for arg in args:
@@ -117,8 +121,8 @@ Example:
 		Block = Begin, ++Statement, End
 		Statement = Invocation
 		Invocation = ++Expression
-		Expression = Identifier | String
-		String = "'", ++(not "'"), "'", Spacing 
+		Expression = Identifier / String
+		String = "'", ++(not "'", any()), "'", Spacing 
 		Identifier = ++[a-z, A-Z], OptionalSpacing
 		Begin = ":", Spacing
 		End = empty()

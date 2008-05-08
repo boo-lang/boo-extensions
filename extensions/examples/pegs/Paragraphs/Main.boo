@@ -8,7 +8,7 @@ def ods(m):
 
 peg:
 	document = ++[para, line], eof
-	para = inset, enter, line, --((@inset, inset) & para | (@inset, line)), leave
+	para = inset, enter, line, --((@inset, inset) & para / (@inset, line)), leave
 	inset = ++[" ", "\t"]
 	line = ++(not "\n", any()), { ods $text }, eol
 	eol = "\n"

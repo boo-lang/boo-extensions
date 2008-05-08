@@ -11,12 +11,19 @@ class PegMacroTests:
 		peg:
 			element = '<', tag, '>', content, '</', @tag, '>'
 			tag = ++(a-z)
-			content = --(element | text)
+			content = --(element / text)
 			text = not "<", any()
 		
 		PegAssert.Matches("<foo></foo>", element)
 		PegAssert.DoesNotMatch("<foo></bar>", 7, element)
 		PegAssert.Matches("<foo><bar></bar><baz></baz></foo>", element)
+		
+	[Test]
+	def TestDigitRange():
+		peg:
+			digits = ++(0-9)
+			
+		PegAssert.Matches("42", digits)
 	
 	[Test]
 	def TestZeroOrMany():
