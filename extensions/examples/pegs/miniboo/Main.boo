@@ -4,22 +4,31 @@ import Boo.Pegs
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.MetaProgramming
 
-def push(ctx as PegContextWithPayload[of List]):
+//class BooPegContext(PegDebugContext):
+class BooPegContext(PegContext):
+	
+	[getter(Stack)]
+	_stack = []
+	
+	def constructor(text as string):
+		super(text)
+
+def push(ctx as BooPegContext):
 	push(ctx, text(ctx))
 
-def push(ctx as PegContextWithPayload[of List], value):
-	ctx.Payload.Push(value)
+def push(ctx as BooPegContext, value):
+	ctx.Stack.Push(value)
 
-def pop(ctx as PegContextWithPayload[of List]):
-	return ctx.Payload.Pop()
+def pop(ctx as BooPegContext):
+	return ctx.Stack.Pop()
 	
-def peek(ctx as PegContextWithPayload[of List]):
-	return ctx.Payload[-1]
+def peek(ctx as BooPegContext):
+	return ctx.Stack[-1]
 	
-def currentType(ctx as PegContextWithPayload[of List]):
+def currentType(ctx as BooPegContext):
 	return peek(ctx) as Ast.TypeDefinition
 	
-def currentBlock(ctx as PegContextWithPayload[of List]):
+def currentBlock(ctx as BooPegContext):
 	return peek(ctx) as Ast.Block
 	
 keywords = "class", "def", "end"
@@ -29,27 +38,31 @@ IsNotKeyword = FunctionExpression() do (ctx as PegContext):
 	return identifier not in keywords
 
 peg miniboo:
-	Module = EnterModule, OptionalSpacing, ++Member, EndOfFile
-	Class = CLASS, Identifier, EnterClass, Begin, ++Member, End, LeaveClass
+	Module = EnterModule, AnySpace, ++Member, EndOfFile
+	Class = CLASS, Identifier, EnterClass, ClassBody, LeaveClass
+	ClassBody = Begin, Space, Member, --(@Space, Member), End
 	Member = [Class, Method]
 	Method = DEF, Identifier, EnterMethod, LPAREN, RPAREN, Block, LeaveMethod
-	Block = Begin, ++Statement, End
-	Statement = ExpressionStatement
+	Block = Begin, Space, Statement, --(@Space, Statement), End
+	Eol = ~NEWLINE
+	Statement = ExpressionStatement, NEWLINE
 	ExpressionStatement = Invocation, OnExpressionStatement
 	Invocation = Expression, EnterInvocation, Argument
 	Argument = Expression, OnArgument	
 	Expression = [Reference, String]
 	Reference = Identifier, OnReference
-	String = "'", ++(not "'"), "'", { $push(Ast.StringLiteralExpression(Value: $text[1:-1])) }, Spacing
-	Identifier = ++[a-z, A-Z], IsNotKeyword, { $push }, OptionalSpacing
-	Begin = ":", OptionalSpacing
-	End = "end", Spacing
-	Spacing = ++[' ', '\t', '\r', '\n']
-	OptionalSpacing = ~Spacing
-	CLASS = "class", Spacing
-	DEF = "def", Spacing
-	LPAREN = "(", OptionalSpacing
-	RPAREN = ")", OptionalSpacing
+	String = "'", ++(not "'", any()), "'", { $push(Ast.StringLiteralExpression(Value: $text[1:-1])) }, OptSpace
+	Identifier = ++[a-z, A-Z], IsNotKeyword, { $push }, OptSpace
+	Begin = ":", OptSpace, Eol
+	End = --(OptSpace, NEWLINE)
+	OptSpace = ~Space
+	Space = ++[' ', '\t']
+	AnySpace = --whitespace()
+	CLASS = "class", Space
+	DEF = "def", Space
+	LPAREN = "(", AnySpace
+	RPAREN = ")", AnySpace
+	NEWLINE = ++"\n"
 	EndOfFile = not any()
 	
 	# actions
@@ -92,14 +105,14 @@ class Foo:
 	class Nested:
 		def bar():
 			print 'yahoo'
-		end
-	end
+	
 	def run():
 		print 'Hello, world!'
-	end
-end
+		
+def baz():
+	print 'Hello, again'
 """
-ctx = PegContextWithPayload[of List](code, [])
+ctx = BooPegContext(code)
 assert ctx.Match(Module),  "Error at " + ctx.Input.Position
 
 module as Ast.Module = pop(ctx)
