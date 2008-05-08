@@ -75,11 +75,11 @@ class PegDebugContext(PegContext):
 		super(text)
 		
 	override def EnterRule(rule as PegRule):
-		print ">", rule
+		print ">", rule, _input.Position
 		return super(rule)
 		
 	override def LeaveRule(rule as PegRule, success as bool):
-		print "<", rule, success
+		print "<", rule, success, _input.Position
 		return super(rule, success)
 		
 class PegRuleState:
