@@ -12,11 +12,11 @@ push = stack.Push
 pop = stack.Pop
 	
 peg:
-	calculator = spacing, addition, eof
-	addition = term, --("+", spacing, term, { push(pop() + pop()) })
-	term = factor, --("*", spacing, factor, { push(pop() * pop()) })
-	factor = ++digit(), { push(int.Parse($text)) }, spacing
-	spacing = --whitespace()
+	calculator = spaces, addition, eof
+	addition = term, --("+", spaces, term, { push(pop() + pop()) })
+	term = factor, --("*", spaces, factor, { push(pop() * pop()) })
+	factor = ++digit(), { push(int.Parse($text)) }, spaces
+	spaces = --whitespace()
 	eof = not any()
 
 while true:
