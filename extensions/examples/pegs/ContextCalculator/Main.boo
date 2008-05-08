@@ -8,6 +8,17 @@ def push(ctx as PegContextWithPayload[of List], value as int):
 def pop(ctx as PegContextWithPayload[of List]) as int:
 	return ctx.Payload.Pop()
 	
+def readEvalLoop(calculator as PegExpression):
+	while true:
+		expression = prompt("> ")
+		if string.IsNullOrEmpty(expression): break
+		ctx = PegContextWithPayload[of List](expression, [])
+		if calculator.Match(ctx):
+			print pop(ctx)
+		else:
+			print "--" + "-" * ctx.Input.Position + "^"
+			print "DOES NOT COMPUTE!"
+		
 // the $ operator inside actions means
 // "access the function specified passing the context as the first argument"
 // in other words, $pop means pop(context)
@@ -19,13 +30,5 @@ peg:
 	factor = ++digit(), { $push(int.Parse($text)) }, spacing
 	spacing = --whitespace()
 	eof = not any()
-
-while true:
-	expression = prompt("> ")
-	if string.IsNullOrEmpty(expression): break
-	ctx = PegContextWithPayload[of List](expression, [])
-	if calculator.Match(ctx):
-		print pop(ctx)
-	else:
-		print "--" + "-" * ctx.Input.Position + "^"
-		print "DOES NOT COMPUTE!"
+	
+readEvalLoop calculator
