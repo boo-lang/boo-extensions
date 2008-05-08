@@ -133,7 +133,10 @@ Example:
 				
 	# declare all rules
 	for rule as ReferenceExpression, _ in rules:
-		result.Add([| $rule = PegRule() |])
+		decl = DeclarationStatement(
+			Declaration(Name: rule.Name, Type: SimpleTypeReference("PegRule")),
+			[| PegRule() |])
+		result.Add(decl)
 		
 	# expand all the expressions
 	for rule as ReferenceExpression, expression as Expression in rules:
