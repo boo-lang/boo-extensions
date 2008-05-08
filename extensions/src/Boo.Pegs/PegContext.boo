@@ -70,6 +70,18 @@ class PegContext:
 	def OnAction(action as PegAction):
 		_state.OnAction(action)
 		
+class PegDebugContext(PegContext):
+	def constructor(text as string):
+		super(text)
+		
+	override def EnterRule(rule as PegRule):
+		print ">", rule
+		return super(rule)
+		
+	override def LeaveRule(rule as PegRule, success as bool):
+		print "<", rule, success
+		return super(rule, success)
+		
 class PegRuleState:
 	
 	_ctx as PegContext

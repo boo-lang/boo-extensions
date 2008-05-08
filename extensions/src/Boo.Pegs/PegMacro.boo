@@ -148,7 +148,7 @@ Example:
 	for rule as ReferenceExpression, _ in rules:
 		decl = DeclarationStatement(
 			Declaration(Name: rule.Name, Type: SimpleTypeReference("PegRule")),
-			[| PegRule() |])
+			[| PegRule($(rule.Name)) |])
 		result.Add(decl)
 		
 	# expand all the expressions
