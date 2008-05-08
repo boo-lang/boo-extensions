@@ -10,7 +10,7 @@ peg:
 	document = ++[para, line], eof
 	para = inset, enter, line, --((@inset, inset) & para | (@inset, line)), leave
 	inset = ++[" ", "\t"]
-	line = ++(not "\n"), { ods $text }, eol
+	line = ++(not "\n", any()), { ods $text }, eol
 	eol = "\n"
 	eof = not any()
 	
@@ -36,3 +36,4 @@ third line
 """
 
 print PegContext(s).Match(document)
+#print PegDebugContext(s).Match(document)
