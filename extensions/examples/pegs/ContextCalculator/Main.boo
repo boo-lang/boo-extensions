@@ -2,17 +2,24 @@ namespace pegs
 
 import Boo.Pegs
 
-def push(ctx as PegContextWithPayload[of List], value as int):
-	ctx.Payload.Push(value)
+class CalculatorContext(PegContext):
+	
+	[getter(Stack)] _stack = []
+	
+	def constructor(text as string):
+		super(text)
 
-def pop(ctx as PegContextWithPayload[of List]) as int:
-	return ctx.Payload.Pop()
+def push(ctx as CalculatorContext, value as int):
+	ctx.Stack.Push(value)
+
+def pop(ctx as CalculatorContext) as int:
+	return ctx.Stack.Pop()
 	
 def readEvalLoop(calculator as PegExpression):
 	while true:
 		expression = prompt("> ")
 		if string.IsNullOrEmpty(expression): break
-		ctx = PegContextWithPayload[of List](expression, [])
+		ctx = CalculatorContext(expression)
 		if calculator.Match(ctx):
 			print pop(ctx)
 		else:
