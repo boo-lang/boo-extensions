@@ -31,7 +31,7 @@ def not_predicate(e as PegExpression):
 	ne = FunctionExpression() do (ctx as PegContext):
 		return not e.Match(ctx)
 	return FunctionExpression() do (ctx as PegContext):
-		return ctx.TestNot(ne)
+		return ctx.Test(ne)
 		
 def predict(test as PegExpression, e as PegExpression):
 	return FunctionExpression() do (ctx as PegContext):

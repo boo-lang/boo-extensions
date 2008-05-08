@@ -26,8 +26,7 @@ class CharPredicateExpression(PegExpression):
 		if not input.MoveNext():
 			return false
 		if not _predicate(input.CurrentChar):
-			if not context.InNotPredicate:
-				input.MovePrevious()
+			input.MovePrevious()
 			return false
 		return true
 		

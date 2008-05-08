@@ -12,7 +12,7 @@ class PegMacroTests:
 			element = '<', tag, '>', content, '</', @tag, '>'
 			tag = ++(a-z)
 			content = --(element | text)
-			text = not "<"
+			text = not "<", any()
 		
 		PegAssert.Matches("<foo></foo>", element)
 		PegAssert.DoesNotMatch("<foo></bar>", 7, element)

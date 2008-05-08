@@ -41,8 +41,4 @@ class PrimitiveTests:
 	def TestNotPredicate():
 		e = not_predicate(terminal("o"))
 		context = PegAssert.Matches("aeioou", e)
-		PegAssert.NextChar("e", context)
-		PegAssert.Matches(context, e)
-		PegAssert.NextChar("o", context)
-		assert not e.Match(context)
-		PegAssert.NextChar("o", context)
+		PegAssert.NextChar("a", context)

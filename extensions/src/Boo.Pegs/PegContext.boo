@@ -19,25 +19,24 @@ class PegContext:
 		return e.Match(self)
 		
 	def MatchRule(rule as PegRule):
-		
-		_ruleState = _ruleState.EnterRule()
+		_ruleState = EnterRule(rule)
 		try:
 			success = Match(rule.Expression)
 		ensure:
-			_ruleState = _ruleState.LeaveRule(rule, success)
+			_ruleState = LeaveRule(rule, success)
 		return success
+		
+	virtual def EnterRule(rule as PegRule):
+		return _ruleState.EnterRule()
+		
+	virtual def LeaveRule(rule as PegRule, success as bool):
+		return _ruleState.LeaveRule(rule, success)
 		
 	def Try(e as PegExpression):
 		return WithState(_state.BeginChoice(), e)
 		
-	def TestNot(e as PegExpression):
-		return WithState(NotPredicateState(self), e)
-		
 	def Test(e as PegExpression):
 		return WithState(PredicateState(self), e)
-		
-	InNotPredicate:
-		get: return _state.InNotPredicate
 
 	def WithState(state as PegState, e as PegExpression):
 		old = _state

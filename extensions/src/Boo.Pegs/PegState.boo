@@ -39,9 +39,6 @@ class PegState:
 	def constructor(ctx as PegContext):
 		_ctx = ctx
 		
-	virtual InNotPredicate:
-		get: return false
-		
 	virtual def BeginChoice() as PegState:
 		return TopLevelChoice(_ctx)
 		
@@ -78,20 +75,6 @@ class PredicateState(AbstractChoiceState):
 		
 	override def Commit():
 		Context.Restore(_state)
-		
-	override def OnAction(_ as PegAction):
-		pass
-		
-class NotPredicateState(AbstractChoiceState):
-	
-	def constructor(ctx as PegContext):
-		super(ctx)
-		
-	override InNotPredicate:
-		get: return true
-
-	override def BeginChoice():
-		return NotPredicateState(Context)
 		
 	override def OnAction(_ as PegAction):
 		pass
