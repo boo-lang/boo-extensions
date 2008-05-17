@@ -142,7 +142,7 @@ class PegRuleStateMatched(PegRuleStateNested):
 		
 	override def LastMatchFor(rule as PegRule):
 		if rule is _rule: return Text
-		return _parent.LastMatchFor(rule)
+		return super(rule)
 		
 def text(ctx as PegContext):
 	return ctx.Input.TextFrom(ctx.RuleState.MatchBegin)
