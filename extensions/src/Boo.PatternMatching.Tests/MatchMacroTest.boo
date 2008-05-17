@@ -160,9 +160,9 @@ class MatchMacroTest:
 				
 	def genericMatch(o):
 		match o:
-			case Container of int(value: i):
+			case Container[of int](value: i):
 				return i*2
-			case Container of string(value: s):
+			case Container[of string](value: s):
 				return s.ToUpper()
 				
 	def lastItem(o):
