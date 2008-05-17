@@ -22,14 +22,6 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
 		
 	[Test]
-	def If_Bool_1():
-		runTestCase("../boojay/tests/integration/If-Bool-1.boo")
-		
-	[Test]
-	def If_Not_Bool_1():
-		runTestCase("../boojay/tests/integration/If-Not-Bool-1.boo")
-		
-	[Test]
 	def Integers_1():
 		runTestCase("../boojay/tests/integration/Integers-1.boo")
 		
@@ -78,18 +70,34 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/ReturnValue-2.boo")
 		
 	[Test]
-	def While_Bool_1():
-		runTestCase("../boojay/tests/integration/While-Bool-1.boo")
-		
-	[Test]
-	def While_Not_Bool_1():
-		runTestCase("../boojay/tests/integration/While-Not-Bool-1.boo")
-		
-	[Test]
 	def Cast_1():
 		runTestCase("../boojay/tests/integration/casts/Cast-1.boo")
 		
 	[Test]
 	def Isa_1():
 		runTestCase("../boojay/tests/integration/casts/Isa-1.boo")
+		
+	[Test]
+	def TryCast_1():
+		runTestCase("../boojay/tests/integration/casts/TryCast-1.boo")
+		
+	[Test]
+	def If_Bool_1():
+		runTestCase("../boojay/tests/integration/statements/If-Bool-1.boo")
+		
+	[Test]
+	def If_Not_Bool_1():
+		runTestCase("../boojay/tests/integration/statements/If-Not-Bool-1.boo")
+		
+	[Test]
+	def Try_1():
+		runTestCase("../boojay/tests/integration/statements/Try-1.boo")
+		
+	[Test]
+	def While_Bool_1():
+		runTestCase("../boojay/tests/integration/statements/While-Bool-1.boo")
+		
+	[Test]
+	def While_Not_Bool_1():
+		runTestCase("../boojay/tests/integration/statements/While-Not-Bool-1.boo")
 		
