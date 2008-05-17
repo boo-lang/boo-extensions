@@ -293,6 +293,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				emitSubtraction node
 			case BinaryOperatorType.Addition:
 				emitAddition node
+			case BinaryOperatorType.TypeTest:
+				emitTypeTest node
+				
+	def emitTypeTest(node as BinaryExpression):
+		match node.Right:
+			case TypeofExpression(Type: t):
+				emit node.Left
+				INSTANCEOF javaType(t)
 				
 	def emitAddition(node as BinaryExpression):
 		emit node.Left
@@ -416,6 +424,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 
 	def GOTO(label as Label):
 		emitJumpInsn Opcodes.GOTO, label
+		
+	def INSTANCEOF(typeName as string):
+		emitTypeInsn Opcodes.INSTANCEOF, typeName
 	
 	def ILOAD(index as int):
 		emitVarInsn Opcodes.ILOAD, index

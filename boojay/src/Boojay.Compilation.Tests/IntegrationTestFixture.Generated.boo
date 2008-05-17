@@ -85,3 +85,11 @@ partial class IntegrationTestFixture:
 	def While_Not_Bool_1():
 		runTestCase("../boojay/tests/integration/While-Not-Bool-1.boo")
 		
+	[Test]
+	def Cast_1():
+		runTestCase("../boojay/tests/integration/casts/Cast-1.boo")
+		
+	[Test]
+	def Isa_1():
+		runTestCase("../boojay/tests/integration/casts/Isa-1.boo")
+		
