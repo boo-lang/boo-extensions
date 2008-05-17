@@ -213,6 +213,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def hasReturnValue(m as IMethod):
 		return m.ReturnType is not TypeSystemServices.VoidType
 		
+	override def OnNullLiteralExpression(node as NullLiteralExpression):
+		ACONST_NULL
+		
 	override def OnReturnStatement(node as ReturnStatement):
 		if node.Expression is null:
 			RETURN
@@ -454,6 +457,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	
 	def ISTORE(index as int):
 		emitVarInsn(Opcodes.ISTORE, index)
+		
+	def ACONST_NULL():
+		emitInsn Opcodes.ACONST_NULL
 		
 	def ALOAD(index as int):
 		emitVarInsn(Opcodes.ALOAD, index)
