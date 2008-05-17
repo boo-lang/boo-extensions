@@ -288,6 +288,20 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			and method.DeclaringType.FullName == "java.lang.System"
 			and method.Name in ("get_out", "get_in", "get_err"))
 			
+	override def OnTryCastExpression(node as TryCastExpression):
+		emit node.Target
+		DUP
+		INSTANCEOF javaType(node.Type)
+		L1 = Label()
+		L2 = Label()
+		IFNE L1
+		POP
+		ACONST_NULL
+		GOTO L2
+		mark L1
+		CHECKCAST javaType(node.Type)
+		mark L2
+			
 	override def OnBinaryExpression(node as BinaryExpression):
 		match node.Operator:
 			case BinaryOperatorType.Assign:
@@ -298,7 +312,22 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				emitAddition node
 			case BinaryOperatorType.TypeTest:
 				emitTypeTest node
+			case BinaryOperatorType.ReferenceEquality:
+				emitReferenceEquality node
 				
+	def emitReferenceEquality(node as BinaryExpression):
+		L1 = Label()
+		L2 = Label()
+		
+		emit node.Left
+		emit node.Right
+		IF_ACMPNE L1
+		ICONST_1
+		GOTO L2
+		mark L1
+		ICONST_0
+		mark L2	
+					
 	def emitTypeTest(node as BinaryExpression):
 		match node.Right:
 			case TypeofExpression(Type: t):
@@ -423,13 +452,19 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitJumpInsn Opcodes.IFEQ, label
 	
 	def IFNE(label as Label):
-        emitJumpInsn Opcodes.IFNE, label
-
+		emitJumpInsn Opcodes.IFNE, label
+	
+	def IF_ACMPNE(label as Label):
+		emitJumpInsn Opcodes.IF_ACMPNE, label
+		
 	def GOTO(label as Label):
 		emitJumpInsn Opcodes.GOTO, label
 		
 	def INSTANCEOF(typeName as string):
 		emitTypeInsn Opcodes.INSTANCEOF, typeName
+		
+	def CHECKCAST(typeName as string):
+		emitTypeInsn Opcodes.CHECKCAST, typeName
 	
 	def ILOAD(index as int):
 		emitVarInsn Opcodes.ILOAD, index
