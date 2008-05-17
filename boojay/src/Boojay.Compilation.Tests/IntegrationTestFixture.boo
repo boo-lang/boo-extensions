@@ -33,4 +33,7 @@ partial class IntegrationTestFixture:
 		return module.FullName + "Module"
 		
 	def runJavaClass(className as string):
-		return shell("java", "-cp . ${className}")
+		p = shellp("java", "-cp . ${className}")
+		p.WaitForExit()
+		if p.ExitCode != 0: raise p.StandardError.ReadToEnd()
+		return p.StandardOutput.ReadToEnd()
