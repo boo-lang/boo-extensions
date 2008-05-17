@@ -12,13 +12,18 @@ def writeTestCases(writer as TextWriter, baseDir as string):
 	for fname in Directory.GetFiles(baseDir):
 		continue unless fname.EndsWith(".boo")
 		++count		
-		writer.Write("""
+		writeTestCase(writer, fname)
+	for subDir in Directory.GetDirectories(baseDir):
+		writeTestCases(writer, subDir)
+	print("${count} test cases found in ${baseDir}.")
+	
+def writeTestCase(writer as TextWriter, fname as string):
+	writer.Write("""
 	[Test]
 	def ${testCaseName(fname)}():
 		runTestCase("../boojay/${fname.Replace('\\', '/')}")
 		""")
-	print("${count} test cases found in ${baseDir}.")
-	
+		
 using writer = StreamWriter("src/Boojay.Compilation.Tests/IntegrationTestFixture.Generated.boo"):
 	writer.Write("""
 namespace Boojay.Compilation.Tests
