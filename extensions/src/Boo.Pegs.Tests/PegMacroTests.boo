@@ -8,16 +8,22 @@ class PegMacroTests:
 	
 	[Test]
 	def TestSameRule():
+		
+		trace = []
+		t = { text | trace.Add("tag(${text})") }
+		c = { text | trace.Add("c(${text})") }
 		peg:
-			element = '<', tag, '>', content, '</', @tag, '>'
+			element = '<', { t @tag }, tag, { t @tag }, '>', content, { c @content }, { t @tag }, '</', @tag, '>'
 			tag = ++(a-z)
 			content = --(element / text)
-			text = not "<", any()
+			text = ++(not "<", any())
 		
-		PegAssert.Matches("<foo></foo>", element)
+		PegAssert.Matches("<foo>42</foo>", element)
+		Assert.AreEqual(["tag()", "tag(foo)", "c(42)", "tag(foo)"], trace)
+		
 		PegAssert.DoesNotMatch("<foo></bar>", 7, element)
 		PegAssert.Matches("<foo><bar></bar><baz></baz></foo>", element)
-		
+				
 	[Test]
 	def TestDigitRange():
 		peg:

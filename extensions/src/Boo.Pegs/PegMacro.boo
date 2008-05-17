@@ -50,7 +50,7 @@ def expand(e as Expression) as Expression:
 		case block=BlockExpression():
 			template = [| { context as PegContext | _ } |]
 			block.Parameters = template.Parameters
-			return SpliceExpander().Expand([| action($block) |])
+			return ClosureExpander().Expand([| action($block) |])
 			
 		case MemberReferenceExpression():
 			return e
@@ -64,20 +64,27 @@ def expand(e as Expression) as Expression:
 		otherwise:
 			return e
 			
-class SpliceExpander(DepthFirstTransformer):
+class ClosureExpander(DepthFirstTransformer):
 	def Expand(node as Expression):
 		return self.VisitNode(node)
 		
 	override def LeaveSpliceExpression(node as SpliceExpression):
 		match node.Expression:
-			case function=ReferenceExpression():
+			case r=ReferenceExpression():
 				mie = node.ParentNode as MethodInvocationExpression
 				if mie is not null and mie.Target is node:
 					mie.Arguments.Insert(0, [| context |])
 					ReplaceCurrentNode(node.Expression)
-				else:
-					ReplaceCurrentNode([| $function(context) |])
-			
+					return
+					
+				ReplaceCurrentNode([| $r(context) |])
+				
+	override def OnReferenceExpression(node as ReferenceExpression):
+		if not node.Name.StartsWith("@"): return
+		
+		node.Name = node.Name[1:]
+		ReplaceCurrentNode([| context.RuleState.LastMatchFor($node) |])
+		
 def charFor(e as Expression):
 	match e:
 		case r=ReferenceExpression():
@@ -101,7 +108,7 @@ Usage:
 		
 		// choice
 		MyRule2 = [Choice1, Choice2, ChoiceN] 
-		MyRule3 = Choice1 | Choice2
+		MyRule3 = Choice1 / Choice2
 		
 		// repetition (one or many)
 		MyRule4 = ++E
