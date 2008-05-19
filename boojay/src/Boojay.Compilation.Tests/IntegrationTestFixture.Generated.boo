@@ -102,6 +102,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/statements/TryExceptEnsure.boo")
 		
 	[Test]
+	def TryExceptReraise():
+		runTestCase("../boojay/tests/integration/statements/TryExceptReraise.boo")
+		
+	[Test]
 	def While_Bool_1():
 		runTestCase("../boojay/tests/integration/statements/While-Bool-1.boo")
 		

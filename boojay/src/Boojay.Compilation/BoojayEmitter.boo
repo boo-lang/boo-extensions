@@ -301,8 +301,15 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			and method.Name in ("get_out", "get_in", "get_err"))
 			
 	override def OnRaiseStatement(node as RaiseStatement):
-		emit node.Exception
-		ATHROW
+		if node.Exception is not null:
+			emit node.Exception
+			ATHROW
+		else:
+			ALOAD index(entity(enclosingHandler(node).Declaration))
+			ATHROW
+			
+	def enclosingHandler(node as Node) as ExceptionHandler:
+		return node.GetAncestor(NodeType.ExceptionHandler)
 			
 	override def OnTryStatement(node as TryStatement):
 		L1 = Label()
@@ -317,7 +324,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			L4 = Label()
 			mark L4
 			decl = handler.Declaration
-			_code.visitTryCatchBlock(L1, L2, L4, javaType(decl.Type))
+			TRYCATCHBLOCK L1, L2, L4, javaType(decl.Type)
 			ASTORE index(entity(decl))
 			emit handler.Block
 			GOTO L3
@@ -330,7 +337,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			
 			L4 = Label()
 			mark L4
-			_code.visitTryCatchBlock(L1, L2, L4, null)
+			TRYCATCHBLOCK L1, L4, L4, null
 			temp = newTemp(typeSystem.ObjectType)
 			ASTORE index(temp)
 			emit node.EnsureBlock
@@ -578,6 +585,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def INVOKEINTERFACE(method as IMethod):
 		invoke(Opcodes.INVOKEINTERFACE, method)
+		
+	def TRYCATCHBLOCK(begin as Label, end as Label, target as Label, type as string):
+		_code.visitTryCatchBlock(begin, end, target, type)
 		
 	def ATHROW():
 		emitInsn(Opcodes.ATHROW)
