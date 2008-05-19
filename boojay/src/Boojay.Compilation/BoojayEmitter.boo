@@ -16,6 +16,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	_classWriter as ClassWriter
 	_code as MethodVisitor
+	_currentMethod as Method
 	_typeMappings as Hash
 	_primitiveMappings as Hash
 	
@@ -156,7 +157,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					null)
 					
 		if not node.IsAbstract:
-			emitMethodBody node 
+			_currentMethod = node
+			emitMethodBody node
 		_code.visitEnd()
 		
 	def emitMethodBody(node as Method):
@@ -190,6 +192,17 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def lastParameterIndex(node as Method):
 		param as InternalParameter = entity(node.Parameters[-1])
 		return param.Index
+		
+	def newTemp(type as IType):
+		i = nextLocalIndex()
+		local = CodeBuilder.DeclareTempLocal(self._currentMethod, type)
+		index local.Local, i
+		return local
+		
+	def nextLocalIndex():
+		locals = _currentMethod.Locals
+		if len(locals) == 0: return firstLocalIndex(_currentMethod)
+		return index(entity(locals[-1])) + 1
 			
 	def index(node as Local, index as int):
 		node["index"] = index
@@ -307,22 +320,26 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			_code.visitTryCatchBlock(L1, L2, L4, javaType(decl.Type))
 			ASTORE index(entity(decl))
 			emit handler.Block
-			if node.EnsureBlock is not null:
-				emit node.EnsureBlock
 			GOTO L3
 			
-		mark L3
+		if node.EnsureBlock is null:
+			
+			mark L3
 		
-#		if node.EnsureBlock is null:
-#			mark L3
-#		else:
-#			L4 = Label()
-#			mark L4
-#			POP
-#			emit node.EnsureBlock
-#			_code.visitTryCatchBlock(L1, L4, L4, null)
-#			mark L3
-#		
+		else:
+			
+			L4 = Label()
+			mark L4
+			_code.visitTryCatchBlock(L1, L2, L4, null)
+			temp = newTemp(typeSystem.ObjectType)
+			ASTORE index(temp)
+			emit node.EnsureBlock
+			ALOAD index(temp)
+			ATHROW
+			
+			mark L3
+			emit node.EnsureBlock
+		
 	override def OnCastExpression(node as CastExpression):
 		emit node.Target
 		CHECKCAST javaType(node.Type)

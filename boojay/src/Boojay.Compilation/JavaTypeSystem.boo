@@ -18,7 +18,6 @@ class JavaTypeSystem(TypeSystemServices):
 		Cache(existing, mapping)
 		return mapping
 		
-		
 class JavaLangString:
 	def toUpperCase():
 		return self
