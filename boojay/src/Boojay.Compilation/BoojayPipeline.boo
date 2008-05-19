@@ -8,4 +8,5 @@ class BoojayPipeline(Compile):
 	def constructor():
 		Add(BoojayEmitter())
 		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
+		Replace(IntroduceGlobalNamespaces, IntroduceBoojayNamespaces())
 		

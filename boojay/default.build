@@ -8,8 +8,6 @@
 	<property name="asm.lib.dir" value="/Users/rodrigob/java/asm-3.1/lib" />
 	<property name="build.dir" value="../bin" />
 	<property name="boo.dir" value="../../boo/build" />
-
-	<include buildfile="build.properties" if="${file::exists('build.properties')}" />
 	
 	<target name="asm.dll" depends="init">
 		<fileset id="asm.jars" basedir="${asm.lib.dir}">
@@ -42,6 +40,12 @@
 	
 	<target name="build" depends="copy-libs">
 	
+		<booc target="library" output="${build.dir}/Boojay.Macros.dll">
+			<sources basedir="src/Boojay.Macros">
+				<include name="*.boo" />
+			</sources>
+		</booc>
+	
 		<booc target="library" output="${build.dir}/Boojay.Compilation.dll">
 			<sources basedir="src/Boojay.Compilation">
 				<include name="*.boo" />
@@ -49,6 +53,7 @@
 			<references basedir="${build.dir}">
 				<include name="asm.dll" />
 				<include name="Boo.PatternMatching.dll" />
+				<include name="Boojay.Macros.dll" />
 			</references>
 		</booc>
 		
@@ -74,7 +79,7 @@
 	
 	<target name="copy-libs" depends="init">
 		<copy todir="${build.dir}" file="lib/asm.dll" />
-		<copy todir="${build.dir}" file="../extensions/bin/Boo.PatternMatching.dll" />
+		<copy todir="${build.dir}" file="../bin/Boo.PatternMatching.dll" />
 	</target>
 	
 	<target name="init">

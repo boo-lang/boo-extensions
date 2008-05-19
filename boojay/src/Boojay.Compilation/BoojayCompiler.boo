@@ -7,4 +7,5 @@ def newBoojayCompiler():
 	compiler = BooCompiler()
 	compiler.Parameters.Pipeline = BoojayPipeline()
 	compiler.Parameters.References.Add(typeof(lang.Object).Assembly)
+	compiler.Parameters.References.Add(typeof(Boojay.Macros.PrintMacro).Assembly)
 	return compiler
