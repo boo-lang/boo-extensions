@@ -38,7 +38,6 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.VoidType: VOID_TYPE.getDescriptor(),
 		}
 		
-		
 	override def OnInterfaceDefinition(node as InterfaceDefinition):
 		emitTypeDefinition node
 	
@@ -288,6 +287,46 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			and method.DeclaringType.FullName == "java.lang.System"
 			and method.Name in ("get_out", "get_in", "get_err"))
 			
+	override def OnRaiseStatement(node as RaiseStatement):
+		emit node.Exception
+		ATHROW
+			
+	override def OnTryStatement(node as TryStatement):
+		L1 = Label()
+		L2 = Label()
+		L3 = Label()
+		mark L1
+		emit node.ProtectedBlock
+		GOTO L3
+		mark L2
+		
+		for handler in node.ExceptionHandlers:
+			L4 = Label()
+			mark L4
+			decl = handler.Declaration
+			_code.visitTryCatchBlock(L1, L2, L4, javaType(decl.Type))
+			ASTORE index(entity(decl))
+			emit handler.Block
+			if node.EnsureBlock is not null:
+				emit node.EnsureBlock
+			GOTO L3
+			
+		mark L3
+		
+#		if node.EnsureBlock is null:
+#			mark L3
+#		else:
+#			L4 = Label()
+#			mark L4
+#			POP
+#			emit node.EnsureBlock
+#			_code.visitTryCatchBlock(L1, L4, L4, null)
+#			mark L3
+#		
+	override def OnCastExpression(node as CastExpression):
+		emit node.Target
+		CHECKCAST javaType(node.Type)
+			
 	override def OnTryCastExpression(node as TryCastExpression):
 		emit node.Target
 		DUP
@@ -522,6 +561,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def INVOKEINTERFACE(method as IMethod):
 		invoke(Opcodes.INVOKEINTERFACE, method)
+		
+	def ATHROW():
+		emitInsn(Opcodes.ATHROW)
 		
 	def RETURN():
 	   emitInsn(Opcodes.RETURN)

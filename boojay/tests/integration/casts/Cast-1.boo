@@ -1,5 +1,6 @@
 """
 FOO
+exception
 """
 import java.lang
 
