@@ -6,16 +6,16 @@ after
 """
 import java.lang
 
-System.out.println("before")
+print "before"
 
 a = 1
 if a:
-	System.out.println("1 is true")
+	print "1 is true"
 	
 a = 0
 if a:
-	System.out.println("0 is true")
+	print "0 is true"
 else:
-	System.out.println("0 is false")
+	print "0 is false"
 	
-System.out.println("after")
+print "after"

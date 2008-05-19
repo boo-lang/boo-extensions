@@ -2,14 +2,12 @@
 foo
 null
 """
-import java.lang
-
 def sysout(o):
 	if o is null:
-		System.out.println("null")
+		print "null"
 	else:
-		System.out.println(o)
+		print o
 
 o as object = "foo"
 sysout o as string
-sysout o as Integer
+sysout o as java.lang.Integer

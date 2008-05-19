@@ -6,18 +6,18 @@ after
 """
 import java.lang
 
-System.out.println("before")
+print "before"
 
 a = 1
 if not a:
-	System.out.println("not 1 is true")
+	print "not 1 is true"
 else:
-	System.out.println("not 1 is false")
+	print "not 1 is false"
 	
 a = 0
 if not a:
-	System.out.println("not 0 is true")
+	print "not 0 is true"
 else:
-	System.out.println("0 is false")
+	print "0 is false"
 	
-System.out.println("after")
+print "after"

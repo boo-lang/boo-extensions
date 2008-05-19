@@ -6,15 +6,15 @@ after
 """
 import java.lang
 
-System.out.println("before")
+print "before"
 
 a = 2
 while a:
-	System.out.println("true")
+	print "true"
 	a -= 1
 	
 a = 0
 while a:
-	System.out.println("0 is true")
+	print "0 is true"
 	
-System.out.println("after")
+print "after"
