@@ -7,6 +7,8 @@ class JavaTypeSystem(TypeSystemServices):
 	
 	def constructor(context as CompilerContext):
 		super(context)
+		self.StringType = ReplaceMapping(System.String, JavaLangString)
+		self.AddPrimitiveType("string", self.StringType)
 		
 	override ExceptionType:
 		get: return Map(java.lang.Exception)
@@ -15,3 +17,11 @@ class JavaTypeSystem(TypeSystemServices):
 		mapping = Map(new)
 		Cache(existing, mapping)
 		return mapping
+		
+		
+class JavaLangString:
+	def toUpperCase():
+		return self
+		
+	def toLowerCase():
+		return self
