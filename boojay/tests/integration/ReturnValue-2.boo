@@ -3,15 +3,11 @@ before
 ltuae
 after
 """
-import java.lang
 
 def ltuae():
-	sysout "ltuae"
+	print "ltuae"
 	return "42"
-	
-def sysout(s as string):
-	System.out.println(s)
 
-sysout "before"	
+print "before"	
 ltuae()
-sysout "after"
+print "after"

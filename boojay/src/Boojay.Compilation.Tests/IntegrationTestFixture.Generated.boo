@@ -6,28 +6,12 @@ import NUnit.Framework
 partial class IntegrationTestFixture:
 
 	[Test]
-	def Bool_1():
-		runTestCase("../boojay/tests/integration/Bool-1.boo")
-		
-	[Test]
-	def Classes_1():
-		runTestCase("../boojay/tests/integration/Classes-1.boo")
-		
-	[Test]
 	def Constructors_1():
 		runTestCase("../boojay/tests/integration/Constructors-1.boo")
 		
 	[Test]
 	def HelloWorld():
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
-		
-	[Test]
-	def Integers_1():
-		runTestCase("../boojay/tests/integration/Integers-1.boo")
-		
-	[Test]
-	def Interfaces_1():
-		runTestCase("../boojay/tests/integration/Interfaces-1.boo")
 		
 	[Test]
 	def Locals_1():
@@ -54,14 +38,6 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/Namespaces.boo")
 		
 	[Test]
-	def Objects_1():
-		runTestCase("../boojay/tests/integration/Objects-1.boo")
-		
-	[Test]
-	def Objects_2():
-		runTestCase("../boojay/tests/integration/Objects-2.boo")
-		
-	[Test]
 	def ReturnValue_1():
 		runTestCase("../boojay/tests/integration/ReturnValue-1.boo")
 		
@@ -75,15 +51,19 @@ partial class IntegrationTestFixture:
 		
 	[Test]
 	def Cast_1():
-		runTestCase("../boojay/tests/integration/casts/Cast-1.boo")
+		runTestCase("../boojay/tests/integration/expressions/Cast-1.boo")
 		
 	[Test]
 	def Isa_1():
-		runTestCase("../boojay/tests/integration/casts/Isa-1.boo")
+		runTestCase("../boojay/tests/integration/expressions/Isa-1.boo")
+		
+	[Test]
+	def StringInterpolation():
+		runTestCase("../boojay/tests/integration/expressions/StringInterpolation.boo")
 		
 	[Test]
 	def TryCast_1():
-		runTestCase("../boojay/tests/integration/casts/TryCast-1.boo")
+		runTestCase("../boojay/tests/integration/expressions/TryCast-1.boo")
 		
 	[Test]
 	def ForItemInArray():
@@ -120,4 +100,28 @@ partial class IntegrationTestFixture:
 	[Test]
 	def While_Not_Bool_1():
 		runTestCase("../boojay/tests/integration/statements/While-Not-Bool-1.boo")
+		
+	[Test]
+	def Bool_1():
+		runTestCase("../boojay/tests/integration/types/Bool-1.boo")
+		
+	[Test]
+	def Classes_1():
+		runTestCase("../boojay/tests/integration/types/Classes-1.boo")
+		
+	[Test]
+	def Integers_1():
+		runTestCase("../boojay/tests/integration/types/Integers-1.boo")
+		
+	[Test]
+	def Interfaces_1():
+		runTestCase("../boojay/tests/integration/types/Interfaces-1.boo")
+		
+	[Test]
+	def Objects_1():
+		runTestCase("../boojay/tests/integration/types/Objects-1.boo")
+		
+	[Test]
+	def Objects_2():
+		runTestCase("../boojay/tests/integration/types/Objects-2.boo")
 		
