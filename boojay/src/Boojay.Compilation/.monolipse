@@ -11,6 +11,9 @@
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
       <path>/boo-extensions/boojay/src/Boojay.Macros</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
+    <monolipse.core.internal.AssemblySourceReference-Remembrance>
+      <path>/boo-extensions/boojay/src/boojay.runtime</path>
+    </monolipse.core.internal.AssemblySourceReference-Remembrance>
   </references>
   <outputFolder>/boo-extensions/bin</outputFolder>
   <additionalOptions></additionalOptions>

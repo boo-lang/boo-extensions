@@ -31,6 +31,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_typeMappings = {
 			typeSystem.ObjectType: "java/lang/Object",
 			typeSystem.StringType: "java/lang/String",
+			typeSystem.ICallableType: "Boo/Lang/ICallable",
 		}
 		
 		_primitiveMappings = {

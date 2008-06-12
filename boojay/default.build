@@ -75,6 +75,10 @@
 			</references>
 		</booc>
 		
+		<exec program="boojay.exe" workingdir="${build.dir}" useruntimeengine="true">
+			<arg value="../boojay/src/boojay.runtime/Callable.boo" />
+		</exec>
+		
 	</target>
 	
 	<target name="copy-libs" depends="init">
