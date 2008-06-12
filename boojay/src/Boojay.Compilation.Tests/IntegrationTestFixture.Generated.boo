@@ -70,6 +70,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/ReturnValue-2.boo")
 		
 	[Test]
+	def SimpleStringArray():
+		runTestCase("../boojay/tests/integration/arrays/SimpleStringArray.boo")
+		
+	[Test]
 	def Cast_1():
 		runTestCase("../boojay/tests/integration/casts/Cast-1.boo")
 		
@@ -80,6 +84,10 @@ partial class IntegrationTestFixture:
 	[Test]
 	def TryCast_1():
 		runTestCase("../boojay/tests/integration/casts/TryCast-1.boo")
+		
+	[Test]
+	def ForItemInArray():
+		runTestCase("../boojay/tests/integration/statements/ForItemInArray.boo")
 		
 	[Test]
 	def If_Bool_1():

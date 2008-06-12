@@ -70,7 +70,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return interfaces
 		
 	def isInterface(typeRef as TypeReference):
-		return (entity(typeRef) as IType).IsInterface
+		return typeBinding(typeRef).IsInterface
+		
+	def typeBinding(node as Node) as IType:
+		return entity(node)
+		
+	def expressionType(e as Expression) as IType:
+		return self.TypeSystemServices.GetExpressionType(e)
 		
 	def typeAttributes(node as TypeDefinition):
 		attrs = 0
@@ -118,6 +124,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					Operator: UnaryOperatorType.LogicalNot,
 					Operand: condition):
 				emitBranchFalse condition, label
+				
+			case BinaryExpression(
+					Operator: BinaryOperatorType.LessThan,
+					Left: l,
+					Right: r):
+				emit l
+				emit r
+				IF_ICMPLT label
 			otherwise:
 				emit e
 				IFNE label
@@ -266,6 +280,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		if isSpecialIkvmGetter(method):
 			emitSpecialIkvmGetter(method)
 			return
+			
+		if isArrayLength(method):
+			emit node.Target
+			ARRAYLENGTH
+			return
 		
 		emit node.Target
 		emit node.Arguments
@@ -275,8 +294,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		elif method.DeclaringType.IsInterface:
 			INVOKEINTERFACE method
 		else:
-			INVOKEVIRTUAL method 		
-		
+			INVOKEVIRTUAL method 	
+			
+	def isArrayLength(method as IMethod):
+		return method.FullName == "System.Array.get_Length"
 		
 	def emitObjectCreation(ctor as IConstructor, node as MethodInvocationExpression):
 		NEW ctor.DeclaringType
@@ -463,6 +484,56 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def stripGetterPrefix(name as string):
 		return name[len("get_"):]				
 		
+	override def OnArrayLiteralExpression(node as ArrayLiteralExpression):
+		ICONST len(node.Items)
+		ANEWARRAY javaType(expressionType(node).GetElementType())
+		i = 0
+		for item in node.Items:
+			DUP
+			ICONST i++
+			emit item
+			AASTORE
+			
+	override def OnSlicingExpression(node as SlicingExpression):
+		assert 1 == len(node.Indices)
+		match node.Indices[0].Begin:
+			case IntegerLiteralExpression(Value: value):
+				if value < 0:
+					emitNormalizedArraySlicing node
+				else:
+					emitRawArraySlicing node
+					
+			otherwise:
+				emitNormalizedArraySlicing node
+				
+	def emitRawArraySlicing(node as SlicingExpression):
+		emit node.Target
+		emit node.Indices[0].Begin
+		AALOAD
+				
+	def emitNormalizedArraySlicing(node as SlicingExpression):
+		L1 = Label()
+		local = ensureLocal(node.Target)
+		ALOAD index(local)
+		emit node.Indices[0].Begin
+		DUP
+		ICONST_0
+		IF_ICMPGE L1
+		ALOAD index(local)
+		ARRAYLENGTH
+		IADD
+		mark L1
+		AALOAD
+		
+	def ensureLocal(e as Expression):
+		local = optionalEntity(e) as InternalLocal
+		if local is not null: return local
+		
+		local = newTemp(expressionType(e))
+		emit e
+		ASTORE index(local)
+		return local
+		
 	override def OnStringLiteralExpression(node as StringLiteralExpression):
 		LDC node.Value
 		
@@ -513,6 +584,18 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def IFEQ(label as Label):
 		emitJumpInsn Opcodes.IFEQ, label
+		
+	def IF_ICMPGE(label as Label):
+		emitJumpInsn Opcodes.IF_ICMPGE, label
+		
+	def IF_ICMPGT(label as Label):
+		emitJumpInsn Opcodes.IF_ICMPGT, label
+		
+	def IF_ICMPLE(label as Label):
+		emitJumpInsn Opcodes.IF_ICMPLE, label
+		
+	def IF_ICMPLT(label as Label):
+		emitJumpInsn Opcodes.IF_ICMPLT, label
 	
 	def IFNE(label as Label):
 		emitJumpInsn Opcodes.IFNE, label
@@ -550,6 +633,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		if value == 0: return Opcodes.ICONST_0
 		if value == 1: return Opcodes.ICONST_1
 		if value == 2: return Opcodes.ICONST_2
+		if value == 3: return Opcodes.ICONST_3
+		if value == 4: return Opcodes.ICONST_4
+		if value == 5: return Opcodes.ICONST_5
 		if value == -1: return Opcodes.ICONST_M1
 		raise System.ArgumentException("value")
 	
@@ -561,6 +647,18 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def ALOAD(index as int):
 		emitVarInsn(Opcodes.ALOAD, index)
+		
+	def ANEWARRAY(type as string):
+		emitTypeInsn Opcodes.ANEWARRAY, type
+		
+	def ARRAYLENGTH():
+		emitInsn Opcodes.ARRAYLENGTH
+		
+	def AASTORE():
+		emitInsn Opcodes.AASTORE
+		
+	def AALOAD():
+		emitInsn Opcodes.AALOAD
 		
 	def ASTORE(index as int):
 		emitVarInsn(Opcodes.ASTORE, index)
@@ -657,6 +755,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				
 	def entity(node as Node):
 		return GetEntity(node)
+		
+	def optionalEntity(node as Node):
+		return self.TypeSystemServices.GetOptionalEntity(node)
 		
 	def javaType(typeRef as TypeReference):
 		return javaType(entity(typeRef) as IType)
