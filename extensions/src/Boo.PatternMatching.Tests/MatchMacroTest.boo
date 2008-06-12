@@ -9,7 +9,7 @@ class Item:
 	[property(Name)] _name = ""
 	[property(Child)] _child as Item
 	
-class Container of T:
+class Container[of T]:
 	public value as T
 	
 class Collection:
