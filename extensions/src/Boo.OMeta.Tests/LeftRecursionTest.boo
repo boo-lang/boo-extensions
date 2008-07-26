@@ -17,10 +17,10 @@ class LeftRecursionTest:
 			expr = (expr, "-", num) | num
 			num = ++digit >> ds ^ join(ds, '')
 			
-		match DLR().expr("1-2-3"):
+		match DLR().expr("47-2-3"):
 			case SuccessfulMatch(
 					Input: OMetaInput(IsEmpty: true),
-					Value: [['1', '-', '2'], '-', '3']):
+					Value: [['47', '-', '2'], '-', '3']):
 				pass
 			
 	[Test]

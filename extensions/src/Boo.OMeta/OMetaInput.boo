@@ -11,8 +11,11 @@ class OMetaInput:
 		return ForEnumerator(enumerable.GetEnumerator())
 		
 	static def ForEnumerator(enumerator as IEnumerator) as OMetaInput:
+		return ForEnumerator(enumerator, 0)
+		
+	static def ForEnumerator(enumerator as IEnumerator, position as int) as OMetaInput:
 		if enumerator.MoveNext():
-			return EnumeratorInput(enumerator)
+			return EnumeratorInput(enumerator, position)
 		return Empty
 		
 	static def Prepend(argument, input as OMetaInput):
@@ -33,6 +36,9 @@ class OMetaInput:
 	virtual Tail as OMetaInput:
 		get: raise InvalidOperationException()
 		
+	virtual Position:
+		get: return int.MaxValue
+		
 	override def ToString():
 		return "OMetaInput()"
 		
@@ -49,13 +55,18 @@ internal class OMetaInputCons(OMetaInput):
 
 internal class EnumeratorInput(OMetaInput):
 	
+	final _position as int
 	final _input as IEnumerator
 	_tail as OMetaInput
 	_head
 	
-	internal def constructor(input as IEnumerator):
+	internal def constructor(input as IEnumerator, position as int):
 		_input = input
 		_head = input.Current
+		_position = position
+		
+	override Position:
+		get: return _position
 		
 	override IsEmpty:
 		get: return false
@@ -66,8 +77,8 @@ internal class EnumeratorInput(OMetaInput):
 	override Tail:
 		get:
 			if _tail is null:
-				_tail = ForEnumerator(_input)
+				_tail = ForEnumerator(_input, _position + 1)
 			return _tail
 		
 	override def ToString():
-		return "OMetaInput(Head: ${Head})"
+		return "OMetaInput(Head: ${Head}, Position: ${Position})"

@@ -63,9 +63,9 @@ class OMetaGrammarRoot(OMetaGrammar):
 				return m
 		
 	def GrowLR(context as OMetaGrammar, rule as string, input as OMetaInput, key, lastSuccessfulMatch as OMetaMatch):
-		while true:			
+		while true:
 			m = Eval(context, rule, input)
-			if m isa FailedMatch or m.Input is input.Tail:
+			if m isa FailedMatch or m.Input.Position <= lastSuccessfulMatch.Input.Position:
 				break
 			_memo[key] = lastSuccessfulMatch = m
 		return lastSuccessfulMatch
