@@ -230,6 +230,17 @@ class RuleExpander:
 			case [| super |]:
 				block.Add([| $lastMatch = grammar.SuperApply(grammar, $_ruleName, $input) |])
 				
+			case [| $_() |]:
+				condition = PatternExpander().expand([| smatch.Value |], e)
+				code = [|
+					block:
+						$lastMatch = any($input)
+						smatch = $lastMatch as SuccessfulMatch
+						if smatch is not null and not $condition:
+							$lastMatch = FailedMatch($input)
+				|].Block
+				block.Add(code) 
+				
 			case ArrayLiteralExpression(Items: items):
 				expandSequence block, items, input, lastMatch 
 			

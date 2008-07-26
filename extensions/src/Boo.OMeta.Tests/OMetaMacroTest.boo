@@ -24,9 +24,7 @@ class OMetaMacroTest:
 	
 	[Test]
 	def Test():
-		
-		e = E()
-		AssertE e
+		AssertE E()
 		
 	[Test]
 	def TestExtension():
@@ -50,7 +48,6 @@ class OMetaMacroTest:
 		AssertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
 		
 	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
-		
 		match grammar.Apply(grammar, rule, OMetaInput.For(text)):
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
