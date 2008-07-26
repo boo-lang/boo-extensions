@@ -159,7 +159,7 @@ class RuleExpander:
 	def expandSequenceWithoutParseTree(block as Block, sequence as ExpressionCollection, input as Expression, lastMatch as ReferenceExpression):
 		
 		currentBlock = block
-		for item in sequence:
+		for item in sequence.ToArray()[:-1]:
 			expand currentBlock, item, input, lastMatch
 			input = [| $lastMatch.Input |]
 			code = [|
@@ -168,6 +168,7 @@ class RuleExpander:
 			|]
 			currentBlock.Add(code)
 			currentBlock = code.TrueBlock
+		expand currentBlock, sequence[-1], input, lastMatch
 		
 	def expandSequenceWithParseTree(block as Block, sequence as ExpressionCollection, input as Expression, lastMatch as ReferenceExpression):
 		
