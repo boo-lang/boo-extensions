@@ -4,6 +4,7 @@ class StringInput(OMetaInput):
 	
 	final _input as string
 	final _position as int
+	_tail as OMetaInput
 	
 	def constructor(input as string):
 		_input = input
@@ -17,9 +18,12 @@ class StringInput(OMetaInput):
 		
 	Head:
 		get: return _input[_position]
-		
+	
 	Tail:
-		get: return StringInput(_input, _position+1)
+		get:
+			if _tail is null:
+				_tail = StringInput(_input, _position+1)
+			return _tail
 		
 	override def ToString():
 		return "StringInput(${(null if IsEmpty else 'Head: ' + Head)})"

@@ -15,12 +15,41 @@ interface OMetaGrammar:
 
 class OMetaGrammarRoot(OMetaGrammar):
 	
+	class MemoKey:
+		final _rule as string
+		final _input as OMetaInput
+		
+		def constructor(rule as string, input as OMetaInput):
+			_rule = rule
+			_input = input
+			
+		override def Equals(o):
+			other as MemoKey = o
+			if _input is not other._input: return false
+			return _rule is other._rule
+			
+		override def GetHashCode():
+			return _rule.GetHashCode() ^ _input.GetHashCode()
+	
 	_rules = Dictionary[of string, OMetaRule]()
+	_memo = Dictionary[of MemoKey, OMetaMatch]()
 	
 	def InstallRule(ruleName as string, rule as OMetaRule):
 		_rules[ruleName] = rule
 	
 	def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
+		
+		key = MemoKey(rule, input)
+		memo as OMetaMatch
+		if _memo.TryGetValue(key, memo):
+			return memo
+			
+		_memo[key] = FailedMatch(input)
+		memo = Eval(context, rule, input)
+		_memo[key] = memo
+		return memo
+		
+	def Eval(context as OMetaGrammar, rule as string, input as OMetaInput):
 		found as OMetaRule
 		if _rules.TryGetValue(rule, found):
 			return found(context, input)
