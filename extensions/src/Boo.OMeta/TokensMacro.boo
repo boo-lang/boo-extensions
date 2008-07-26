@@ -1,12 +1,30 @@
-namespace Boo.OMeta.Parser
+namespace Boo.OMeta
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.PatternMatching
 
 macro tokens:
-	block as Block = tokens.ParentNode
+"""
+Generates token rules. The generated code relies on the existence of a
+parameterized token rule.
+
+From:
 	
+	tokens:
+		eq = "="
+		id = ++letters
+	
+it generates:
+
+	eq = "=" >> value ^ makeToken("eq", value)
+	id = ++letters >> value ^ makeToken("id", value)
+	tokens = eq | id
+	EQ = token["eq"]
+	ID = token["id"]
+"""
+	block as Block = tokens.ParentNode
+
 	rules = []
 	for stmt in tokens.Block.Statements:
 		match stmt:
@@ -20,7 +38,4 @@ macro tokens:
 				block.Add(tokenRule)
 				rules.Add(name)
 	
-	rule as Expression = rules[0]
-	for name as Expression in rules[1:]:
-		rule = [| $name | $rule |]
-	block.Add([| tokens = $rule |])
+	block.Add([| tokens = $(choicesRuleFrom(rules)) |])

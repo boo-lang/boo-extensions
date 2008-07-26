@@ -65,7 +65,7 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 			
 	def processDedent(input as OMetaInput, i):
 		while smallerIndent(i):
-			input = OMetaInput.ForArgument(makeToken("dedent"), input)
+			input = OMetaInput.Prepend(makeToken("dedent"), input)
 			stack.Pop()
 		assert sameIndent(i)
 		return SuccessfulMatch(input, makeToken("eol"))

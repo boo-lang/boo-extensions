@@ -164,7 +164,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $rule[$arg] |]:
 				newInput = uniqueName()
-				block.Add([| $newInput = OMetaInput.ForArgument($arg, $input) |])
+				block.Add([| $newInput = OMetaInput.Prepend($arg, $input) |])
 				expand block, rule, newInput, lastMatch
 				
 			case [| $pattern and $predicate |]:

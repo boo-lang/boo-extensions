@@ -21,4 +21,3 @@ macro otherwise:
 	match = parentMatch(otherwise)
 	assert match["otherwise"] is null
 	match["otherwise"] = otherwise
-	

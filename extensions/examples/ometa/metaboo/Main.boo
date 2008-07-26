@@ -6,51 +6,13 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
 
-ometa OMetaParser < WhitespaceSensitiveTokenizer:
-	
-	tokens:
-		eq = "="
-		num = ++digit
-		id = (letter | '_'), --(letter | digit | '_')
-		colon = ":"
-		lparen = "("
-		rparen = ")"
-		kw = (keywords >> value, ~(letter | digit)) ^ value
-		
-	keywords = "class" | "pass" | "def"
-	keyword[expected] = ((token["kw"] >> t) and (expected is tokenValue(t))) ^ t
-	
-	module = (--whitespace, ++classDef >> types) ^ types
-	
-	classDef = (
-		keyword["class"], token["id"] >> className, token["colon"], token["indent"], classBody >> body, token["dedent"]
-	) ^ [className, body]
-	
-	classBody = (keyword["pass"], eol) ^ null | ++classMember
-	
-	classMember = method | classDef
-	
-	method = (
-		keyword["def"], token["id"], token["lparen"], token["rparen"], token["colon"],
-			token["indent"], methodBody, token["dedent"]
-	)
-	
-	methodBody = ++stmt
-	
-	stmt = (assign >> value, eol) ^ value
-	
-	eol = ++token["eol"] | ~_	
-	assign = lvalue, token["eq"], rvalue
-	
-	lvalue = token["id"]
-	
-	rvalue = token["num"] | token["id"]
-		
-
 def printTokens(text as string):
+	printTokens BooParser(), text
+	
+def printTokens(grammar as OMetaGrammar, text as string):
 	sep = "=" * 20
 	print sep
-	for token in scan(WhitespaceSensitiveTokenizer(), 'scanner', text):
+	for token in scan(grammar, 'scanner', text):
 		print token
 	print sep
 				
@@ -78,12 +40,30 @@ class Bar:
 		pass
 """
 #printTokens code
-#print OMetaParser().module(code)
+#print BooParser().module(code)
 
 
 code = """def foo():
 	a = 3
+	return bar(a)
 """
 #printTokens code
-#print OMetaParser().method(code)
+match BooParser().method(code):
+	case SuccessfulMatch(Input: OMetaInput(IsEmpty: true), Value: m=Method()):
+		print m.ToCodeString()
+		
+code = """
+class Foo:
+def foo():
+a = 3
+return a
+end
+end
+"""
+#printTokens WSABooParser(), code
+match WSABooParser().Apply('module', code):
+	case SuccessfulMatch(Value: mod=Module()):
+		print mod.ToCodeString()
+	case FailedMatch(Input):
+		print Input, Input.Tail
 

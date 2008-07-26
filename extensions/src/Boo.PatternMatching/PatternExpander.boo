@@ -4,6 +4,7 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
 class PatternExpander:
+	
 	def expand(matchValue as Expression, pattern as Expression) as Expression:
 		mie = pattern as MethodInvocationExpression
 		if mie is not null:

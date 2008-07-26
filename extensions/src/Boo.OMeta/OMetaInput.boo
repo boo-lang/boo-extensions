@@ -15,11 +15,11 @@ class OMetaInput:
 			return EnumeratorInput(enumerator)
 		return Empty
 		
-	static def ForArgument(argument, input as OMetaInput):
-		return ArgumentInput(argument, input)
+	static def Prepend(argument, input as OMetaInput):
+		return OMetaInputCons(argument, input)
 		
 	static def Singleton(o):
-		return For((o,))
+		return Prepend(o, Empty)
 	
 	protected def constructor():
 		pass
@@ -36,7 +36,7 @@ class OMetaInput:
 	override def ToString():
 		return "OMetaInput()"
 		
-internal class ArgumentInput(OMetaInput):
+internal class OMetaInputCons(OMetaInput):
 	[getter(Head)] _argument
 	[getter(Tail)] _tail as OMetaInput
 	

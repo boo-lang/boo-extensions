@@ -42,12 +42,12 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $_ |]):
 					m1 = [|
 						def $name(input as OMetaInput, $arg):
-							return Apply($name, OMetaInput.ForArgument($arg, input))
+							return Apply($name, OMetaInput.Prepend($arg, input))
 					|]
 					type.Members.Add(m1)
 					m2 = [|
 						def $name(input as System.Collections.IEnumerable, $arg):
-							return Apply($name, OMetaInput.ForArgument($arg, OMetaInput.For(input)))
+							return Apply($name, OMetaInput.Prepend($arg, OMetaInput.For(input)))
 					|]
 					type.Members.Add(m2)
 					
