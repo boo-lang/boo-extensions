@@ -25,8 +25,7 @@ class OMetaGrammarRoot(OMetaGrammar):
 			
 		override def Equals(o):
 			other as MemoKey = o
-			if _input is not other._input: return false
-			return _rule is other._rule
+			return _input is other._input and _rule is other._rule
 			
 		override def GetHashCode():
 			return _rule.GetHashCode() ^ _input.GetHashCode()
