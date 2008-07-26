@@ -16,6 +16,14 @@ data Foo(Value as int)
 class DataMacroTest:
 	
 	[Test]
+	def TestMutableField():
+		
+		data Mutable(@m as int, i as int)
+		
+		assert not typeof(Mutable).GetField("m").IsInitOnly
+		assert typeof(Mutable).GetField("i").IsInitOnly
+	
+	[Test]
 	def TestSingleType():
 		type = Foo
 		assert object is type.BaseType

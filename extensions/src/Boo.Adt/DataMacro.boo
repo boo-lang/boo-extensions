@@ -4,10 +4,25 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.PatternMatching
 
-class DataMacro(AbstractAstMacro):
+macro data:
+"""
+Produces a complete data type hierarchy from a declaration.
+
+All the types produced are immutable (unless instructed otherwise) and have
+meaningful implementations for Equals, GetHashCode and ToString.
+
+Usage:
+
+	data Expression = Const(Value as int) | Add(Left as Expression, Right as Expression)
 	
-	override def Expand(node as MacroStatement):
-		DataMacroExpansion(node)
+	
+	data SingleValue(Value as int)
+	
+	
+	data TypeWithMutableField(@MutableValue as int) // @ makes the field mutable
+"""
+
+	DataMacroExpansion(data)
 
 class DataMacroExpansion:
 	
@@ -174,6 +189,7 @@ class DataMacroExpansion:
 		for arg in node.Arguments:
 			match arg:
 				case [| $(ReferenceExpression(Name: name)) as $type |]:
+					name = fieldName(name)
 					ctor.Parameters.Add(
 						ParameterDeclaration(Name: name, Type: type))
 					ctor.Body.Add([|
@@ -184,9 +200,17 @@ class DataMacroExpansion:
 	def fieldForArg(node as Expression):
 		match node:
 			case [| $(ReferenceExpression(Name: name)) as $type |]:
+				if name.StartsWith("@"): // mutable field
+					return [|
+						public $(fieldName(name)) as $type
+					|]
 				return [|
 					public final $name as $type
 				|]
+				
+	def fieldName(name as string):
+		if name.StartsWith("@"): return name[1:]
+		return name
 		
 	def registerType(type as TypeDefinition):
 		_module.Members.Add(type)
