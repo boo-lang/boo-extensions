@@ -17,10 +17,7 @@ Usage:
 	assert 0 == len(let.Block.Statements)
 	
 	match let.Arguments[0]:
-		case BinaryExpression(
-				Operator: BinaryOperatorType.Assign,
-				Left: ReferenceExpression(Name: name),
-				Right: r):
+		case [| $(ReferenceExpression(Name: name)) = $r |]:
 			field = [|
 				public static final $name = $r
 			|]
