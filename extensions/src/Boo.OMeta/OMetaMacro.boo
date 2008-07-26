@@ -10,33 +10,48 @@ macro ometa:
 		type as TypeDefinition = ometa.GetAncestor(NodeType.ClassDefinition) or ometa.GetAncestor(NodeType.Module)
 		return type
 		
-	rules = Block()
-	for rule in ometa.Block.Statements:
-		match rule:
-			case ExpressionStatement(Expression: e):
-				match e:
-					case [| $(ReferenceExpression(Name: name)) = $pattern |]:
-						code = [|
-							block:
-								grammar[$name] = do(grammar as OMetaGrammar, input as OMetaInput):
-									//print "> ${$name}"
-									//try:
-										$(expand(pattern))
-									//ensure:
-									//	print "< ${$name}"
-						|].Block
-						rules.Add(code)
-						
+	def expressions():
+		for stmt in ometa.Block.Statements:
+			match stmt:
+				case ExpressionStatement(Expression: e):
+					yield e
 		
+	grammarSetupBlock = Block()
+	for e in expressions():
+		match e:
+			case [| $(ReferenceExpression(Name: name)) = $pattern |]:
+				code = [|
+					block:
+						grammar[$name] = do(grammar as OMetaGrammar, input as OMetaInput):
+							//print "> ${$name}"
+							//try:
+								$(expand(pattern))
+							//ensure:
+							//	print "< ${$name}"
+				|].Block
+				grammarSetupBlock.Add(code)
+						
 	grammarName as ReferenceExpression, = ometa.Arguments
-	factory = [|
-		def $grammarName():
-			grammar = OMetaGrammar()
-			$rules
-			return grammar
-	|]
+	type = [|
+		class $grammarName:
 	
-	enclosingTypeDefinition().Members.Add(factory)
+			_grammar as OMetaGrammar
+			
+			def constructor():
+				grammar = OMetaGrammar()
+				$grammarSetupBlock
+				_grammar = grammar
+	|]
+	for e in expressions():
+		match e:
+			case [| $(ReferenceExpression(Name: name)) = $_ |]:
+				m = [|
+					def $name(input as OMetaInput):
+						return _grammar.Apply($name, input)
+				|]
+				type.Members.Add(m)
+		
+	enclosingTypeDefinition().Members.Add(type)
 	
 def expand(e as Expression) as Block:
 	temp = [| lastMatch |]

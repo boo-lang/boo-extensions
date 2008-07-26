@@ -47,7 +47,7 @@ class OMetaMacroTest:
 	def Test():
 		
 		e = E()
-		match e.Apply('exp', StringInput("11+31")):
+		match e.exp(StringInput("11+31")):
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty
 				assert Value == [['1', '1'], '+', ['3', '1']]
