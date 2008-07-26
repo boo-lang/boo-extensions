@@ -40,11 +40,11 @@ words = join(("word${i}\n" if 0 == i % 2 else "word\n") for i in range(100000))
 
 time "peg":
 	wordList = pegWords(words)
-#	print wordList
+	if false: print wordList
 
 time "ometa":
 	input = OMetaInput.For(words)
 	match WordCollector().parse(input):
 		case SuccessfulMatch(Input, Value):
 			assert Input.IsEmpty
-#		print Value
+			if false: print Value
