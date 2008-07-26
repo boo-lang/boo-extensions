@@ -38,9 +38,6 @@ class OMetaGrammarRoot(OMetaGrammar):
 	
 	def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		
-		if input.IsEmpty:
-			return Eval(context, rule, input)
-		
 		key = MemoKey(rule, input)
 		memo as OMetaMatch
 		if _memo.TryGetValue(key, memo):
