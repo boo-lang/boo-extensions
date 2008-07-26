@@ -32,22 +32,22 @@ class OMetaMacroTest:
 	def TestExtension():
 		xe = XE()
 		AssertE xe
-		AssertRule xe, 'exp', "1+2/3", list(list('1'), '+', list(list('2'), '/', list('3')))
-		AssertRule xe, 'exp', "1+(2/(3+1))", list(list('1'), '+', list('(', list(list('2'), '/', list('(', list(list('3'), '+', list('1')), ')')), ')'))
+		AssertRule xe, 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
+		AssertRule xe, 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
 		
 	[Test]
 	def TestBinding():
 		ometa NumberListParser:
-			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ OMetaCons(head, tail)
+			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as List))
 			dig = '1' | '2' | '3' | '4' | '5'
-			num = ++dig >> value ^ int.Parse(value.ToString())
+			num = ++dig >> value ^ int.Parse(join(value, ''))
 			
 		parser = NumberListParser()
-		AssertRule parser, 'parse', "21,42,51", list(21, 42, 51)
+		AssertRule parser, 'parse', "21,42,51", [21, 42, 51]
 		
 	def AssertE(grammar as OMetaGrammar):
-		AssertRule grammar, 'exp', "11+31", list(list('1', '1'), '+', list('3', '1'))
-		AssertRule grammar, 'exp', "1+2*3", list(list('1'), '+', list(list('2'), '*', list('3')))
+		AssertRule grammar, 'exp', "11+31", [['1', '1'], '+', ['3', '1']]
+		AssertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
 		
 	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
 		

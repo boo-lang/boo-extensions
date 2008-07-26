@@ -1,8 +1,11 @@
 namespace Boo.OMeta
 
+import Boo.Adt
 import System.Collections.Generic
 
-callable OMetaRule(grammar as OMetaGrammar, input as OMetaInput) as OMetaMatch
+data OMetaMatch(Input as OMetaInput) = SuccessfulMatch(Value as object) | FailedMatch()
+
+callable OMetaRule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch
 
 interface OMetaGrammar:
 	
@@ -29,6 +32,13 @@ class OMetaGrammarRoot(OMetaGrammar):
 	virtual def RuleMissing(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch:
 		raise "Rule '${rule}' missing!"
 		
+class OMetaGrammarPrototype(OMetaGrammarRoot):
+	
+	def constructor():
+		InstallRule("whitespace", makeRule(char.IsWhiteSpace))
+		InstallRule("letter", makeRule(char.IsLetter))
+		InstallRule("digit", makeRule(char.IsDigit))
+		
 class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	
 	_prototype as OMetaGrammar
@@ -41,5 +51,10 @@ class OMetaDelegatingGrammar(OMetaGrammarRoot):
 		
 	override def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		return _prototype.SuperApply(context, rule, input)
-			
 		
+def makeRule(predicate as System.Predicate[of object]) as OMetaRule:
+	def rule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch:
+		if not input.IsEmpty and predicate(input.Head):
+			return SuccessfulMatch(input.Tail, input.Head)
+		return FailedMatch(input)
+	return rule

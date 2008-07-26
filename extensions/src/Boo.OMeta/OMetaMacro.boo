@@ -78,7 +78,7 @@ def prototypeFor(e as Expression) as MethodInvocationExpression:
 		case [| $_ < $prototype |]:
 			return [| OMetaDelegatingGrammar($prototype()) |]
 		case ReferenceExpression():
-			return [| OMetaGrammarRoot() |]
+			return [| OMetaGrammarPrototype() |]
 	
 def grammarName(e as Expression) as string:
 	match e:
@@ -124,14 +124,14 @@ def expandRepetition(block as Block, e as Expression, input as Expression, lastM
 			$(expand(e, input, temp))
 			smatch = $temp as SuccessfulMatch
 			if smatch is not null:
-				$result = OMetaCons(smatch.Value)
+				$result = [smatch.Value]
 				while true:
 					$(expand(e, [| $temp.Input |], temp))
 					smatch = $temp as SuccessfulMatch
 					break if smatch is null
-					$result = OMetaCons(smatch.Value, $result)
+					$result.Add(smatch.Value)
 
-				$lastMatch = SuccessfulMatch($temp.Input, $result.Reverse())
+				$lastMatch = SuccessfulMatch($temp.Input, $result )
 	|].Block
 	block.Add(code)	
 	
@@ -150,18 +150,18 @@ def expandSequence(block as Block, sequence as ExpressionCollection, input as Ex
 	currentBlock = block
 	
 	values = uniqueName()
-	currentBlock.Add([| $values = OMetaList.Empty |])
+	currentBlock.Add([| $values = [] |])
 	for item in sequence:
 		expand currentBlock, item, input, lastMatch
 		input = [| $lastMatch.Input |]
 		currentBlock.Add([| smatch = $lastMatch as SuccessfulMatch |])
 		code = [|
 			if smatch is not null:
-				$values = OMetaCons(smatch.Value, $values)
+				$values.Add(smatch.Value)
 		|]
 		currentBlock.Add(code)
 		currentBlock = code.TrueBlock
-	currentBlock.Add([| $lastMatch = SuccessfulMatch(smatch.Input, $values.Reverse()) |])
+	currentBlock.Add([| $lastMatch = SuccessfulMatch(smatch.Input, $values) |])
 	
 def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 	

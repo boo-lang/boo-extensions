@@ -1,20 +1,5 @@
 namespace Boo.OMeta
 
-import Boo.Adt
-
-interface OMetaInput:
-	
-	IsEmpty as bool:
-		get
-	
-	Head as object:
-		get
-		
-	Tail as OMetaInput:
-		get
-		
-data OMetaMatch(Input as OMetaInput) = SuccessfulMatch(Value as object) | FailedMatch()
-
 class StringInput(OMetaInput):
 	
 	final _input as string
@@ -39,10 +24,9 @@ class StringInput(OMetaInput):
 	override def ToString():
 		return "StringInput(${(null if IsEmpty else 'Head: ' + Head)})"
 
-
 def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input)
-	return SuccessfulMatch(input.Head, input.Tail)
+	return SuccessfulMatch(input.Tail, input.Head)
 	
 def character(input as OMetaInput, expected as char) as OMetaMatch:
 	if not input.IsEmpty and expected.Equals(input.Head):
