@@ -52,7 +52,7 @@ def benchmark(wordCount as int, printValues as bool):
 				assert Input.IsEmpty
 				if printValues: print Value
 				
-	print "================= FACTOR(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds
+	print "================= SIZE(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds
 				
-for i in (10, 100, 1000, 10000, 50000, 100000):
+for i in (10, 100, 200, 1000, 10000, 50000, 100000):
 	benchmark i, false

@@ -26,7 +26,7 @@ class OMetaInput:
 	
 	protected def constructor():
 		pass
-	
+		
 	virtual IsEmpty as bool:
 		get: return true
 		
@@ -57,8 +57,8 @@ internal class EnumeratorInput(OMetaInput):
 	
 	final _position as int
 	final _input as IEnumerator
+	final _head
 	_tail as OMetaInput
-	_head
 	
 	internal def constructor(input as IEnumerator, position as int):
 		_input = input
