@@ -1,7 +1,7 @@
 namespace Boo.PatternMatching
 
 import Boo.Lang.Compiler.Ast
-		
+	
 def caseList(node as MacroStatement) as List:
 	list as List = node["caseList"]
 	if list is null:
