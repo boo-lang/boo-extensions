@@ -3,14 +3,16 @@ namespace Boo.OMeta
 import Boo.Adt
 import System.Collections.Generic
 
-data OMetaFailure(Rule as string) = \
+let EndOfInput = EndOfInputFailure()
+
+data OMetaFailure() = \
 		EndOfInputFailure() \
-		| SequenceFailure() \
-		| PredicateFailure() \
-		| NegationFailure() \
+		| PredicateFailure(Predicate as string) \
+		| NegationFailure(Predicate as string) \
 		| LeftRecursionFailure() \
 		| UnexpectedValueFailure(Expected as object) \
-		| ObjectPatternFailure()
+		| ObjectPatternFailure(Pattern as string) \
+		| RuleFailure(Rule as string, Reason as OMetaFailure)
 
 data OMetaMatch(Input as OMetaInput) = \
 		SuccessfulMatch(Value as object) \
@@ -68,7 +70,7 @@ class OMetaGrammarRoot(OMetaGrammar):
 			lr = m as LR
 			if lr is not null:
 				lr.detected = true
-				return FailedMatch(input, LeftRecursionFailure(rule))
+				return FailedMatch(input, LeftRecursionFailure())
 			else:
 				return m
 		
@@ -118,7 +120,9 @@ class OMetaDelegatingGrammar(OMetaGrammarRoot):
 		
 def makeRule(ruleName as string, predicate as System.Predicate[of object]) as OMetaRule:
 	def rule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch:
-		if input.IsEmpty: return FailedMatch(input, EndOfInputFailure(ruleName))
-		if  not predicate(input.Head): return FailedMatch(input, PredicateFailure(ruleName))
+		if input.IsEmpty:
+			return FailedMatch(input, RuleFailure(ruleName, EndOfInput))
+		if  not predicate(input.Head):
+			return FailedMatch(input, RuleFailure(ruleName, PredicateFailure(predicate.Method.ToString())))
 		return SuccessfulMatch(input.Tail, input.Head)
 	return rule

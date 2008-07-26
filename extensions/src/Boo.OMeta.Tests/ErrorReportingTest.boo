@@ -13,20 +13,36 @@ ometa FailureParser:
 [TestFixture]
 class ErrorReportingTest:
 	
+#	[Test]
+#	def Choice():
+#		
+#		match FailureParser().choice("_"):
+#			case FailedMatch(
+#					Input: OMetaInput(Position: 1),
+#					Failure: ChoiceFailure(
+#								Failures: [
+#									FailedMatch(Failure: RuleFailure(Rule: 'letter')),
+#									FailedMatch(Failure: RuleFailure(Rule: 'digit'))
+#								])):
+#				pass
+	
 	[Test]
 	def Sequence():
 		
 		match FailureParser().sequence("aa"):
 			case FailedMatch(
 					Input: OMetaInput(Position: 1),
-					Failure: PredicateFailure(Rule: 'digit')):
+					Failure: RuleFailure(Rule: 'digit')):
 				pass
 				
 	[Test]
 	def EndOfInput():
 		
 		match FailureParser().sequence(""):
-			case FailedMatch(Failure: EndOfInputFailure(Rule: 'letter')):
+			case FailedMatch(
+					Failure: RuleFailure(
+								Rule: 'letter',
+								Reason: EndOfInputFailure())):
 				pass
 				
 	[Test]
@@ -35,7 +51,7 @@ class ErrorReportingTest:
 		match FailureParser().predicate("b"):
 			case FailedMatch(
 					Input: OMetaInput(Position: 0),
-					Failure: PredicateFailure(Rule: "(l == char('a'))")):
+					Failure: PredicateFailure(Predicate: "(l == char('a'))")):
 				pass
 		
 		
