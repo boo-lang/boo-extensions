@@ -5,23 +5,34 @@ import Boo.PatternMatching
 
 import NUnit.Framework
 
-// layout rules can be implemented with a filter that matches whitespace
-// and generates Indent/Dedent values
-
 ometa E:
 	dig = '1' | '2' | '3'
 	num = ++dig
 	exp = (fac, '+', fac) | fac
 	fac = (atom, '*', atom) | atom
 	atom = num | ('(', exp, ')')
-   
-ometa XE < E:
-	fac = division | super /* super tries to delegate to all prototypes */
-	division = (atom, '/', atom)
-
+  
 [TestFixture]
 class OMetaMacroTest:
 	
+	[Test]
+	def TestUntypedGrammarArgument():
+		ometa G1(value):
+			parse = ++digit ^ value
+			
+		match G1(42).parse("1234"):
+			case SuccessfulMatch(Input, Value: 42):
+				assert Input.IsEmpty
+				
+	[Test]
+	def TestTypedGrammarArgument():
+		ometa G2(value as int):
+			parse = ++digit ^ value * 2
+			
+		match G2(21).parse("1234"):
+			case SuccessfulMatch(Input, Value: 42):
+				assert Input.IsEmpty
+				
 	[Test]
 	def TestRepetion():
 		ometa Repetition:
@@ -87,6 +98,10 @@ class OMetaMacroTest:
 		
 	[Test]
 	def TestExtensionParseTree():
+		ometa XE < E:
+			fac = division | super /* super tries to delegate to all prototypes */
+			division = (atom, '/', atom)
+		
 		xe = XE()
 		assertE xe
 		assertRule xe, 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
@@ -126,23 +141,3 @@ class OMetaMacroTest:
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
 				Assert.AreEqual(expected, Value)
-
-#	charRange(begin as char, end as  = character >> c
-	// semantic predicates with 'and'
-	// even = num >> n and 0 == n % 2
-	
-#syntax decimal: // switches the global syntax to this one augmented to the global
-#	literal = (digits+):numbers 'd' => [| decimal.Parse($(numbers.ToString())) |]
-#		| super
-
-#				
-#ometa XE < E:
-#	E.fac = (num, '/', num) | super /* super tries to delegate to all prototypes */
-#	
-#interface SaxContentHandler:
-#	def startTag(tagName as string)
-#	def contents(contents as string)
-#	def endTag()
-#	
-#
-	
