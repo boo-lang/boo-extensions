@@ -38,20 +38,16 @@ class OMetaMacroRuleProcessor:
 		return block
 		
 	def expandChoices(block as Block, choices as List, input as Expression, lastMatch as ReferenceExpression):
-		temp = uniqueName()
-		
 		currentBlock = block
 		for choice in choices:
-			expand currentBlock, choice, input, temp
+			expand currentBlock, choice, input, lastMatch
 			code = [|
-				if $temp isa SuccessfulMatch:
-					$lastMatch = $temp
-				else:
+				if $lastMatch isa FailedMatch:
 					pass
 			|]
 			currentBlock.Add(code)
-			currentBlock = code.FalseBlock
-		currentBlock.Add([| $lastMatch = FailedMatch($input) |])
+			currentBlock = code.TrueBlock
+#		currentBlock.Add([| $lastMatch = FailedMatch($input) |])
 		
 	def resultAppend(result as Expression):
 		if collectingParseTree:
@@ -151,7 +147,7 @@ class OMetaMacroRuleProcessor:
 			if smatch is null:
 				$lastMatch = SuccessfulMatch($oldInput, null)
 			else:
-				$lastMatch = FailedMatch($oldInput)
+				$lastMatch = FailedMatch($oldInput, NegationFailure($(rule.ToCodeString())))
 		|]
 		block.Add(code)
 		return code
@@ -171,7 +167,7 @@ class OMetaMacroRuleProcessor:
 				expand block, pattern, input, lastMatch
 				checkPredicate = [|
 					if $lastMatch isa SuccessfulMatch and not $predicate:
-						$lastMatch = FailedMatch($input)
+						$lastMatch = FailedMatch($input, PredicateFailure($(predicate.ToCodeString())))
 				|]
 				block.Add(checkPredicate)
 				
@@ -233,7 +229,7 @@ class OMetaMacroRuleProcessor:
 							if $condition:
 								$(expandObjectPatternRules(rules, lastMatch))
 							else:
-								$lastMatch = FailedMatch($input)
+								$lastMatch = FailedMatch($input, ObjectPatternFailure($(e.ToCodeString())))
 				|].Block
 				block.Add(code) 
 				

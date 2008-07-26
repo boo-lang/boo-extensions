@@ -3,8 +3,18 @@ namespace Boo.OMeta
 import Boo.Adt
 import System.Collections.Generic
 
-data OMetaMatch(Input as OMetaInput) = SuccessfulMatch(Value as object) \
-		| FailedMatch() \
+data OMetaFailure(Rule as string) = \
+		EndOfInputFailure() \
+		| SequenceFailure() \
+		| PredicateFailure() \
+		| NegationFailure() \
+		| LeftRecursionFailure() \
+		| UnexpectedValueFailure(Expected as object) \
+		| ObjectPatternFailure()
+
+data OMetaMatch(Input as OMetaInput) = \
+		SuccessfulMatch(Value as object) \
+		| FailedMatch(Failure as OMetaFailure) \
 		| LR(@detected as bool) // internal use only
 
 callable OMetaRule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch
@@ -58,7 +68,7 @@ class OMetaGrammarRoot(OMetaGrammar):
 			lr = m as LR
 			if lr is not null:
 				lr.detected = true
-				return FailedMatch(input)
+				return FailedMatch(input, LeftRecursionFailure(rule))
 			else:
 				return m
 		
@@ -85,10 +95,13 @@ class OMetaGrammarRoot(OMetaGrammar):
 class OMetaGrammarPrototype(OMetaGrammarRoot):
 	
 	def constructor():
-		InstallRule("whitespace", makeRule(char.IsWhiteSpace))
-		InstallRule("letter", makeRule(char.IsLetter))
-		InstallRule("digit", makeRule(char.IsDigit))
-		InstallRule("_", makeRule({ o | return true }))
+		SetUpRule "whitespace", char.IsWhiteSpace
+		SetUpRule "letter", char.IsLetter
+		SetUpRule "digit", char.IsDigit
+		SetUpRule "_", { o | return true }
+		
+	private def SetUpRule(name as string, predicate as System.Predicate[of object]):
+		InstallRule(name, makeRule(name, predicate))
 		
 class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	
@@ -103,9 +116,9 @@ class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	override def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		return _prototype.Apply(context, rule, input)
 		
-def makeRule(predicate as System.Predicate[of object]) as OMetaRule:
+def makeRule(ruleName as string, predicate as System.Predicate[of object]) as OMetaRule:
 	def rule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch:
-		if not input.IsEmpty and predicate(input.Head):
-			return SuccessfulMatch(input.Tail, input.Head)
-		return FailedMatch(input)
+		if input.IsEmpty: return FailedMatch(input, EndOfInputFailure(ruleName))
+		if  not predicate(input.Head): return FailedMatch(input, PredicateFailure(ruleName))
+		return SuccessfulMatch(input.Tail, input.Head)
 	return rule
