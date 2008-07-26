@@ -2,6 +2,7 @@ namespace Boo.OMeta.Tests
 
 import Boo.OMeta
 import Boo.PatternMatching
+import Boo.Adt
 
 import NUnit.Framework
 
@@ -23,9 +24,20 @@ ometa XE < E:
 class OMetaMacroTest:
 	
 	[Test]
-	def Test():
-		AssertE E()
+	def TestRepetion():
+		ometa Repetition:
+			zero_or_many = --letter
+			one_or_many = ++letter
 		
+		r = Repetition()
+		match r.zero_or_many(OMetaInput.For("3")):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('3'))):
+				pass
+				
+		match r.zero_or_many(OMetaInput.For("abc4")):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('4')), Value):
+				Assert.AreEqual([char('a'), char('b'), char('c')], Value)
+	
 	[Test]
 	def TestSemanticPredicate():
 		
@@ -45,13 +57,35 @@ class OMetaMacroTest:
 		match odd("42"):
 			case FailedMatch():
 				pass
+				
+#	[Test]
+#	def TestRuleArgument():
+#		data XmlNode = XmlElement(tag as string, contents as string)
+#		
+#		ometa PoorsManXml:
+#			tag = (startTag >> tagName, contents >> c, endTag[tagName]) ^ XmlElement(tagName, c)
+#			startTag = (lt, ++letter >> tagName, gt) ^ join(tagName, '')
+#			contents = ++(~lt, _)
+#			endTag[tagName] = token["</"], token[tagName], gt
+#			lt = token["<"]
+#			gt = token[">"]
+#			token[t] = --whitespace, $(characters(input, t))
+#			
+#		match PoorsManXml().tag(OMetaInput.For("   < foo > hello world </ foo >")):
+#			case SuccessfulMatch(Value: XmlElement(tag: "foo", contents: " hello world "), Input):
+#				assert Input.IsEmpty, Input.ToString()
+				
+				
+	[Test]
+	def TestParseTree():
+		assertE E()
 		
 	[Test]
-	def TestExtension():
+	def TestExtensionParseTree():
 		xe = XE()
-		AssertE xe
-		AssertRule xe, 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
-		AssertRule xe, 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
+		assertE xe
+		assertRule xe, 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
+		assertRule xe, 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
 		
 	[Test]
 	def TestNot():
@@ -63,7 +97,7 @@ class OMetaMacroTest:
 			eof = ~_
 			
 		lines = ["foo", "bar", "baz"]
-		AssertMatch lines, Lines().parse(OMetaInput.For(lines.Join("\n")))
+		assertMatch lines, Lines().parse(OMetaInput.For(lines.Join("\n")))
 		
 	[Test]
 	def TestBinding():
@@ -73,16 +107,16 @@ class OMetaMacroTest:
 			num = ++dig >> value ^ int.Parse(join(value, ''))
 			
 		parser = NumberListParser()
-		AssertRule parser, 'parse', "21,42,51", [21, 42, 51]
+		assertRule parser, 'parse', "21,42,51", [21, 42, 51]
 		
-	def AssertE(grammar as OMetaGrammar):
-		AssertRule grammar, 'exp', "11+31", [['1', '1'], '+', ['3', '1']]
-		AssertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
+	def assertE(grammar as OMetaGrammar):
+		assertRule grammar, 'exp', "11+31", [['1', '1'], '+', ['3', '1']]
+		assertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
 		
-	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
-		AssertMatch expected, grammar.Apply(grammar, rule, OMetaInput.For(text))
+	def assertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
+		assertMatch expected, grammar.Apply(grammar, rule, OMetaInput.For(text))
 		
-	def AssertMatch(expected, m as OMetaMatch):
+	def assertMatch(expected, m as OMetaMatch):
 		match m:
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
@@ -105,11 +139,5 @@ class OMetaMacroTest:
 #	def contents(contents as string)
 #	def endTag()
 #	
-#ometa SaxParser(handler as SaxContentHandler):
-#	tag = startTag >> $tagName, contents, endTag($tagName)
-#	startTag = lt, identifier >> $tagName, gt
-#	contents = ++(~lt, _)
-#	endTag(tagName) = lt, token($tagName), token("/>")
-#	lt = token("<")
-#	gt = token(">")
+#
 	

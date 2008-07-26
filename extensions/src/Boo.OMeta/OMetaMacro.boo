@@ -144,15 +144,25 @@ class RuleExpander:
 				if smatch is not null:
 					$result = []
 					$(resultAppend(result))
-					while true:
-						$(expand(e, [| $temp.Input |], temp))
-						smatch = $temp as SuccessfulMatch
-						break if smatch is null
-						$(resultAppend(result))
-	
-					$lastMatch = SuccessfulMatch($temp.Input, $result )
+					$(expandRepetitionLoop(e, [| $temp.Input |], temp, result)) 
 		|].Block
 		block.Add(code)	
+		
+	def expandRepetitionLoop(e as Expression, input as Expression, lastMatch as ReferenceExpression, result as Expression):
+			tempInput = uniqueName()
+			code = [|
+				block:
+					$tempInput = $input
+					while true:
+						$(expand(e, [| $tempInput |], lastMatch))
+						smatch = $lastMatch as SuccessfulMatch
+						break if smatch is null
+						$tempInput = smatch.Input
+						$(resultAppend(result))
+	
+					$lastMatch = SuccessfulMatch($lastMatch.Input, $result)
+			|]
+			return code.Block
 		
 	def collectChoices(choices as List, e as Expression):
 		match e:
@@ -259,10 +269,15 @@ class RuleExpander:
 				expandChoices block, choices, input, lastMatch
 				
 			case StringLiteralExpression():
-				block.Add([| $lastMatch = string_($input, $e) |])
+				block.Add([| $lastMatch = characters($input, $e) |])
 				
 			case [| ++$rule |]:
 				expandRepetition block, rule, input, lastMatch
+				
+			case [| --$rule |]:
+				result = uniqueName()
+				block.Add([| $result = [] |])
+				block.Add(expandRepetitionLoop(rule, input, lastMatch, result))
 				
 			case [| ~$rule |]:
 				expandNegation block, rule, input, lastMatch

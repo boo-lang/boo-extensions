@@ -9,7 +9,7 @@ def character(input as OMetaInput, expected as char) as OMetaMatch:
 		return SuccessfulMatch(input.Tail, input.Head)
 	return FailedMatch(input)
 	
-def string_(input as OMetaInput, expected as string) as OMetaMatch:
+def characters(input as OMetaInput, expected as string) as OMetaMatch:
 	for ch in expected:
 		m = character(input, ch)
 		if m isa FailedMatch: return m
