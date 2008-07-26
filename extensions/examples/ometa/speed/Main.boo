@@ -38,13 +38,15 @@ def time(label as string, block as callable()):
 	
 words = join(("word${i}\n" if 0 == i % 2 else "word\n") for i in range(100000))
 
+printValues = false
+
 time "peg":
 	wordList = pegWords(words)
-	if false: print wordList
+	if printValues: print wordList
 
 time "ometa":
 	input = OMetaInput.For(words)
 	match WordCollector().parse(input):
 		case SuccessfulMatch(Input, Value):
 			assert Input.IsEmpty
-			if false: print Value
+			if printValues: print Value
