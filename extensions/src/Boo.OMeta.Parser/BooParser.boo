@@ -10,16 +10,27 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		num = ++digit
 		id = (letter | '_'), --(letter | digit | '_')
 		colon = ":"
+		dot = "."
 		comma = ","
 		lparen = "("
 		rparen = ")"
 		kw = (keywords >> value, ~(letter | digit)) ^ value
 		
-	keywords "class", "pass", "def", "return"
+	keywords "class", "def", "import", "pass", "return"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
-	module = (--whitespace, ++classDef >> types) ^ newModule(types)
+	module = (
+		--whitespace,
+		--importDeclaration >> ids,
+		--classDef >> types,
+		--stmt >> stmts,
+		--whitespace
+	) ^ newModule(ids, types, stmts)
+	
+	importDeclaration = (IMPORT, qualifiedName >> ns, eol) ^ newImport(ns)
+	
+	qualifiedName = (ID >> qualifier, --((DOT, ID >> n) ^n) >> suffix)^ buildQName(qualifier, suffix) 
 	
 	classDef = (
 		CLASS, ID >> className, beginBlock, classBody >> body, endBlock
@@ -66,10 +77,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	eol = ++EOL | ~_	
 	
-	def newModule(members):
+	def newModule(imports, members, stmts):
 		m = Module()
+		for item in imports: m.Imports.Add(item)
 		for member in members: m.Members.Add(member)
+		for stmt as Statement in stmts: m.Globals.Add(stmt)
 		return m
+		
+	def newImport(qname as string):
+		return Import(Namespace: qname)
 	
 	def newInteger(t):
 		return IntegerLiteralExpression(Value: int.Parse(tokenValue(t)))
@@ -103,4 +119,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	def prepend(first, tail as List):
 		tail.Insert(0, first)
 		return tail
+		
+	def buildQName(q, rest):
+		return join(tokenValue(t) for t in prepend(q, rest), '.')
 
