@@ -15,7 +15,7 @@
 		</nunit2>
 	</target>
 	
-	<target name="build" depends="Boo.Pegs, Boo.PatternMatching, Boo.Adt">
+	<target name="build" depends="Boo.Pegs, Boo.PatternMatching, Boo.Adt, Boo.OMeta">
 	</target>
 	
 	<target name="Boo.Pegs" depends="Boo.PatternMatching">
@@ -74,6 +74,29 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+	</target>
+	
+	<target name="Boo.OMeta" depends="Boo.PatternMatching, Boo.Adt">
+		<booc target="library" output="${build.dir}/Boo.OMeta.dll">
+			<sources basedir="src/Boo.OMeta">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.OMeta.Tests.dll">
+			<sources basedir="src/Boo.OMeta.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.OMeta.dll" />
 				<include name="Boo.Adt.dll" />
 				<include name="Boo.PatternMatching.dll" />
 			</references>
