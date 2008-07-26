@@ -12,17 +12,14 @@ class DataMacro(AbstractAstMacro):
 class DataMacroExpansion:
 	
 	_module as Module
-	_baseType as TypeReference
+	_baseType as TypeDefinition
 	
 	def constructor(node as MacroStatement):
 		
 		assert 1 == len(node.Arguments)
 		
 		match node.Arguments[0]:
-			case BinaryExpression(
-					Operator: BinaryOperatorType.Assign,
-					Left: left,
-					Right: right):
+			case [| $left = $right |]:
 				_module = enclosingModule(node)
 				_baseType = createBaseType(left)
 				expandDataConstructors(right)
@@ -30,27 +27,32 @@ class DataMacroExpansion:
 	def createBaseType(node as Expression):
 		type = baseTypeForExpression(node)
 		registerType(type)
+		return type
 		
-		typeRef = TypeReference.Lift(type)
-		typeRef.LexicalInfo = node.LexicalInfo
-		return typeRef
+	def abstractType(name as string):
+		type = [|
+			abstract class $name:
+				pass
+		|]
+		return type
 		
 	def baseTypeForExpression(node as Expression):
 		match node:
-			case re=ReferenceExpression():
-				type = [|
-					abstract class $re:
-						pass
-				|]
-				return type
+			case ReferenceExpression(Name: name):
+				return abstractType(name)
 				
-			case mie=MethodInvocationExpression(
-						Target: ReferenceExpression(Name: name),
-						Arguments: (ReferenceExpression(Name: baseType),)):
+			case [| $(ReferenceExpression(Name: name)) < $(ReferenceExpression(Name: baseType)) |]:
 				type = [|
 					abstract class $name($baseType):
 						pass
 				|]
+				return type
+				
+			case mie=MethodInvocationExpression(Target: ReferenceExpression(Name: name)):
+				type = abstractType(name)
+				for arg in mie.Arguments:
+					type.Members.Add(fieldForArg(arg))
+				type.Members.Add(constructorForInvocation(mie))
 				return type
 				
 			case gre=SlicingExpression(
@@ -73,9 +75,7 @@ class DataMacroExpansion:
 		
 	def expandDataConstructors(node as Expression):
 		match node:
-			case BinaryExpression(Operator: BinaryOperatorType.BitwiseOr,
-								Left: left,
-								Right: right):
+			case [| $left | $right |]:
 				expandDataConstructors(left)
 				expandDataConstructors(right)
 			case MethodInvocationExpression():
@@ -88,7 +88,18 @@ class DataMacroExpansion:
 			type.Members.Add(fieldForArg(arg))	
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type))
-		type.Members.Add(constructorForInvocation(node))	
+		
+		ctor = constructorForInvocation(node)
+		if len(_baseType.Members):
+			superInvocation = [| super() |]
+			i = 0
+			for field as Field in fields(_baseType):
+				ctor.Parameters.Insert(i++, 
+					ParameterDeclaration(Name: field.Name, Type: field.Type))
+				superInvocation.Arguments.Add(ReferenceExpression(field.Name))
+			ctor.Body.Insert(0, superInvocation)
+		type.Members.Add(ctor)
+		
 		registerType(type)
 		
 	def dataConstructorTypeForExpression(node as Expression):
@@ -98,14 +109,9 @@ class DataMacroExpansion:
 					class $name($_baseType):
 						pass
 				|]
-				genericBaseType = _baseType as GenericTypeReference
-				if genericBaseType is null: return type
-				
-				for arg in genericBaseType.GenericArguments:
-					match arg:
-						case SimpleTypeReference(Name: name):
-							type.GenericParameters.Add(
-								GenericParameterDeclaration(Name: name))
+				for arg in _baseType.GenericParameters:
+					type.GenericParameters.Add(
+								GenericParameterDeclaration(Name: arg.Name))
 				return type
 						
 		
@@ -119,7 +125,7 @@ class DataMacroExpansion:
 				other as $type = o
 		|]
 	
-		for field in fields(type):
+		for field as Field in fieldsIncludingBaseType(type):
 			comparison = [|
 				if self.$(field.Name) != other.$(field.Name):
 					return false
@@ -135,7 +141,7 @@ class DataMacroExpansion:
 		items.Add([| $("${type.Name}(") |])
 		
 		comma = false
-		for field in fields(type):
+		for field as Field in fieldsIncludingBaseType(type):
 			if comma: items.Add([| ", " |])
 			items.Add([| self.$(field.Name) |])
 			comma = true
@@ -146,8 +152,11 @@ class DataMacroExpansion:
 				return $expression
 		|]
 		
+	def fieldsIncludingBaseType(type as TypeDefinition):
+		return cat(fields(_baseType), fields(type))
+		
 	def fields(type as TypeDefinition):
-		return f for f as Field in type.Members.Select(NodeType.Field)
+		return type.Members.Select(NodeType.Field)
 		
 	def constructorForInvocation(node as MethodInvocationExpression):
 		ctor = [|
@@ -156,9 +165,7 @@ class DataMacroExpansion:
 		|]
 		for arg in node.Arguments:
 			match arg:
-				case TryCastExpression(
-						Target: ReferenceExpression(Name: name),
-						Type: type):
+				case [| $(ReferenceExpression(Name: name)) as $type |]:
 					ctor.Parameters.Add(
 						ParameterDeclaration(Name: name, Type: type))
 					ctor.Body.Add([|
@@ -166,11 +173,11 @@ class DataMacroExpansion:
 					|])
 		return ctor
 	
-	def fieldForArg(node as TryCastExpression):
-		match node.Target:
-			case ReferenceExpression(Name: name):
+	def fieldForArg(node as Expression):
+		match node:
+			case [| $(ReferenceExpression(Name: name)) as $type |]:
 				return [|
-					public final $name as $(node.Type)
+					public final $name as $type
 				|]
 		
 	def registerType(type as TypeDefinition):

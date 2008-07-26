@@ -6,10 +6,19 @@ import Boo.Adt
 data Expression = Const(value as int) \
 			| Add(left as Expression, right as Expression)
 			
-data ExpressionX(Expression) = Mult(left as Expression, right as Expression)
+data ExpressionX < Expression = Mult(left as Expression, right as Expression)
+
+data Result(Value as int) = Success() | Failure(Error as string)
 
 [TestFixture]
 class DataMacroTest:
+	
+	[Test]
+	def TestBaseFields():
+		Assert.AreEqual("Success(42)", Success(42).ToString())
+		Assert.AreEqual("Failure(42, crash)", Failure(42, "crash").ToString())
+		Assert.AreEqual(Success(42), Success(42))
+		Assert.IsFalse(Success(42) == Success(21))
 
 	[Test]
 	def TestClassHierarchy():
