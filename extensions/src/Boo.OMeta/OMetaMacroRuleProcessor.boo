@@ -41,7 +41,7 @@ class OMetaMacroRuleProcessor:
 		currentBlock = block
 		
 		failureList = uniqueName()
-		currentBlock.Add([| $failureList = System.Collections.Generic.List[of FailedMatch]($(len(choices))) |])
+		currentBlock.Add([| $failureList = Boo.Lang.List[of FailedMatch]($(len(choices))) |])
 		for choice in choices:
 			expand currentBlock, choice, input, lastMatch
 			code = [|

@@ -12,7 +12,7 @@ data OMetaFailure() = \
 		| LeftRecursionFailure() \
 		| ExpectedValueFailure(Expected as object) \
 		| ObjectPatternFailure(Pattern as string) \
-		| ChoiceFailure(Failures as List[of FailedMatch]) \
+		| ChoiceFailure(Failures as Boo.Lang.List[of FailedMatch]) \
 		| RuleFailure(Rule as string, Reason as OMetaFailure)
 
 data OMetaMatch(Input as OMetaInput) = \
