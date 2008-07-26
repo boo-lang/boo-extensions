@@ -12,7 +12,7 @@ class OMetaMacroRuleProcessor:
 		_ruleName = ruleName
 		_collectingParseTree = DynamicVariable[of bool]("ParseTree" in options)
 	
-	def expand(e as Expression, args as (Expression)) as Block:
+	def expand(e as Expression, *args as (Expression)) as Block:
 		
 		input = [| input_ |]
 		block = Block(LexicalInfo: e.LexicalInfo)

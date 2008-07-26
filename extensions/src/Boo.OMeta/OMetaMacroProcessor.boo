@@ -15,19 +15,27 @@ class OMetaMacroProcessor:
 		
 	def expandGrammarSetup():
 		block = Block()
+		
 		for e in expressions():
 			match e:
 				case [| $(ReferenceExpression(Name: name)) = $pattern |]:
-					expandRule block, name, pattern
+					pass
 					
-				case [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]:
-					expandRule block, name, pattern, arg
+				case [| $(ReferenceExpression(Name: name))[$_] = $pattern |]:
+					pass
+			
+			block.Add([| InstallRule($name, $(ReferenceExpression(Name: "${name}Rule"))) |])
 		return block
 		
 	def introduceRuleMethods(type as TypeDefinition):
 		for stmt in ometa.Block.Statements:
 			match stmt:
-				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $_ |]):
+				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
+					m0 = [|
+						private def $("${name}Rule")(context as OMetaGrammar, input_ as OMetaInput) as OMetaMatch:
+							$(OMetaMacroRuleProcessor(name, options).expand(pattern))
+					|]
+					type.Members.Add(m0)
 					m1 = [|
 						def $name(input as OMetaInput):
 							return Apply($name, input)
@@ -39,7 +47,12 @@ class OMetaMacroProcessor:
 					|]
 					type.Members.Add(m2)
 					
-				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $_ |]):
+				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]):
+					m0 = [|
+						private def $("${name}Rule")(context as OMetaGrammar, input_ as OMetaInput) as OMetaMatch:
+							$(OMetaMacroRuleProcessor(name, options).expand(pattern, arg))
+					|]
+					type.Members.Add(m0)
 					m1 = [|
 						def $name(input as OMetaInput, $arg):
 							return Apply($name, OMetaInput.Prepend($arg, input))
@@ -135,18 +148,6 @@ class OMetaMacroProcessor:
 					yield e
 				otherwise:
 					pass
-					
-	def expandRule(block as Block, name as string, pattern as Expression, *args as (Expression)):
-		code = [|
-			block:
-				InstallRule($name) do(context as OMetaGrammar, input_ as OMetaInput):
-					//print "> ${$name}"
-					//try:
-						$(OMetaMacroRuleProcessor(name, options).expand(pattern, args))
-					//ensure:
-					//	print "< ${$name}"
-		|].Block
-		block.Add(code)
 	
 def prototypeFor(e as Expression) as MethodInvocationExpression:
 	match e:
