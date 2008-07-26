@@ -30,7 +30,7 @@ class ObjectMatchingTest:
 			def add(x as int, y as int):
 				return x + y
 				
-		match Evaluator().eval(OMetaInput.For([Sum(Const(21), Sum(Const(11), Const(10)))])):
+		match Evaluator().eval(OMetaInput.Singleton(Sum(Const(21), Sum(Const(11), Const(10))))):
 			case SuccessfulMatch(Input, Value):
 				assert Input.IsEmpty
 				Assert.AreEqual(42, Value)
