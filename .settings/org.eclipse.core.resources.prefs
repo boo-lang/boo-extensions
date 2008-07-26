@@ -1,8 +1,15 @@
-#Mon May 19 15:10:27 BRT 2008
+#Wed Jul 23 12:53:02 BRT 2008
 eclipse.preferences.version=1
 encoding//boojay/src/Boojay.Macros/.monolipse=utf-8
 encoding//boojay/src/boojay.runtime/.monolipse=utf-8
 encoding//examples/expressions/.monolipse=utf-8
+encoding//extensions/examples/ometa/calculator/.monolipse=utf-8
+encoding//extensions/examples/ometa/metaboo/.monolipse=utf-8
+encoding//extensions/examples/ometa/speed/.monolipse=utf-8
 encoding//extensions/examples/pegs/miniboo/.monolipse=utf-8
+encoding//extensions/src/Boo.OMeta.Parser.Tests/.monolipse=utf-8
+encoding//extensions/src/Boo.OMeta.Parser/.monolipse=utf-8
+encoding//extensions/src/Boo.OMeta.Tests/.monolipse=utf-8
+encoding//extensions/src/Boo.OMeta/.monolipse=utf-8
 encoding//extensions/src/Boo.Pegs.Tests/.monolipse=utf-8
 encoding//extensions/src/Boo.Pegs/.monolipse=utf-8
