@@ -34,6 +34,18 @@ class OMetaMacroTest:
 		AssertRule xe, 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
 		
 	[Test]
+	def TestNot():
+		
+		ometa Lines:
+			parse = ++((line >> l, (newline | eof)) ^ join(l, ''))
+			line = ++(~newline, _)
+			newline = "\n" | "\r\n" | "\r"
+			eof = ~_
+			
+		lines = ["foo", "bar", "baz"]
+		AssertMatch lines, Lines().parse(OMetaInput.For(lines.Join("\n")))
+		
+	[Test]
 	def TestBinding():
 		ometa NumberListParser:
 			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as List))
@@ -48,7 +60,10 @@ class OMetaMacroTest:
 		AssertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
 		
 	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
-		match grammar.Apply(grammar, rule, OMetaInput.For(text)):
+		AssertMatch expected, grammar.Apply(grammar, rule, OMetaInput.For(text))
+		
+	def AssertMatch(expected, m as OMetaMatch):
+		match m:
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
 				Assert.AreEqual(expected, Value)

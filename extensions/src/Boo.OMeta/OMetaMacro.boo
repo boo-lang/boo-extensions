@@ -130,6 +130,9 @@ class RuleExpander:
 			currentBlock = code.FalseBlock
 		currentBlock.Add([| $lastMatch = FailedMatch($input) |])
 		
+	def resultAppend(result as Expression):
+		return [| $result.Add(smatch.Value) if smatch.Value is not null |]
+		
 	def expandRepetition(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		
 		temp = lastMatch #uniqueName()
@@ -139,12 +142,13 @@ class RuleExpander:
 				$(expand(e, input, temp))
 				smatch = $temp as SuccessfulMatch
 				if smatch is not null:
-					$result = [smatch.Value]
+					$result = []
+					$(resultAppend(result))
 					while true:
 						$(expand(e, [| $temp.Input |], temp))
 						smatch = $temp as SuccessfulMatch
 						break if smatch is null
-						$result.Add(smatch.Value)
+						$(resultAppend(result))
 	
 					$lastMatch = SuccessfulMatch($temp.Input, $result )
 		|].Block
@@ -190,18 +194,34 @@ class RuleExpander:
 		
 		for item in sequence:
 			expand currentBlock, item, input, lastMatch
-			input = [| $lastMatch.Input |]
 			currentBlock.Add([| smatch = $lastMatch as SuccessfulMatch |])
 			code = [|
 				if smatch is not null:
-					$result.Add(smatch.Value)
+					$(resultAppend(result))
 			|]
 			currentBlock.Add(code)
 			currentBlock = code.TrueBlock
+			input = [| $lastMatch.Input |]
+			
 		currentBlock.Add([| $lastMatch = SuccessfulMatch(smatch.Input, $result) |])
 		
-	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
+	def expandNegation(block as Block, rule as Expression, input as Expression, lastMatch as ReferenceExpression):
+		oldInput = uniqueName()
+		block.Add([| $oldInput = $input |])
 		
+		_collectingParseTree.With(false):
+			expand block, rule, input, lastMatch
+		block.Add([| smatch = $lastMatch as SuccessfulMatch |])
+		code = [|
+			if smatch is null:
+				$lastMatch = SuccessfulMatch($oldInput, null)
+			else:
+				$lastMatch = FailedMatch($oldInput)
+		|]
+		block.Add(code)
+		return code
+		
+	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		match e:
 			case [| $pattern ^ $value |]:
 				_collectingParseTree.With(false):
@@ -236,6 +256,9 @@ class RuleExpander:
 			case [| ++$rule |]:
 				expandRepetition block, rule, input, lastMatch
 				
+			case [| ~$rule |]:
+				expandNegation block, rule, input, lastMatch
+				
 			case ReferenceExpression(Name: name):
 				block.Add([| $lastMatch = grammar.Apply(grammar, $name, $input) |])
 				
@@ -258,7 +281,15 @@ class RuleExpander:
 				block.Add(code) 
 				
 			case ArrayLiteralExpression(Items: items):
-				expandSequence block, items, input, lastMatch 
+				match items[0]:
+					case [| ~$rule |]:
+						negation = expandNegation(block, rule, input, lastMatch)
+						if len(items) > 2:
+							expandSequence negation.TrueBlock, items.PopRange(1), input, lastMatch
+						else:
+							expand negation.TrueBlock, items[1], input, lastMatch
+					otherwise:
+						expandSequence block, items, input, lastMatch 
 				
 	def processObjectPatternRules(pattern as Expression):
 		rules = []
