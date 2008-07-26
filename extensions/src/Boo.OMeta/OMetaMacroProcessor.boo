@@ -108,11 +108,17 @@ class OMetaMacroProcessor:
 				case [| $paramName as $paramType |]:
 					introduceGrammarParameter type, paramName, paramType
 					
+				case [| $paramName = $value |]:
+					introduceGrammarField type, paramName, null, value
+					
 	def introduceGrammarParameter(type as TypeDefinition, name as ReferenceExpression, paramType as TypeReference):
-		type.Members.Add(Field(Name: name.Name, Type: paramType))
+		introduceGrammarField type, name, paramType, null
 		ctor = type.GetConstructor(0)
 		ctor.Parameters.Add(ParameterDeclaration(Name: name.Name, Type: paramType))
 		ctor.Body.Add([| self.$name = $name |])
+		
+	def introduceGrammarField(type as TypeDefinition, name as ReferenceExpression, fieldType as TypeReference, initializer as Expression):
+		type.Members.Add(Field(Name: name.Name, Type: fieldType, Initializer: initializer))
 			
 	def expressions():
 		for stmt in ometa.Block.Statements:

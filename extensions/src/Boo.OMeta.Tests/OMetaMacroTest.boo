@@ -39,18 +39,21 @@ class OMetaMacroTest:
 		ometa G1(value):
 			parse = ++digit ^ value
 			
-		match G1(42).parse("1234"):
-			case SuccessfulMatch(Input, Value: 42):
-				assert Input.IsEmpty
+		assertMatch 42, G1(42).parse("1234")
 				
 	[Test]
 	def TestTypedGrammarArgument():
 		ometa G2(value as int):
 			parse = ++digit ^ value * 2
 			
-		match G2(21).parse("1234"):
-			case SuccessfulMatch(Input, Value: 42):
-				assert Input.IsEmpty
+		assertMatch 42, G2(21).parse("1234")
+				
+	[Test]
+	def TestGrammarConst():
+		ometa G4(answer = 42):
+			parse = ++digit ^ answer
+			
+		assertMatch 42, G4().parse("1234")
 				
 	[Test]
 	def TestRepetition():
