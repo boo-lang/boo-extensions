@@ -4,13 +4,25 @@ import Boo.PatternMatching
 import Boo.Lang.Compiler.Ast
 
 macro ometa:
+"""
+Compiles ometa matching definition into OMetaGrammar types.
+
+The following patterns are supported:
+
+By default the grammar won't generate parse trees and it will dispatch all rule invocation
+dynamically to allow dynamic composition.
+
+A few options can be used to customize the generated code:
+
+	option ParseTree
+		causes the grammar to collect parse trees for sequences and repetitions in lists
+		
+ 
+"""
 	
-	def enclosingTypeDefinition():
-		type as TypeDefinition = ometa.GetAncestor(NodeType.ClassDefinition) or ometa.GetAncestor(NodeType.Module)
-		return type
-	
+	enclosingType as TypeDefinition = ometa.GetAncestor(NodeType.ClassDefinition) or ometa.GetAncestor(NodeType.Module)
 	type = OMetaMacroProcessor(ometa).expandType()
-	enclosingTypeDefinition().Members.Add(type)
+	enclosingType.Members.Add(type)
 	
 macro option:
 	
