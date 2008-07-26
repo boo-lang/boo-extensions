@@ -35,18 +35,24 @@ def time(label as string, block as callable()):
 	block()	
 	elapsed = date.Now - start
 	print "${label}: ${elapsed}"
+	return elapsed
 	
-words = join(("word${i}\n" if 0 == i % 2 else "word\n") for i in range(100000))
-
-printValues = false
-
-time "peg":
-	wordList = pegWords(words)
-	if printValues: print wordList
-
-time "ometa":
-	input = OMetaInput.For(words)
-	match WordCollector().parse(input):
-		case SuccessfulMatch(Input, Value):
-			assert Input.IsEmpty
-			if printValues: print Value
+def benchmark(wordCount as int, printValues as bool):
+	
+	words = join(("word${i}\n" if 0 == i % 2 else "word\n") for i in range(wordCount))
+	
+	peg = time("peg"):
+		wordList = pegWords(words)
+		if printValues: print wordList
+	
+	ometa = time("ometa"):
+		input = OMetaInput.For(words)
+		match WordCollector().parse(input):
+			case SuccessfulMatch(Input, Value):
+				assert Input.IsEmpty
+				if printValues: print Value
+				
+	print "================= FACTOR(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds
+				
+for i in (10, 100, 1000, 10000, 50000, 100000):
+	benchmark i, false
