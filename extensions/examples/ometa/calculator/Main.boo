@@ -1,46 +1,56 @@
 import Boo.OMeta
 import Boo.Adt
 import Boo.PatternMatching
+import Boo.Lang.Compiler
+import Boo.Lang.Compiler.Ast
 
 data Exp = Const(value as int) | Infix(operator as string, left as Exp, right as Exp)
 
-ometa E:
-	num = ++digit >> value ^ Const(int.Parse(join(value, '')))
-	exp = sum | fac
-	sum = (fac >> x, '+', fac >> y) ^ Infix("+", x, y)
-	fac = mult | atom
-	mult = (atom >> x,'*', atom >> y) ^ Infix("*", x, y)
+// using macros to generate more complex ometa rules
+// is indeed a good idea
+macro infix:
+	
+	l, op, r = infix.Arguments
+	
+	return ExpressionStatement([| $l = ((($l >> l, $op >> op, $r >> r) ^ Infix(op, l, r)) | $r) |])
+
+ometa Parser:
+	parse = sum
+	infix sum, ('+' | '-'), fac
+	infix fac, ('*' |  '/'), atom
 	atom = num | parens
 	parens = ('(', exp >> value, ')') ^ value
-	
-ometa XE < E:
-	fac = division | super
-	division = (atom >> x, '/', atom >> y) ^ Infix("/", x, y)
-	
+	num = ++digit >> value ^ Const(int.Parse(join(value, '')))
 	
 // See, Mom! No visitors!
 ometa Evaluator:
 	eval = const | infix
 	const = Const(value) ^ value
-	infix = sum | mult
+	infix = sum | subtraction | mult | division
+
+	// we could certainly use a macro here too
 	sum = Infix(operator: "+", left: eval >> l, right: eval >> r) ^ add(l, r)
+	subtraction = Infix(operator: "-", left: eval >> l, right: eval >> r) ^ subtract(l, r)
 	mult = Infix(operator: "*", left: eval >> l, right: eval >> r) ^ multiply(l, r)
+	division = Infix(operator: "/", left: eval >> l, right: eval >> r) ^ divide(l, r)
+	
 	def add(x as int, y as int):
 		return x + y
+		
+	def subtract(x as int, y as int):
+		return x - y
+
 	def multiply(x as int, y as int):
 		return x * y
 
-ometa XEvaluator < Evaluator:
-	eval = division | super
-	division = Infix(operator: "/", left: eval >> l, right: eval >> r) ^ divide(l, r)
 	def divide(left as int, right as int):
 		return left / right
 
 while true:
 	line = prompt("> ")
 	if string.IsNullOrEmpty(line) or line == "/q": break
-	match m=XE().Apply('exp', OMetaInput.For(line)):
-		case SuccessfulMatch(Value):
-			print XEvaluator().eval(OMetaInput.Singleton(Value))
+	match m=Parser().parse(OMetaInput.For(line.Trim())):
+		case SuccessfulMatch(Value, Input: OMetaInput(IsEmpty: true)):
+			print Evaluator().eval(OMetaInput.Singleton(Value))
 		otherwise:
 			print m
