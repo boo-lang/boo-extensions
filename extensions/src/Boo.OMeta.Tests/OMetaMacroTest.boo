@@ -9,15 +9,15 @@ import NUnit.Framework
 // and generates Indent/Dedent values
 
 ometa E:
-   dig = '1' | '2' | '3'
-   num = ++dig
-   exp = (fac, '+', fac) | fac
-   fac = (atom, '*', atom) | atom
-   atom = num | ('(', exp, ')')
+	dig = '1' | '2' | '3'
+	num = ++dig
+	exp = (fac, '+', fac) | fac
+	fac = (atom, '*', atom) | atom
+	atom = num | ('(', exp, ')')
    
 ometa XE < E:
-   fac = division | super /* super tries to delegate to all prototypes */
-   division = (atom, '/', atom)
+	fac = division | super /* super tries to delegate to all prototypes */
+	division = (atom, '/', atom)
 
 [TestFixture]
 class OMetaMacroTest:
@@ -25,6 +25,26 @@ class OMetaMacroTest:
 	[Test]
 	def Test():
 		AssertE E()
+		
+	[Test]
+	def TestSemanticPredicate():
+		
+		ometa Numbers:
+			odd = num >> n and isOdd(n)
+			num = ++digit >> ds ^ int.Parse(join(ds, ''))
+			def isOdd(n as int):
+				return n % 2 != 0
+				
+		def odd(input):
+			return Numbers().odd(OMetaInput.For(input))
+				
+		match odd("35"):
+			case SuccessfulMatch(Value: 35, Input: OMetaInput(IsEmpty: true)):
+				pass
+				
+		match odd("42"):
+			case FailedMatch():
+				pass
 		
 	[Test]
 	def TestExtension():

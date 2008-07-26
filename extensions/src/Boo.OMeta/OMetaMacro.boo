@@ -223,6 +223,14 @@ class RuleExpander:
 		
 	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		match e:
+			case [| $pattern and $predicate |]:
+				expand block, pattern, input, lastMatch
+				checkPredicate = [|
+					if $lastMatch isa SuccessfulMatch and not $predicate:
+						$lastMatch = FailedMatch($input)
+				|]
+				block.Add(checkPredicate)
+				
 			case [| $pattern ^ $value |]:
 				_collectingParseTree.With(false):
 					expand block, pattern, input, lastMatch
