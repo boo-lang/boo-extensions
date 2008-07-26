@@ -14,6 +14,9 @@ class OMetaInput:
 		if enumerator.MoveNext():
 			return EnumeratorInput(enumerator)
 		return Empty
+		
+	static def Singleton(o):
+		return For((o,))
 	
 	protected def constructor():
 		pass

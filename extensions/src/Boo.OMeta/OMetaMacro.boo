@@ -15,6 +15,8 @@ macro ometa:
 			match stmt:
 				case ExpressionStatement(Expression: e):
 					yield e
+				otherwise:
+					pass
 		
 	def expandGrammarSetup():
 		block = Block()
@@ -57,13 +59,23 @@ macro ometa:
 				return _grammar.Apply(self, rule, input)
 			
 	|]
-	for e in expressions():
-		match e:
-			case [| $(ReferenceExpression(Name: name)) = $_ |]:
+	for stmt in ometa.Block.Statements:
+		match stmt:
+			case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $_ |]):
 				m = [|
 					def $name(input as OMetaInput):
 						return Apply($name, input)
 				|]
+				type.Members.Add(m)
+				
+			case DeclarationStatement(Declaration: Declaration(Name: name, Type: null), Initializer: block=BlockExpression()):
+				m = Method(
+						Name: name,
+						LexicalInfo: block.LexicalInfo,
+						Body: block.Body,
+						Parameters: block.Parameters,
+						ReturnType: block.ReturnType)
+				
 				type.Members.Add(m)
 		
 	type.LexicalInfo = ometa.LexicalInfo
@@ -231,18 +243,53 @@ class RuleExpander:
 				block.Add([| $lastMatch = grammar.SuperApply(grammar, $_ruleName, $input) |])
 				
 			case [| $_() |]:
+				rules = processObjectPatternRules(e)
 				condition = PatternExpander().expand([| smatch.Value |], e)
 				code = [|
 					block:
 						$lastMatch = any($input)
 						smatch = $lastMatch as SuccessfulMatch
-						if smatch is not null and not $condition:
-							$lastMatch = FailedMatch($input)
+						if smatch is not null:
+							if $condition:
+								$(expandObjectPatternRules(rules, lastMatch))
+							else:
+								$lastMatch = FailedMatch($input)
 				|].Block
 				block.Add(code) 
 				
 			case ArrayLiteralExpression(Items: items):
 				expandSequence block, items, input, lastMatch 
+				
+	def processObjectPatternRules(pattern as Expression):
+		rules = []
+		processObjectPatternRules rules, pattern
+		return rules
+		
+	def expandObjectPatternRules(rules, lastMatch as Expression) as Block:
+		block = Block()
+		input = uniqueName()
+		
+		currentBlock = block
+		for temp as Expression, rule as Expression in rules:
+			block.Add([| $input = OMetaInput.Singleton($temp) |])
+			expand block, rule, input, lastMatch
+			code = [|
+				if $lastMatch isa SuccessfulMatch:
+					pass
+			|]
+			currentBlock.Add(code)
+			currentBlock = code.TrueBlock
+		return block
+		
+	def processObjectPatternRules(rules as List, pattern as MethodInvocationExpression):
+		for arg in pattern.NamedArguments:
+			match arg.Second:
+				case [| $_ >> $_ |]:
+					temp = uniqueName()
+					rules.Add((temp, arg.Second))
+					arg.Second = temp
+				otherwise:
+					pass
 			
 def uniqueName():
 	return ReferenceExpression(Name: "temp${CompilerContext.Current.AllocIndex()}")
