@@ -198,8 +198,13 @@ class OMetaMacroRuleProcessor:
 				collectChoices choices, e
 				expandChoices block, choices, input, lastMatch
 				
-			case StringLiteralExpression():
-				block.Add([| $lastMatch = characters($input, $e) |])
+			case StringLiteralExpression(Value: v):
+				if len(v) == 0:
+					block.Add([| $lastMatch = SuccessfulMatch($input, null) |])
+				elif len(v) == 1:
+					block.Add([| $lastMatch = character($input, $(CharLiteralExpression(e.LexicalInfo, v[0]))) |])
+				else:
+					block.Add([| $lastMatch = characters($input, $e) |])
 				
 			case [| ++$rule |]:
 				expandRepetition block, rule, input, lastMatch
