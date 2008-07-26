@@ -14,6 +14,10 @@ macro tokens:
 				e = [| $name = $pattern >> value ^ makeToken($(name.ToString()), value) |]
 				e.LexicalInfo = stmt.LexicalInfo
 				block.Add(e)
+				
+				tokenRule = [| $(ReferenceExpression(Name: name.ToString().ToUpper())) = token[$(name.ToString())] |]
+				e.LexicalInfo = stmt.LexicalInfo
+				block.Add(tokenRule)
 				rules.Add(name)
 	
 	rule as Expression = rules[0]

@@ -51,6 +51,10 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 	
 	tokens = ++(~newline, _) >> t ^ makeToken("line", t)
 	
+	INDENT = token["indent"]
+	DEDENT = token["dedent"]
+	EOL = token["eol"]
+	
 	def sameIndent(i):
 		return currentIndent() == len(i)
 		
