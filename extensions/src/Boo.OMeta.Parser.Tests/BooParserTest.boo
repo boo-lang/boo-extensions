@@ -9,7 +9,7 @@ import Boo.Lang.Compiler.Ast
 import NUnit.Framework
 
 [TestFixture]
-class BooParserTestCase:
+class BooParserTest:
 	
 	[Test]
 	def TestSimpleModuleWithImport():
@@ -18,7 +18,7 @@ class BooParserTestCase:
 import System.Console
 
 WriteLine(42)
-		"""
+"""
 		
 		m = parseModule(code)
 		Assert.AreEqual(1, len(m.Imports))

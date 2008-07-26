@@ -71,6 +71,14 @@ class OMetaMacroProcessor:
 					
 				def constructor():
 					_grammar = $(prototypeFor(declaration))
+					setUpGrammar()
+					
+				// for syntax extensions
+				def constructor([required] prototype as OMetaGrammar):
+					_grammar = OMetaDelegatingGrammar(prototype)
+					setUpGrammar()
+					
+				private def setUpGrammar():
 					$(expandGrammarSetup())
 					
 				def InstallRule(ruleName as string, rule as OMetaRule):

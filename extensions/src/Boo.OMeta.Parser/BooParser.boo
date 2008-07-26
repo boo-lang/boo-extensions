@@ -30,7 +30,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	importDeclaration = (IMPORT, qualifiedName >> ns, eol) ^ newImport(ns)
 	
-	qualifiedName = (ID >> qualifier, --((DOT, ID >> n) ^n) >> suffix)^ buildQName(qualifier, suffix) 
+	qualifiedName = (ID >> qualifier, --((DOT, ID >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
 	classDef = (
 		CLASS, ID >> className, beginBlock, classBody >> body, endBlock
@@ -67,7 +67,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	invocation = (rvalue >> target, LPAREN, expressionList >> args, RPAREN) ^ newInvocation(target, args)
 	
-	assign = (lvalue >> l, EQ, rvalue >> r) ^ newAssignment(l, r)
+	assign = (lvalue >> l, EQ, expression >> r) ^ newAssignment(l, r)
 	
 	lvalue = ID >> r ^ newReference(r)
 	
