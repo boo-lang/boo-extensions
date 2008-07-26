@@ -155,11 +155,14 @@ class OMetaMacroRuleProcessor:
 		block.Add(code)
 		return code
 		
+	def processVariables(e as Expression, input as Expression):
+		e.ReplaceNodes([| input |], [| $input |])
+		return e
+		
 	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		match e:
 			case SpliceExpression(Expression: rule):
-				block.Add([| input = $input |])
-				block.Add([| $lastMatch = $rule |])
+				block.Add([| $lastMatch = $(processVariables(rule, input)) |])
 				
 			case [| $rule[$arg] |]:
 				newInput = uniqueName()
@@ -169,7 +172,7 @@ class OMetaMacroRuleProcessor:
 			case [| $pattern and $predicate |]:
 				expand block, pattern, input, lastMatch
 				checkPredicate = [|
-					if $lastMatch isa SuccessfulMatch and not $predicate:
+					if $lastMatch isa SuccessfulMatch and not $(processVariables(predicate, input)):
 						$lastMatch = FailedMatch($input, PredicateFailure($(predicate.ToCodeString())))
 				|]
 				block.Add(checkPredicate)
@@ -181,7 +184,7 @@ class OMetaMacroRuleProcessor:
 						block:
 							smatch = $lastMatch as SuccessfulMatch
 							if smatch is not null:
-								$lastMatch = SuccessfulMatch(smatch.Input, $value)
+								$lastMatch = SuccessfulMatch(smatch.Input, $(processVariables(value, input)))
 					|].Block
 					block.Add(code)
 				

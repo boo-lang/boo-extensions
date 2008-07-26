@@ -18,6 +18,16 @@ ometa E:
 class OMetaMacroTest:
 	
 	[Test]
+	def InputVariableIsAvailableToUserCode():
+		ometa InputTest:
+			foo = _ ^ (input.Position)
+			bar = $(any(input)) and (input.Position == 1)
+			
+		tail = OMetaInput.For("01").Tail
+		assertMatch 1, InputTest().foo(tail)
+		assertMatch char('1'), InputTest().bar(tail)
+	
+	[Test]
 	def TestRulesReturnLastValue():
 		ometa G3:
 			repetition = ++digit
