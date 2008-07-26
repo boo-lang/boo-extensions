@@ -60,5 +60,10 @@ class DataMacroTest:
 		assert Const(-1) != Const(42)
 		
 	[Test]
+	def TestEqualsWithoutFields():
+		data NoFields()
+		Assert.AreEqual(NoFields(), NoFields())
+		
+	[Test]
 	def TestProperties():
 		Assert.AreEqual(42, Const(42).value)

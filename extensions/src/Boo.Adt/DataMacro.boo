@@ -110,7 +110,7 @@ class DataMacroExpansion:
 		for arg in node.Arguments:
 			type.Members.Add(fieldForArg(arg))	
 		type.Members.Add(toStringForType(type))
-		type.Members.Add(equalsForType(type))
+		type.Members.Add(equalsForType(type)) 
 		
 		ctor = constructorForInvocation(node)
 		if len(_baseType.Members):
@@ -139,16 +139,24 @@ class DataMacroExpansion:
 						
 		
 	def equalsForType(type as TypeDefinition):
+		
+		allFields = List(fieldsIncludingBaseType(type))
+		if len(allFields) == 0:
+			method = [|
+				override def Equals(o):
+					if o is null: return false
+					return self.GetType() is o.GetType()
+			|]
+			return method
 			
 		method = [|
 			override def Equals(o):
 				if o is null: return false
-				// (self as object) to workaround a generic type emission bug
-				if (self as object).GetType() != o.GetType(): return false
+				if self.GetType() is not o.GetType(): return false
 				other as $type = o
 		|]
 	
-		for field as Field in fieldsIncludingBaseType(type):
+		for field as Field in allFields:
 			comparison = [|
 				if self.$(field.Name) != other.$(field.Name):
 					return false
