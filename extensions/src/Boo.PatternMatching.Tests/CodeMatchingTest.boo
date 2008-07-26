@@ -16,6 +16,19 @@ class CodeMatchingTest:
 		Assert.AreEqual("a", variableName(code))
 		Assert.AreEqual(code.Right, rvalue(code))
 		
+	[Test]
+	def TestSlicing():
+		
+		code = [| a[b] |]
+		match code:
+			case [| $target[$arg] |]:
+				match target:
+					case ReferenceExpression(Name: "a"):
+						pass
+				match arg:
+					case ReferenceExpression(Name: "b"):
+						pass
+		
 	def variableName(code as Expression):
 		match code:
 			case [| $(ReferenceExpression(Name: l)) = $_ |]:

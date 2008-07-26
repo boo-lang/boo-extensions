@@ -86,30 +86,58 @@ class PatternExpander:
 			assert expansion is not null, "Unsupported pattern '${node}'"
 			return expansion
 			
+		def push(srcNode as Node, e as Expression):
+			assert _pattern is null
+			e.LexicalInfo = srcNode.LexicalInfo
+			_pattern = e
+			
 		override def OnSpliceExpression(node as SpliceExpression):
 			_pattern = node.Expression
 			
 		override def OnSpliceTypeReference(node as SpliceTypeReference):
 			_pattern = node.Expression
 			
+		def expandFixedSize(items):
+			a = [| (,) |]
+			for item in items:
+				a.Items.Add(expand(item))
+			return a
+			
+		override def OnOmittedExpression(node as OmittedExpression):
+			_pattern = [| OmittedExpression.Instance |]
+			
+		override def OnSlice(node as Slice):
+			ctor = [| Slice() |]
+			expandProperty ctor, "Begin", node.Begin
+			expandProperty ctor, "End", node.End
+			expandProperty ctor, "Step", node.Step
+			push node, ctor
+			
+		def expandProperty(ctor as MethodInvocationExpression, name as string, value as Expression):
+			if value is null: return
+			ctor.NamedArguments.Add(ExpressionPair(First: ReferenceExpression(name), Second: expand(value)))
+			
+		override def OnSlicingExpression(node as SlicingExpression):
+			push node, [| SlicingExpression(Target: $(expand(node.Target)), Indices: $(expandFixedSize(node.Indices))) |]
+			
 		override def OnTryCastExpression(node as TryCastExpression):
-			_pattern = [| TryCastExpression(Target: $(expand(node.Target)), Type: $(expand(node.Type))) |]
+			push node, [| TryCastExpression(Target: $(expand(node.Target)), Type: $(expand(node.Type))) |]
 			
 		override def OnMethodInvocationExpression(node as MethodInvocationExpression):
 			assert 0 == len(node.Arguments), "Unsupported pattern '${node}'"
-			_pattern = [| MethodInvocationExpression(Target: $(expand(node.Target))) |]
+			push node, [| MethodInvocationExpression(Target: $(expand(node.Target))) |]
 			
 		override def OnUnaryExpression(node as UnaryExpression):
-			_pattern = [| UnaryExpression(Operator: UnaryOperatorType.$(node.Operator.ToString()), Operand: $(expand(node.Operand))) |]
+			push node, [| UnaryExpression(Operator: UnaryOperatorType.$(node.Operator.ToString()), Operand: $(expand(node.Operand))) |]
 			
 		override def OnBinaryExpression(node as BinaryExpression):
-			_pattern = [| BinaryExpression(Operator: BinaryOperatorType.$(node.Operator.ToString()), Left: $(expand(node.Left)), Right: $(expand(node.Right))) |]
+			push node, [| BinaryExpression(Operator: BinaryOperatorType.$(node.Operator.ToString()), Left: $(expand(node.Left)), Right: $(expand(node.Right))) |]
 		
 		override def OnReferenceExpression(node as ReferenceExpression):
-			_pattern = [| ReferenceExpression(Name: $(node.Name)) |]
+			push node, [| ReferenceExpression(Name: $(node.Name)) |]
 			
 		override def OnSuperLiteralExpression(node as SuperLiteralExpression):
-			_pattern = [| SuperLiteralExpression() |]
+			push node, [| SuperLiteralExpression() |]
 			
 	def objectPatternFor(node as QuasiquoteExpression):
 		return QuasiquotePatternBuilder(self).build(node)
