@@ -196,6 +196,9 @@ class MatchExpansion:
 		override def OnReferenceExpression(node as ReferenceExpression):
 			_pattern = [| ReferenceExpression(Name: $(node.Name)) |]
 			
+		override def OnSuperLiteralExpression(node as SuperLiteralExpression):
+			_pattern = [| SuperLiteralExpression() |]
+			
 	def objectPatternFor(node as QuasiquoteExpression):
 		return QuasiquotePatternBuilder(self).build(node)
 		
