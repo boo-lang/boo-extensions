@@ -1,5 +1,7 @@
 namespace Boo.OMeta
 
+import Boo.PatternMatching
+
 def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input)
 	return SuccessfulMatch(input.Tail, input.Head)
@@ -15,3 +17,13 @@ def characters(input as OMetaInput, expected as string) as OMetaMatch:
 		if m isa FailedMatch: return m
 		input = m.Input
 	return SuccessfulMatch(input, expected)
+	
+def scan(grammar as OMetaGrammar, rule as string, input as System.Collections.IEnumerable):
+	return scan(grammar, rule, OMetaInput.For(input))
+	
+def scan(grammar as OMetaGrammar, rule as string, input as OMetaInput):
+	while not input.IsEmpty:
+		match grammar.Apply(grammar, 'scanner', input):
+			case SuccessfulMatch(Input, Value):
+				input = Input
+				yield Value
