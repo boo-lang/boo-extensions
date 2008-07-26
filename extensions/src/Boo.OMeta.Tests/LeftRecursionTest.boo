@@ -8,13 +8,28 @@ import NUnit.Framework
 
 [TestFixture]
 class LeftRecursionTest:
+	
 	[Test]
-	def TestFailure():
-		ometa E:
+	def DirectLeftRecursion():
+		
+		ometa DLR:
+			option ParseTree
+			expr = (expr, "-", num) | num
+			num = ++digit >> ds ^ join(ds, '')
+			
+		match DLR().expr("1-2-3"):
+			case SuccessfulMatch(
+					Input: OMetaInput(IsEmpty: true),
+					Value: [['1', '-', '2'], '-', '3']):
+				pass
+			
+	[Test]
+	def FailsOnIndirectRecursion():
+		ometa ILR:
 			expr = subtraction
 			num = ++digit
 			subtraction = expr, '-', num
 			
-		match E().expr(OMetaInput.For("2-1")):
+		match ILR().expr(OMetaInput.For("2-1")):
 			case FailedMatch(Input):
 				Assert.AreEqual('2', Input.Head.ToString())

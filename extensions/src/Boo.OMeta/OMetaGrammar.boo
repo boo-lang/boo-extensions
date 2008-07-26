@@ -3,7 +3,9 @@ namespace Boo.OMeta
 import Boo.Adt
 import System.Collections.Generic
 
-data OMetaMatch(Input as OMetaInput) = SuccessfulMatch(Value as object) | FailedMatch()
+data OMetaMatch(Input as OMetaInput) = SuccessfulMatch(Value as object) \
+		| FailedMatch() \
+		| LR(@detected as bool) // internal use only
 
 callable OMetaRule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch
 
@@ -29,6 +31,9 @@ class OMetaGrammarRoot(OMetaGrammar):
 			
 		override def GetHashCode():
 			return _rule.GetHashCode() ^ _input.GetHashCode()
+			
+		override def ToString():
+			return "MemoKey(${_rule}, ${_input})"
 	
 	_rules = Dictionary[of string, OMetaRule]()
 	_memo = Dictionary[of MemoKey, OMetaMatch]()
@@ -39,14 +44,31 @@ class OMetaGrammarRoot(OMetaGrammar):
 	def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		
 		key = MemoKey(rule, input)
-		memo as OMetaMatch
-		if _memo.TryGetValue(key, memo):
-			return memo
-			
-		_memo[key] = FailedMatch(input)
-		memo = Eval(context, rule, input)
-		_memo[key] = memo
-		return memo
+		m as OMetaMatch
+		if not _memo.TryGetValue(key, m):
+			lr = LR(input, false)
+			_memo[key] = lr
+			m = Eval(context, rule, input)
+			_memo[key] = m
+			if lr.detected and m isa SuccessfulMatch:
+				return GrowLR(context, rule, input, key, m)
+			else:
+				return m
+		else:
+			lr = m as LR
+			if lr is not null:
+				lr.detected = true
+				return FailedMatch(input)
+			else:
+				return m
+		
+	def GrowLR(context as OMetaGrammar, rule as string, input as OMetaInput, key, lastSuccessfulMatch as OMetaMatch):
+		while true:			
+			m = Eval(context, rule, input)
+			if m isa FailedMatch or m.Input is input.Tail:
+				break
+			_memo[key] = lastSuccessfulMatch = m
+		return lastSuccessfulMatch
 		
 	def Eval(context as OMetaGrammar, rule as string, input as OMetaInput):
 		found as OMetaRule
