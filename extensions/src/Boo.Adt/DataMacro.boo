@@ -11,18 +11,26 @@ class DataMacro(AbstractAstMacro):
 
 class DataMacroExpansion:
 	
-	_module as Module
+	_module as TypeDefinition
 	_baseType as TypeDefinition
 	
 	def constructor(node as MacroStatement):
 		
 		assert 1 == len(node.Arguments)
+		_module = enclosingModule(node)
 		
 		match node.Arguments[0]:
 			case [| $left = $right |]:
-				_module = enclosingModule(node)
 				_baseType = createBaseType(left)
 				expandDataConstructors(right)
+				
+			case ctor=MethodInvocationExpression():
+				_baseType = [|
+					class object:
+						pass
+				|]
+				expandDataConstructor(ctor)
+				
 		
 	def createBaseType(node as Expression):
 		type = baseTypeForExpression(node)

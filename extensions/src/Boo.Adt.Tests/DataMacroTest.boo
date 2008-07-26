@@ -10,9 +10,17 @@ data ExpressionX < Expression = Mult(left as Expression, right as Expression)
 
 data Result(Value as int) = Success() | Failure(Error as string)
 
+data Foo(Value as int)
+
 [TestFixture]
 class DataMacroTest:
 	
+	[Test]
+	def TestSingleType():
+		type = Foo
+		assert object is type.BaseType
+		Assert.AreEqual("Foo(42)", Foo(42).ToString())
+
 	[Test]
 	def TestBaseFields():
 		Assert.AreEqual("Success(42)", Success(42).ToString())
