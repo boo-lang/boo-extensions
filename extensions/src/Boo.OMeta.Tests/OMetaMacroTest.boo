@@ -2,7 +2,6 @@ namespace Boo.OMeta.Tests
 
 import Boo.OMeta
 import Boo.PatternMatching
-import Boo.Adt
 
 import NUnit.Framework
 
@@ -30,13 +29,21 @@ class OMetaMacroTest:
 			one_or_many = ++letter
 		
 		r = Repetition()
-		match r.zero_or_many(OMetaInput.For("3")):
+		match r.zero_or_many("3"):
 			case SuccessfulMatch(Input: OMetaInput(Head: char('3'))):
 				pass
 				
-		match r.zero_or_many(OMetaInput.For("abc4")):
+		match r.zero_or_many("abc4"):
 			case SuccessfulMatch(Input: OMetaInput(Head: char('4')), Value):
 				Assert.AreEqual([char('a'), char('b'), char('c')], Value)
+				
+		match r.one_or_many("3"):
+			case FailedMatch(Input: OMetaInput(Head: char('3'))):
+				pass
+				
+		match r.one_or_many("ab4"):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('4')), Value):
+				Assert.AreEqual([char('a'), char('b')], Value)
 	
 	[Test]
 	def TestSemanticPredicate():
@@ -47,8 +54,8 @@ class OMetaMacroTest:
 			def isOdd(n as int):
 				return n % 2 != 0
 				
-		def odd(input):
-			return Numbers().odd(OMetaInput.For(input))
+		def odd(input as string):
+			return Numbers().odd(input)
 				
 		match odd("35"):
 			case SuccessfulMatch(Value: 35, Input: OMetaInput(IsEmpty: true)):
@@ -58,23 +65,21 @@ class OMetaMacroTest:
 			case FailedMatch():
 				pass
 				
-#	[Test]
-#	def TestRuleArgument():
-#		data XmlNode = XmlElement(tag as string, contents as string)
-#		
-#		ometa PoorsManXml:
-#			tag = (startTag >> tagName, contents >> c, endTag[tagName]) ^ XmlElement(tagName, c)
-#			startTag = (lt, ++letter >> tagName, gt) ^ join(tagName, '')
-#			contents = ++(~lt, _)
-#			endTag[tagName] = token["</"], token[tagName], gt
-#			lt = token["<"]
-#			gt = token[">"]
-#			token[t] = --whitespace, $(characters(input, t))
-#			
-#		match PoorsManXml().tag(OMetaInput.For("   < foo > hello world </ foo >")):
-#			case SuccessfulMatch(Value: XmlElement(tag: "foo", contents: " hello world "), Input):
-#				assert Input.IsEmpty, Input.ToString()
+	[Test]
+	def TestRuleArgument():
+		ometa Tokens:
+			token[t] = --whitespace, $(characters(input, t))
+			
+		def token(input as string, value as string):
+			return Tokens().token(input, value)
 				
+		match token("   =-", "="):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('-'))):
+				pass
+				
+		match token("   <=*", "<="):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('*'))):
+				pass
 				
 	[Test]
 	def TestParseTree():

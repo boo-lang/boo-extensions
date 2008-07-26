@@ -23,16 +23,10 @@ macro ometa:
 		for e in expressions():
 			match e:
 				case [| $(ReferenceExpression(Name: name)) = $pattern |]:
-					code = [|
-						block:
-							InstallRule($name) do(grammar as OMetaGrammar, input as OMetaInput):
-								//print "> ${$name}"
-								//try:
-									$(RuleExpander(name).expand(pattern))
-								//ensure:
-								//	print "< ${$name}"
-					|].Block
-					block.Add(code)
+					expandRule block, name, pattern
+					
+				case [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]:
+					expandRule block, name, pattern, arg
 		return block
 		
 	declaration = ometa.Arguments[0]
@@ -57,16 +51,36 @@ macro ometa:
 				
 			def Apply(rule as string, input as OMetaInput):
 				return _grammar.Apply(self, rule, input)
+				
+			def Apply(rule as string, input as System.Collections.IEnumerable):
+				return Apply(rule, OMetaInput.For(input))
 			
 	|]
 	for stmt in ometa.Block.Statements:
 		match stmt:
 			case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $_ |]):
-				m = [|
+				m1 = [|
 					def $name(input as OMetaInput):
 						return Apply($name, input)
 				|]
-				type.Members.Add(m)
+				type.Members.Add(m1)
+				m2 = [|
+					def $name(input as System.Collections.IEnumerable):
+						return Apply($name, OMetaInput.For(input))
+				|]
+				type.Members.Add(m2)
+				
+			case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $_ |]):
+				m1 = [|
+					def $name(input as OMetaInput, $arg):
+						return Apply($name, OMetaInput.ForArgument($arg, input))
+				|]
+				type.Members.Add(m1)
+				m2 = [|
+					def $name(input as System.Collections.IEnumerable, $arg):
+						return Apply($name, OMetaInput.ForArgument($arg, OMetaInput.For(input)))
+				|]
+				type.Members.Add(m2)
 				
 			case DeclarationStatement(Declaration: Declaration(Name: name, Type: null), Initializer: block=BlockExpression()):
 				m = Method(
@@ -95,6 +109,18 @@ def grammarName(e as Expression) as string:
 		case [| $l < $_ |]:
 			return grammarName(l)
 			
+def expandRule(block as Block, name as string, pattern as Expression, *args as (Expression)):
+	code = [|
+		block:
+			InstallRule($name) do(context as OMetaGrammar, input_ as OMetaInput):
+				//print "> ${$name}"
+				//try:
+					$(RuleExpander(name).expand(pattern, args))
+				//ensure:
+				//	print "< ${$name}"
+	|].Block
+	block.Add(code)
+			
 class RuleExpander:
 	
 	_ruleName as string
@@ -103,10 +129,24 @@ class RuleExpander:
 	def constructor(ruleName as string):
 		_ruleName = ruleName
 	
-	def expand(e as Expression) as Block:
-		block = expand(e, [| input |], [| lastMatch |])
+	def expand(e as Expression, args as (Expression)) as Block:
+		
+		input = [| input_ |]
+		block = Block(LexicalInfo: e.LexicalInfo)
+		for arg in args:
+			code = [|
+				block:
+					lastMatch = any($input)
+					smatch = lastMatch as SuccessfulMatch
+					if smatch is null: return lastMatch
+					$input = smatch.Input
+					$arg = smatch.Value
+			|].Block
+			block.Add(code)
+		
+		expand block, e, input, [| lastMatch |]
 		block.Add([| return lastMatch |])
-		block.LexicalInfo = e.LexicalInfo
+		
 		return block
 		
 	def expand(e as Expression, input as Expression, lastMatch as ReferenceExpression) as Block:
@@ -233,6 +273,15 @@ class RuleExpander:
 		
 	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		match e:
+			case SpliceExpression(Expression: rule):
+				block.Add([| input = $input |])
+				block.Add([| $lastMatch = $rule |])
+				
+			case [| $rule[$arg] |]:
+				newInput = uniqueName()
+				block.Add([| $newInput = OMetaInput.ForArgument($arg, $input) |])
+				expand block, rule, newInput, lastMatch
+				
 			case [| $pattern and $predicate |]:
 				expand block, pattern, input, lastMatch
 				checkPredicate = [|
@@ -283,10 +332,10 @@ class RuleExpander:
 				expandNegation block, rule, input, lastMatch
 				
 			case ReferenceExpression(Name: name):
-				block.Add([| $lastMatch = grammar.Apply(grammar, $name, $input) |])
+				block.Add([| $lastMatch = context.Apply(context, $name, $input) |])
 				
 			case [| super |]:
-				block.Add([| $lastMatch = grammar.SuperApply(grammar, $_ruleName, $input) |])
+				block.Add([| $lastMatch = context.SuperApply(context, $_ruleName, $input) |])
 				
 			case [| $_() |]:
 				rules = processObjectPatternRules(e)

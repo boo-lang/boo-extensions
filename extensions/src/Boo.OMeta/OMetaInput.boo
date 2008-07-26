@@ -15,6 +15,9 @@ class OMetaInput:
 			return EnumeratorInput(enumerator)
 		return Empty
 		
+	static def ForArgument(argument, input as OMetaInput):
+		return ArgumentInput(argument, input)
+		
 	static def Singleton(o):
 		return For((o,))
 	
@@ -32,6 +35,17 @@ class OMetaInput:
 		
 	override def ToString():
 		return "OMetaInput()"
+		
+internal class ArgumentInput(OMetaInput):
+	[getter(Head)] _argument
+	[getter(Tail)] _tail as OMetaInput
+	
+	def constructor(argument, tail as OMetaInput):
+		_argument = argument
+		_tail = tail
+		
+	override IsEmpty:
+		get: return false
 
 internal class EnumeratorInput(OMetaInput):
 	
