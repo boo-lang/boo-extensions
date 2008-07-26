@@ -10,8 +10,9 @@ data OMetaFailure() = \
 		| PredicateFailure(Predicate as string) \
 		| NegationFailure(Predicate as string) \
 		| LeftRecursionFailure() \
-		| UnexpectedValueFailure(Expected as object) \
+		| ExpectedValueFailure(Expected as object) \
 		| ObjectPatternFailure(Pattern as string) \
+		| ChoiceFailure(Failures as List[of FailedMatch]) \
 		| RuleFailure(Rule as string, Reason as OMetaFailure)
 
 data OMetaMatch(Input as OMetaInput) = \
@@ -97,13 +98,13 @@ class OMetaGrammarRoot(OMetaGrammar):
 class OMetaGrammarPrototype(OMetaGrammarRoot):
 	
 	def constructor():
-		SetUpRule "whitespace", char.IsWhiteSpace
-		SetUpRule "letter", char.IsLetter
-		SetUpRule "digit", char.IsDigit
-		SetUpRule "_", { o | return true }
+		SetUpRule "whitespace", "char.IsWhitespace", char.IsWhiteSpace
+		SetUpRule "letter", "char.IsLetter", char.IsLetter
+		SetUpRule "digit", "char.IsDigit", char.IsDigit
+		SetUpRule "_", "_", { o | return true }
 		
-	private def SetUpRule(name as string, predicate as System.Predicate[of object]):
-		InstallRule(name, makeRule(name, predicate))
+	private def SetUpRule(name as string, predicateDescription as string, predicate as System.Predicate[of object]):
+		InstallRule(name, makeRule(name, predicateDescription, predicate))
 		
 class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	
@@ -118,11 +119,12 @@ class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	override def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		return _prototype.Apply(context, rule, input)
 		
-def makeRule(ruleName as string, predicate as System.Predicate[of object]) as OMetaRule:
+def makeRule(ruleName as string, predicateDescription as string, predicate as System.Predicate[of object]) as OMetaRule:
+	predicateFailure = PredicateFailure(predicateDescription)
 	def rule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch:
 		if input.IsEmpty:
 			return FailedMatch(input, RuleFailure(ruleName, EndOfInput))
 		if  not predicate(input.Head):
-			return FailedMatch(input, RuleFailure(ruleName, PredicateFailure(predicate.Method.ToString())))
+			return FailedMatch(input, RuleFailure(ruleName, predicateFailure))
 		return SuccessfulMatch(input.Tail, input.Head)
 	return rule

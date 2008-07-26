@@ -13,7 +13,7 @@ def character(input as OMetaInput, expected as char) as OMetaMatch:
 	if input.IsEmpty:
 		return FailedMatch(input, RuleFailure('character', EndOfInput))
 	if not expected.Equals(input.Head):
-		return FailedMatch(input, RuleFailure('character', UnexpectedValueFailure(expected)))
+		return FailedMatch(input, RuleFailure('character', ExpectedValueFailure(expected)))
 	return SuccessfulMatch(input.Tail, expected.ToString())
 	
 def characters(input as OMetaInput, expected as string) as OMetaMatch:
