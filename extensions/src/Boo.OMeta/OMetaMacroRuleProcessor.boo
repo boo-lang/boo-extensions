@@ -6,10 +6,11 @@ import Boo.PatternMatching
 class OMetaMacroRuleProcessor:
 	
 	_ruleName as string
-	_collectingParseTree = DynamicVariable[of bool](true)
+	_collectingParseTree as DynamicVariable[of bool]
 
-	def constructor(ruleName as string):
+	def constructor(ruleName as string, options as List):
 		_ruleName = ruleName
+		_collectingParseTree = DynamicVariable[of bool]("ParseTree" in options)
 	
 	def expand(e as Expression, args as (Expression)) as Block:
 		
@@ -53,38 +54,40 @@ class OMetaMacroRuleProcessor:
 		currentBlock.Add([| $lastMatch = FailedMatch($input) |])
 		
 	def resultAppend(result as Expression):
-		return [| $result.Add(smatch.Value) if smatch.Value is not null |]
+		if collectingParseTree:
+			return [| $result.Add(smatch.Value) if smatch.Value is not null |]
+		return ExpressionStatement([| $result = smatch.Value |])
 		
 	def expandRepetition(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 		
 		temp = lastMatch #uniqueName()
 		result = uniqueName()
+		block.Add(expand(e, input, temp))
+		block.Add([| smatch = $temp as SuccessfulMatch |])
 		code = [|
-			block:
-				$(expand(e, input, temp))
-				smatch = $temp as SuccessfulMatch
-				if smatch is not null:
-					$result = []
-					$(resultAppend(result))
-					$(expandRepetitionLoop(e, [| $temp.Input |], temp, result)) 
-		|].Block
+			if smatch is not null:
+				$(resultAppend(result))
+				$(expandRepetitionLoop(e, [| $temp.Input |], temp, result)) 
+		|]
+		if collectingParseTree:
+			code.TrueBlock.Insert(0, [| $result = [] |])
 		block.Add(code)	
 		
 	def expandRepetitionLoop(e as Expression, input as Expression, lastMatch as ReferenceExpression, result as Expression):
-			tempInput = uniqueName()
-			code = [|
-				block:
-					$tempInput = $input
-					while true:
-						$(expand(e, [| $tempInput |], lastMatch))
-						smatch = $lastMatch as SuccessfulMatch
-						break if smatch is null
-						$tempInput = smatch.Input
-						$(resultAppend(result))
-	
-					$lastMatch = SuccessfulMatch($lastMatch.Input, $result)
-			|]
-			return code.Block
+		tempInput = uniqueName()
+		code = [|
+			block:
+				$tempInput = $input
+				while true:
+					$(expand(e, [| $tempInput |], lastMatch))
+					smatch = $lastMatch as SuccessfulMatch
+					break if smatch is null
+					$tempInput = smatch.Input
+					$(resultAppend(result))
+
+				$lastMatch = SuccessfulMatch($lastMatch.Input, $result)
+		|]
+		return code.Block
 		
 	def collectChoices(choices as List, e as Expression):
 		match e:
@@ -207,7 +210,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| --$rule |]:
 				result = uniqueName()
-				block.Add([| $result = [] |])
+				block.Add([| $result = [] |]) if collectingParseTree
 				block.Add(expandRepetitionLoop(rule, input, lastMatch, result))
 				
 			case [| ~$rule |]:

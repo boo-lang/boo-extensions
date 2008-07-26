@@ -6,6 +6,8 @@ import Boo.PatternMatching
 import NUnit.Framework
 
 ometa E:
+	option ParseTree
+	
 	dig = '1' | '2' | '3'
 	num = ++dig
 	exp = (fac, '+', fac) | fac
@@ -15,6 +17,23 @@ ometa E:
 [TestFixture]
 class OMetaMacroTest:
 	
+	[Test]
+	def TestRulesReturnLastValue():
+		ometa G3:
+			repetition = ++digit
+			sequence = digit, letter
+			negation = ~digit
+			choice = digit | letter
+			
+		assertRule G3(), 'repetition', "1234", char('4')
+		assertRule G3(), 'sequence', "1a", char('a')
+		assertRule G3(), 'choice', "3", char('3')
+		assertRule G3(), 'choice', "a", char('a')
+		
+		match G3().negation("a"):
+			case SuccessfulMatch(Input: OMetaInput(Head: char('a')), Value: null):
+				pass
+		
 	[Test]
 	def TestUntypedGrammarArgument():
 		ometa G1(value):
@@ -34,8 +53,11 @@ class OMetaMacroTest:
 				assert Input.IsEmpty
 				
 	[Test]
-	def TestRepetion():
+	def TestRepetition():
 		ometa Repetition:
+			
+			option ParseTree
+			
 			zero_or_many = --letter
 			one_or_many = ++letter
 		
@@ -99,6 +121,7 @@ class OMetaMacroTest:
 	[Test]
 	def TestExtensionParseTree():
 		ometa XE < E:
+			option ParseTree
 			fac = division | super /* super tries to delegate to all prototypes */
 			division = (atom, '/', atom)
 		
@@ -111,6 +134,9 @@ class OMetaMacroTest:
 	def TestNot():
 		
 		ometa Lines:
+			
+			option ParseTree
+			
 			parse = ++((line >> l, (newline | eof)) ^ join(l, ''))
 			line = ++(~newline, _)
 			newline = "\n" | "\r\n" | "\r"

@@ -14,6 +14,7 @@ class ObjectMatchingTest:
 	def PropertyPatternMatching():
 		
 		ometa ConstList:
+			option ParseTree
 			parse = ++(Const(value) ^ value)
 			
 		match ConstList().parse(OMetaInput.For([Const(1), Const(42)])):

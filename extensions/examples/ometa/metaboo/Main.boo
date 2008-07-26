@@ -77,7 +77,7 @@ ometa Tokenizer:
 		) >> value
 	) ^ value
 	
-	indentation = (emptyLines, spaces >> value, ~whitespace) ^ value
+	indentation = (emptyLines, --space >> value, ~whitespace) ^ value
 	emptyLines = ++(~~emptyLine, emptyLine)
 	emptyLine = spaces, newline
 	

@@ -7,10 +7,12 @@ import Boo.PatternMatching
 class OMetaMacroProcessor:
 	
 	ometa as MacroStatement
+	options = []
 	
 	def constructor(ometa as MacroStatement):
 		self.ometa = ometa
-	
+		self.options = ometa["options"] or []
+		
 	def expandGrammarSetup():
 		block = Block()
 		for e in expressions():
@@ -118,7 +120,19 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: e):
 					yield e
 				otherwise:
-					pass	
+					pass
+					
+	def expandRule(block as Block, name as string, pattern as Expression, *args as (Expression)):
+		code = [|
+			block:
+				InstallRule($name) do(context as OMetaGrammar, input_ as OMetaInput):
+					//print "> ${$name}"
+					//try:
+						$(OMetaMacroRuleProcessor(name, options).expand(pattern, args))
+					//ensure:
+					//	print "< ${$name}"
+		|].Block
+		block.Add(code)
 	
 def prototypeFor(e as Expression) as MethodInvocationExpression:
 	match e:
@@ -137,19 +151,6 @@ def grammarName(e as Expression) as string:
 			return name
 		case [| $l < $_ |]:
 			return grammarName(l)
-			
-def expandRule(block as Block, name as string, pattern as Expression, *args as (Expression)):
-	code = [|
-		block:
-			InstallRule($name) do(context as OMetaGrammar, input_ as OMetaInput):
-				//print "> ${$name}"
-				//try:
-					$(OMetaMacroRuleProcessor(name).expand(pattern, args))
-				//ensure:
-				//	print "< ${$name}"
-	|].Block
-	block.Add(code)
-			
 
 def uniqueName():
 	return ReferenceExpression(Name: "temp${CompilerContext.Current.AllocIndex()}")
