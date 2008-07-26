@@ -177,6 +177,16 @@ class MatchExpansion:
 		override def OnSpliceExpression(node as SpliceExpression):
 			_pattern = node.Expression
 			
+		override def OnSpliceTypeReference(node as SpliceTypeReference):
+			_pattern = node.Expression
+			
+		override def OnTryCastExpression(node as TryCastExpression):
+			_pattern = [| TryCastExpression(Target: $(expand(node.Target)), Type: $(expand(node.Type))) |]
+			
+		override def OnMethodInvocationExpression(node as MethodInvocationExpression):
+			assert 0 == len(node.Arguments), "Unsupported pattern '${node}'"
+			_pattern = [| MethodInvocationExpression(Target: $(expand(node.Target))) |]
+			
 		override def OnUnaryExpression(node as UnaryExpression):
 			_pattern = [| UnaryExpression(Operator: UnaryOperatorType.$(node.Operator.ToString()), Operand: $(expand(node.Operand))) |]
 			
