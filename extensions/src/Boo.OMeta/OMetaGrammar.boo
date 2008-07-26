@@ -66,6 +66,7 @@ class OMetaGrammarPrototype(OMetaGrammarRoot):
 		InstallRule("whitespace", makeRule(char.IsWhiteSpace))
 		InstallRule("letter", makeRule(char.IsLetter))
 		InstallRule("digit", makeRule(char.IsDigit))
+		InstallRule("_", makeRule({ o | return true }))
 		
 class OMetaDelegatingGrammar(OMetaGrammarRoot):
 	
