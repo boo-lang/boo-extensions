@@ -5,6 +5,13 @@ import Boo.Lang.Compiler.Ast
 import Boo.PatternMatching
 
 macro let:
+"""
+Declares a public static final field in the current module.
+
+Usage:
+
+	let answer = 42
+"""
 	
 	assert 1 == len(let.Arguments)
 	assert 0 == len(let.Block.Statements)
