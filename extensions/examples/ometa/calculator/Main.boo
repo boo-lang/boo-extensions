@@ -19,7 +19,7 @@ ometa Parser:
 	infix sum, ('+' | '-'), fac
 	infix fac, ('*' |  '/'), atom
 	atom = num | parens
-	parens = ('(', exp >> value, ')') ^ value
+	parens = ('(', sum >> value, ')') ^ value
 	num = ++digit >> value ^ Const(int.Parse(join(value, '')))
 	
 // See, Mom! No visitors!
