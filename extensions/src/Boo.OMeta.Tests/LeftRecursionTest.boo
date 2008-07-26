@@ -11,9 +11,10 @@ class LeftRecursionTest:
 	[Test]
 	def TestFailure():
 		ometa E:
-			expr = expr, '-', num
+			expr = subtraction
 			num = ++digit
+			subtraction = expr, '-', num
 			
-		match E().expr(StringInput("2-1")):
+		match E().expr(OMetaInput.For("2-1")):
 			case FailedMatch(Input):
 				Assert.AreEqual('2', Input.Head.ToString())

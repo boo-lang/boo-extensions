@@ -51,7 +51,7 @@ class OMetaMacroTest:
 		
 	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
 		
-		match grammar.Apply(grammar, rule, StringInput(text)):
+		match grammar.Apply(grammar, rule, OMetaInput.For(text)):
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
 				Assert.AreEqual(expected, Value)
