@@ -9,12 +9,53 @@ import NUnit.Framework
 // and generates Indent/Dedent values
 
 ometa E:
-	dig = '1' | '2' | '3'
-	num = ++dig
-	exp = (fac, '+', fac) | fac
-	fac = (atom, '*', atom) | atom
-	atom = num | ('(', exp, ')')
+   dig = '1' | '2' | '3'
+   num = ++dig
+   exp = (fac, '+', fac) | fac
+   fac = (atom, '*', atom) | atom
+   atom = num | ('(', exp, ')')
+   
+ometa XE < E:
+   fac = division | super /* super tries to delegate to all prototypes */
+   division = (atom, '/', atom)
+
+[TestFixture]
+class OMetaMacroTest:
 	
+	[Test]
+	def Test():
+		
+		e = E()
+		AssertE e
+		
+	[Test]
+	def TestExtension():
+		xe = XE()
+		AssertE xe
+		AssertRule xe, 'exp', "1+2/3", list(list('1'), '+', list(list('2'), '/', list('3')))
+		AssertRule xe, 'exp', "1+(2/(3+1))", list(list('1'), '+', list('(', list(list('2'), '/', list('(', list(list('3'), '+', list('1')), ')')), ')'))
+		
+	[Test]
+	def TestBinding():
+		ometa NumberListParser:
+			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ OMetaCons(head, tail)
+			dig = '1' | '2' | '3' | '4' | '5'
+			num = ++dig >> value ^ int.Parse(value.ToString())
+			
+		parser = NumberListParser()
+		AssertRule parser, 'parse', "21,42,51", list(21, 42, 51)
+		
+	def AssertE(grammar as OMetaGrammar):
+		AssertRule grammar, 'exp', "11+31", list(list('1', '1'), '+', list('3', '1'))
+		AssertRule grammar, 'exp', "1+2*3", list(list('1'), '+', list(list('2'), '*', list('3')))
+		
+	def AssertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
+		
+		match grammar.Apply(grammar, rule, StringInput(text)):
+			case SuccessfulMatch(Value, Input):
+				assert Input.IsEmpty, "Unexpected ${Input.Head}"
+				Assert.AreEqual(expected, Value)
+
 #	charRange(begin as char, end as  = character >> c
 	// semantic predicates with 'and'
 	// even = num >> n and 0 == n % 2
@@ -40,14 +81,3 @@ ometa E:
 #	lt = token("<")
 #	gt = token(">")
 	
-[TestFixture]
-class OMetaMacroTest:
-	
-	[Test]
-	def Test():
-		
-		e = E()
-		match e.exp(StringInput("11+31")):
-			case SuccessfulMatch(Value, Input):
-				assert Input.IsEmpty
-				assert Value == [['1', '1'], '+', ['3', '1']]

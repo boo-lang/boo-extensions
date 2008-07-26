@@ -3,6 +3,9 @@ namespace Boo.OMeta
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.PatternMatching
+import Boo.Adt
+
+let currentRuleName = DynamicVariable[of string]()
 
 macro ometa:
 	
@@ -16,46 +19,78 @@ macro ometa:
 				case ExpressionStatement(Expression: e):
 					yield e
 		
-	grammarSetupBlock = Block()
-	for e in expressions():
-		match e:
-			case [| $(ReferenceExpression(Name: name)) = $pattern |]:
-				code = [|
-					block:
-						grammar[$name] = do(grammar as OMetaGrammar, input as OMetaInput):
-							//print "> ${$name}"
-							//try:
-								$(expand(pattern))
-							//ensure:
-							//	print "< ${$name}"
-				|].Block
-				grammarSetupBlock.Add(code)
+	def expandGrammarSetup():
+		block = Block()
+		for e in expressions():
+			match e:
+				case [| $(ReferenceExpression(Name: name)) = $pattern |]:
+					currentRuleName.With(name):
+						code = [|
+							block:
+								InstallRule($name) do(grammar as OMetaGrammar, input as OMetaInput):
+									//print "> ${$name}"
+									//try:
+										$(expand(pattern))
+									//ensure:
+									//	print "< ${$name}"
+						|].Block
+						block.Add(code)
+		return block
+		
+	declaration = ometa.Arguments[0]
 						
-	grammarName as ReferenceExpression, = ometa.Arguments
 	type = [|
-		class $grammarName:
-	
-			_grammar as OMetaGrammar
+		class $(grammarName(declaration))(OMetaGrammar):
 			
+			_grammar as OMetaGrammar
+				
 			def constructor():
-				grammar = OMetaGrammar()
-				$grammarSetupBlock
-				_grammar = grammar
+				_grammar = $(prototypeFor(declaration))
+				$(expandGrammarSetup())
+				
+			def InstallRule(ruleName as string, rule as OMetaRule):
+				_grammar.InstallRule(ruleName, rule)
+		
+			def OMetaGrammar.Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
+				return _grammar.Apply(context, rule, input)
+				
+			def OMetaGrammar.SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
+				return _grammar.SuperApply(context, rule, input)
+				
+			def Apply(rule as string, input as OMetaInput):
+				return _grammar.Apply(self, rule, input)
+			
 	|]
 	for e in expressions():
 		match e:
 			case [| $(ReferenceExpression(Name: name)) = $_ |]:
 				m = [|
 					def $name(input as OMetaInput):
-						return _grammar.Apply($name, input)
+						return Apply($name, input)
 				|]
 				type.Members.Add(m)
 		
+	type.LexicalInfo = ometa.LexicalInfo
 	enclosingTypeDefinition().Members.Add(type)
+	
+def prototypeFor(e as Expression) as MethodInvocationExpression:
+	match e:
+		case [| $_ < $prototype |]:
+			return [| OMetaDelegatingGrammar($prototype()) |]
+		case ReferenceExpression():
+			return [| OMetaGrammarRoot() |]
+	
+def grammarName(e as Expression) as string:
+	match e:
+		case ReferenceExpression(Name: name):
+			return name
+		case [| $l < $_ |]:
+			return grammarName(l)
 	
 def expand(e as Expression) as Block:
 	temp = [| lastMatch |]
 	block = expand(e, [| input |], temp)
+	block.LexicalInfo = e.LexicalInfo
 	block.Add([| return $temp |])
 	return block
 	
@@ -83,20 +118,20 @@ def expandChoices(block as Block, choices as List, input as Expression, lastMatc
 def expandRepetition(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 	
 	temp = lastMatch #uniqueName()
-	
+	result = uniqueName()
 	code = [|
 		block:
 			$(expand(e, input, temp))
 			smatch = $temp as SuccessfulMatch
 			if smatch is not null:
-				result = [smatch.Value]
+				$result = OMetaCons(smatch.Value)
 				while true:
 					$(expand(e, [| $temp.Input |], temp))
 					smatch = $temp as SuccessfulMatch
 					break if smatch is null
-					result.Add(smatch.Value)
+					$result = OMetaCons(smatch.Value, $result)
 
-				$lastMatch = SuccessfulMatch($temp.Input, result)
+				$lastMatch = SuccessfulMatch($temp.Input, $result.Reverse())
 	|].Block
 	block.Add(code)	
 	
@@ -115,23 +150,43 @@ def expandSequence(block as Block, sequence as ExpressionCollection, input as Ex
 	currentBlock = block
 	
 	values = uniqueName()
-	currentBlock.Add([| $values = [] |])
+	currentBlock.Add([| $values = OMetaList.Empty |])
 	for item in sequence:
 		expand currentBlock, item, input, lastMatch
 		input = [| $lastMatch.Input |]
 		currentBlock.Add([| smatch = $lastMatch as SuccessfulMatch |])
 		code = [|
 			if smatch is not null:
-				$values.Add(smatch.Value)
+				$values = OMetaCons(smatch.Value, $values)
 		|]
 		currentBlock.Add(code)
 		currentBlock = code.TrueBlock
-	currentBlock.Add([| $lastMatch = SuccessfulMatch(smatch.Input, $values) |])
+	currentBlock.Add([| $lastMatch = SuccessfulMatch(smatch.Input, $values.Reverse()) |])
 	
 def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
 	
 	match e:
-		case [| $l | $r |]:
+		case [| $pattern ^ $value |]:
+			expand block, pattern, input, lastMatch
+			code = [|
+				block:
+					smatch = $lastMatch as SuccessfulMatch
+					if smatch is not null:
+						$lastMatch = SuccessfulMatch(smatch.Input, $value)
+			|].Block
+			block.Add(code)
+			
+		case [| $pattern >> $variable |]:
+			expand block, pattern, input, lastMatch
+			code = [|
+				block:
+					smatch = $lastMatch as SuccessfulMatch
+					if smatch is not null:
+						$variable = smatch.Value
+			|].Block
+			block.Add(code)
+			
+		case [| $_ | $_ |]:
 			choices = []
 			collectChoices choices, e
 			expandChoices block, choices, input, lastMatch
@@ -143,7 +198,10 @@ def expand(block as Block, e as Expression, input as Expression, lastMatch as Re
 			expandRepetition block, rule, input, lastMatch
 			
 		case ReferenceExpression(Name: name):
-			block.Add([| $lastMatch = grammar.Apply($name, $input) |])
+			block.Add([| $lastMatch = grammar.Apply(grammar, $name, $input) |])
+			
+		case [| super |]:
+			block.Add([| $lastMatch = grammar.SuperApply(grammar, $(currentRuleName.Value), $input) |])
 			
 		case ArrayLiteralExpression(Items: items):
 			expandSequence block, items, input, lastMatch 
