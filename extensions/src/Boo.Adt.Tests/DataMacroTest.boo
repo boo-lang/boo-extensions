@@ -3,6 +3,11 @@ namespace Boo.Adt.Tests
 import NUnit.Framework
 import Boo.Adt
 
+data Expression = Const(value as int) \
+			| Add(left as Expression, right as Expression)
+			
+data ExpressionX(Expression) = Mult(left as Expression, right as Expression)
+
 [TestFixture]
 class DataMacroTest:
 
@@ -32,11 +37,3 @@ class DataMacroTest:
 	[Test]
 	def TestProperties():
 		Assert.AreEqual(42, Const(42).value)
-	
-	def DefineData():
-		# TODO: parser needs to be changed to allow
-		# macros at the top level
-		data Expression = Const(value as int) \
-			| Add(left as Expression, right as Expression)
-			
-		data ExpressionX(Expression) = Mult(left as Expression, right as Expression)

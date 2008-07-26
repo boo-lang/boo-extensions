@@ -3,6 +3,9 @@ namespace Boo.Adt.Tests
 import NUnit.Framework
 import Boo.Adt
 
+data GExpression[T] = GConst(value as T) \
+			| GAdd(left as GExpression[of T], right as GExpression[of T])
+
 [TestFixture]
 class GenericDataMacroTest:
 	
@@ -28,7 +31,3 @@ class GenericDataMacroTest:
 	[Test]
 	def TestProperties():
 		Assert.AreEqual(42, GConst[of int](42).value)
-	
-	def DefineData():
-		data GExpression[T] = GConst(value as T) \
-			| GAdd(left as GExpression[of T], right as GExpression[of T])
