@@ -105,6 +105,10 @@ class MatchExpansion:
 		if reference is not null:
 			return expandBindPattern(matchValue, reference)
 			
+		quasiquote = pattern as QuasiquoteExpression
+		if quasiquote is not null:
+			return expandQuasiquotePattern(matchValue, quasiquote)
+			
 		capture = pattern as BinaryExpression
 		if isCapture(capture):
 			return expandCapturePattern(matchValue, capture)
@@ -142,7 +146,7 @@ class MatchExpansion:
 		condition.LexicalInfo = node.LexicalInfo
 		
 		for member in node.Arguments:
-			assert member isa ReferenceExpression, member.ToCodeString()
+			assert member isa ReferenceExpression, "Invalid argument '${member}' in pattern '${node}'."
 			memberRef = MemberReferenceExpression(member.LexicalInfo, temp.CloneNode(), member.ToString())
 			condition = [| $condition and __eval__($member = $memberRef, true) |]  
 			
@@ -151,6 +155,42 @@ class MatchExpansion:
 			condition = [| $condition and $namedArgCondition |]
 			
 		return condition
+	
+	class QuasiquotePatternBuilder(DepthFirstVisitor):
+		
+		_expansion as MatchExpansion
+		_pattern as Expression
+		
+		def constructor(expansion as MatchExpansion):
+			_expansion = expansion
+		
+		def build(node as QuasiquoteExpression):
+			return expand(node.Node)
+			
+		def expand(node as Node):
+			node.Accept(self)
+			expansion = _pattern
+			_pattern = null
+			assert expansion is not null, "Unsupported pattern '${node}'"
+			return expansion
+			
+		override def OnSpliceExpression(node as SpliceExpression):
+			_pattern = node.Expression
+			
+		override def OnUnaryExpression(node as UnaryExpression):
+			_pattern = [| UnaryExpression(Operator: UnaryOperatorType.$(node.Operator.ToString()), Operand: $(expand(node.Operand))) |]
+			
+		override def OnBinaryExpression(node as BinaryExpression):
+			_pattern = [| BinaryExpression(Operator: BinaryOperatorType.$(node.Operator.ToString()), Left: $(expand(node.Left)), Right: $(expand(node.Right))) |]
+		
+		override def OnReferenceExpression(node as ReferenceExpression):
+			_pattern = [| ReferenceExpression(Name: $(node.Name)) |]
+			
+	def objectPatternFor(node as QuasiquoteExpression):
+		return QuasiquotePatternBuilder(self).build(node)
+		
+	def expandQuasiquotePattern(matchValue as Expression, node as QuasiquoteExpression) as Expression:
+		return expandObjectPattern(matchValue, objectPatternFor(node))
 		
 	def expandMemberPattern(matchValue as Expression, member as ExpressionPair):
 		memberRef = MemberReferenceExpression(member.First.LexicalInfo, matchValue, member.First.ToString())	

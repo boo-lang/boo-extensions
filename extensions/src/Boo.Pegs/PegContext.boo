@@ -125,7 +125,7 @@ class PegRuleStateMatched(PegRuleStateNested):
 
 	_rule as PegRule
 	_ruleMatchBegin as int
-	
+
 	def constructor(ctx as PegContext, parent as PegRuleState, rule as PegRule, ruleMatchBegin as int):
 		super(ctx, parent)
 		_rule = rule

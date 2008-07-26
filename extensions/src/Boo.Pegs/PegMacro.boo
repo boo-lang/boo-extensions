@@ -12,39 +12,28 @@ def expand(e as Expression) as Expression:
 		case ListLiteralExpression(Items: items):
 			return expandArguments([| choice() |], items)
 			
-		case UnaryExpression(Operator: UnaryOperatorType.Increment, Operand: expression):
+		case [| ++ $expression |]:
 			return [| one_or_many($(expand(expression))) |]
 			
-		case UnaryExpression(Operator: UnaryOperatorType.Decrement, Operand: expression):
+		case [| -- $expression |]:
 			return [| zero_or_many($(expand(expression))) |]
 			
-		case UnaryExpression(Operator: UnaryOperatorType.OnesComplement, Operand: expression):
+		case [| ~ $expression |]:
 			return [| choice($(expand(expression)), empty()) |]
 			
-		case UnaryExpression(Operator: UnaryOperatorType.LogicalNot, Operand: expression):
+		case [| not $expression |]:
 			return [| not_predicate($(expand(expression))) |]
 			 
 		case s=StringLiteralExpression():
 			return [| terminal($s) |]
 			
-		case BinaryExpression(
-				Operator: BinaryOperatorType.Division,
-				Left: l,
-				Right: r):
-			
+		case [| $l / $r |]:
 			return [| choice($(expand(l)), $(expand(r))) |]
 			
-		case BinaryExpression(
-				Operator: BinaryOperatorType.BitwiseAnd,
-				Left: l,
-				Right: r):
-					
+		case [| $l & $r |]:
 			return [| predict($(expand(l)), $(expand(r))) |]
 			
-		case BinaryExpression(
-				Operator: BinaryOperatorType.Subtraction,
-				Left: l,
-				Right: r):
+		case [| $l - $r |]:
 			return [| char_range($(charFor(l)), $(charFor(r))) |]
 			
 		case block=BlockExpression():
