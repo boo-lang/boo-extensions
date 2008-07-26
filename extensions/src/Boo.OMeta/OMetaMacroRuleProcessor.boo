@@ -39,15 +39,18 @@ class OMetaMacroRuleProcessor:
 		
 	def expandChoices(block as Block, choices as List, input as Expression, lastMatch as ReferenceExpression):
 		currentBlock = block
+		
+		failureList = uniqueName()
+		currentBlock.Add([| $failureList = System.Collections.Generic.List[of FailedMatch]($(len(choices))) |])
 		for choice in choices:
 			expand currentBlock, choice, input, lastMatch
 			code = [|
 				if $lastMatch isa FailedMatch:
-					pass
+					$failureList.Add($lastMatch)
 			|]
 			currentBlock.Add(code)
 			currentBlock = code.TrueBlock
-#		currentBlock.Add([| $lastMatch = FailedMatch($input) |])
+		currentBlock.Add([| $lastMatch = FailedMatch($lastMatch.Input, ChoiceFailure($failureList)) |])
 		
 	def resultAppend(result as Expression):
 		if collectingParseTree:

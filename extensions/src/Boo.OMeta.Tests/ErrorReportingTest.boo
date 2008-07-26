@@ -8,23 +8,22 @@ ometa FailureParser:
 	sequence = letter, digit
 	choice = letter | digit
 	predicate = letter >> l and (l == char('a'))
-		
 
 [TestFixture]
 class ErrorReportingTest:
 	
-#	[Test]
-#	def Choice():
-#		
-#		match FailureParser().choice("_"):
-#			case FailedMatch(
-#					Input: OMetaInput(Position: 1),
-#					Failure: ChoiceFailure(
-#								Failures: [
-#									FailedMatch(Failure: RuleFailure(Rule: 'letter')),
-#									FailedMatch(Failure: RuleFailure(Rule: 'digit'))
-#								])):
-#				pass
+	[Test]
+	def Choice():
+		
+		match FailureParser().choice("_"):
+			case FailedMatch(
+					Input: OMetaInput(Position: 0),
+					Failure: ChoiceFailure(
+								Failures: (
+									FailedMatch(Failure: RuleFailure(Rule: 'letter')),
+									FailedMatch(Failure: RuleFailure(Rule: 'digit'))
+								))):
+				pass
 	
 	[Test]
 	def Sequence():
