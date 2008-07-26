@@ -29,6 +29,9 @@ class OMetaInput:
 		
 	virtual Tail as OMetaInput:
 		get: raise InvalidOperationException()
+		
+	override def ToString():
+		return "OMetaInput()"
 
 internal class EnumeratorInput(OMetaInput):
 	
@@ -53,4 +56,4 @@ internal class EnumeratorInput(OMetaInput):
 			return _tail
 		
 	override def ToString():
-		return "EnumeratorInput(Head: ${Head})"
+		return "OMetaInput(Head: ${Head})"
