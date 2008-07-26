@@ -17,6 +17,8 @@ ometa XE < E:
 	fac = division | super
 	division = (atom >> x, '/', atom >> y) ^ Infix("/", x, y)
 	
+	
+// See, Mom! No visitors!
 ometa Evaluator:
 	eval = const | infix
 	const = Const(value) ^ value
@@ -27,20 +29,18 @@ ometa Evaluator:
 		return x + y
 	def multiply(x as int, y as int):
 		return x * y
-		
+
 ometa XEvaluator < Evaluator:
 	eval = division | super
 	division = Infix(operator: "/", left: eval >> l, right: eval >> r) ^ divide(l, r)
 	def divide(left as int, right as int):
 		return left / right
 
-p = XE()
-e = XEvaluator()
 while true:
 	line = prompt("> ")
 	if string.IsNullOrEmpty(line) or line == "/q": break
-	match m=p.Apply('exp', OMetaInput.For(line)):
+	match m=XE().Apply('exp', OMetaInput.For(line)):
 		case SuccessfulMatch(Value):
-			print e.eval(OMetaInput.Singleton(Value))
+			print XEvaluator().eval(OMetaInput.Singleton(Value))
 		otherwise:
 			print m
