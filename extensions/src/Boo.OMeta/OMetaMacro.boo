@@ -88,10 +88,9 @@ def grammarName(e as Expression) as string:
 			return grammarName(l)
 	
 def expand(e as Expression) as Block:
-	temp = [| lastMatch |]
-	block = expand(e, [| input |], temp)
+	block = expand(e, [| input |], [| lastMatch |])
+	block.Add([| return lastMatch |])
 	block.LexicalInfo = e.LexicalInfo
-	block.Add([| return $temp |])
 	return block
 	
 def expand(e as Expression, input as Expression, lastMatch as ReferenceExpression) as Block:
