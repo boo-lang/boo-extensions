@@ -1,5 +1,6 @@
 namespace metaboo
 
+import System.Text
 import Boo.OMeta
 import Boo.PatternMatching
 import Boo.Adt
@@ -54,37 +55,56 @@ ometa Tokenizer:
 	tokens:
 		eq = "="
 		num = ++digit
-		id = ((letter | '_') >> prefix, ++(letter | digit | '_') >> suffix) ^ (prefix.ToString() + join(suffix, ''))
+		id = (letter | '_'), --(letter | digit | '_')
 		colon = ":"
+		lparen = "("
+		rparen = ")"
 		kw = (keywords >> value, ~(letter | digit)) ^ value 
 	
-	keywords = "class" | "pass"
+	keywords = "class" | "pass" | "def"
 	
-	keyword[expected] = ((token["kw"] >> t) and (expected == tokenValue(t))) ^ t
+	keyword[expected] = ((token["kw"] >> t) and (expected is tokenValue(t))) ^ t
 		
 	token[expected] = (scanner >> t and tokenMatches(t, expected)) ^ t
 	
 	scanner = (
 		(
-		(((indentation >> i) and sameIndent(i), tokens >> t) ^ t)
-		| (((indentation >> i) and largerIndent(i)) ^ makeToken("indent"))
-		| (((indentation >> i) and smallerIndent(i)) ^ makeToken("dedent"))
-		| ((--whitespace, tokens >> t) ^ t)
-		| (((--whitespace, ~_) and bufferedDedent()) ^ makeToken("dedent"))
+			  (((_ >> t) and (t isa Token)) ^ t) // token introduced by processDedent
+			| (((indentation >> i) and sameIndent(i)) ^ makeToken("eol"))
+			| (((indentation >> i) and largerIndent(i)) ^ makeToken("indent"))
+			| (((indentation >> i) and smallerIndent(i), $(processDedent(input, i)) >> value) ^ value)
+			| ((--whitespace, tokens >> t) ^ t)
 		) >> value
 	) ^ value
 	
-	indentation = (emptyLines, ++(' ' | '\t') >> value, ~whitespace) ^ value
+	indentation = (emptyLines, spaces >> value, ~whitespace) ^ value
 	emptyLines = ++(~~emptyLine, emptyLine)
 	emptyLine = spaces, newline
 	
-	spaces = --(' ' | '\t')
+	spaces = --space
 	
-	classDef = keyword["class"], token["id"], token["colon"], token["indent"], classBody, token["dedent"]
+	space = ' ' | '\t'
 	
-	classBody = (keyword["pass"], eos) | classDef
+	module = (--whitespace, ++classDef >> types) ^ types
 	
-	eos = newline | ~_
+	classDef = (
+		keyword["class"], token["id"] >> className, token["colon"], token["indent"], classBody >> body, token["dedent"]
+	) ^ [className, body]
+	
+	classBody = (keyword["pass"], eol) ^ null | ++classMember
+	
+	classMember = method | classDef
+	
+	method = (
+		keyword["def"], token["id"], token["lparen"], token["rparen"], token["colon"],
+			token["indent"], methodBody, token["dedent"]
+	)
+	
+	methodBody = ++stmt
+	
+	stmt = (assign >> value, eol) ^ value
+	
+	eol = ++token["eol"] | ~_
 	
 	newline = '\n' | "\r\n" | "\r"
 	
@@ -95,39 +115,51 @@ ometa Tokenizer:
 	rvalue = token["num"] | token["id"]
 	
 	def trace(input as OMetaInput, value):
-#		print "trace:", value, stack
+		print "trace:", value, stack
 		return SuccessfulMatch(input, value)
 	
 	def sameIndent(i):
-#		print "sameIndent", stack, len(i)
 		return currentIndent() == len(i)
 		
 	def largerIndent(i):
 		if len(i) > currentIndent():
-#			print "largerIndent", stack
 			stack.Push(len(i))
 			return true
+			
+	def processDedent(input as OMetaInput, i):
+		while smallerIndent(i):
+			input = OMetaInput.ForArgument(makeToken("dedent"), input)
+			stack.Pop()
+		assert sameIndent(i)
+		return SuccessfulMatch(input, makeToken("eol"))
 		
 	def smallerIndent(i):
-		if len(i) < currentIndent():
-			stack.Pop()
-#			print "smallerIndent", stack
-			return true
-			
-	def bufferedDedent():
-#		print "bufferedDedent: ", stack
-		if len(stack) > 1:
-			stack.Pop()
-			return true
-		
+		return len(i) < currentIndent()
+
 	def currentIndent() as int:
-		return stack[0]
+		return stack[-1]
 	
 	def makeToken(kind):
 		return Token(kind, kind)
 		
 	def makeToken(kind, value):
-		return Token(kind, join(value, ''))
+		return Token(kind, flatString(value))
+		
+	def flatString(value) as string:
+		if value isa string: return value
+		buffer = StringBuilder()
+		flatString buffer, value
+		return buffer.ToString()
+		
+	def flatString(buffer as StringBuilder, value):
+		match value:
+			case string():
+				buffer.Append(value)
+			case char():
+				buffer.Append(value)
+			otherwise:
+				for item in value:
+					flatString buffer, item
 		
 	def tokenMatches(token as Token, expected):
 		return expected is token.kind
@@ -144,19 +176,49 @@ def scan(text as string):
 				input = Input
 				yield Value
 			case FailedMatch(Input):
-				assert Input.IsEmpty
+				#assert Input.IsEmpty, Input.ToString()
+				print Input
 				break
+				
+def printTokens(text as string):
+	sep = "=" * 20
+	print sep
+	for token in scan(text):
+		print token
+	print sep
 				
 #print Tokenizer().indentation(" \n  foo")
 	
-code = """
+printTokens """
 class class0:
 
 	class Bar:
 		pass
+	
+	def foo():
+		a = 3
+		a = 4
 """
-for token in scan(code):
-	print token
 
-print Tokenizer().classDef(code)
+assert stack == [0]
+
+code = """
+class Foo:
+	def foo():
+		a = 3
+class Bar:
+	class Baz:
+		pass
+	class Gazong:
+		pass
+"""
+printTokens code
+print Tokenizer().module(code)
+
+
+code = """def foo():
+	a = 3
+"""
+printTokens code
+print Tokenizer().method(code)
 
