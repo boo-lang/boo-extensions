@@ -3,16 +3,37 @@ namespace speed
 import Boo.OMeta
 import Boo.PatternMatching
 import Boo.Pegs
+import System.Text
 
 ometa WordCollector:
+	option ParseTree
 	parse = ++(numbered | word)
-	numbered = ((++letter >> letters, ++digit >> digits), wordbreak) ^ (j(letters) + j(digits))
-	word = (++letter >> suffix, wordbreak) ^ j(suffix)
+	numbered = ((++letter >> letters, ++digit >> digits), wordbreak) ^ flatString(letters, digits)
+	word = (++letter >> suffix, wordbreak) ^ flatString(suffix)
 	wordbreak = ++whitespace
-	number = (++digit >> n, wordbreak) ^ j(n)
+	number = (++digit >> n, wordbreak) ^ flatString(n)
 	
-def j(items):
-	return join(items, '')
+def flatString(value) as string:
+	if value isa string: return value
+	buffer = StringBuilder()
+	flatString buffer, value
+	return buffer.ToString()
+	
+def flatString(*values) as string:
+	buffer = StringBuilder()
+	for value in values:
+		flatString buffer, value
+	return buffer.ToString()
+	
+def flatString(buffer as StringBuilder, value):
+	match value:
+		case s=string():
+			buffer.Append(s)
+		case c=char():
+			buffer.Append(c)
+		otherwise:
+			for item in value:
+				flatString buffer, item
 	
 def pegWords(text as string):
 		
@@ -55,4 +76,4 @@ def benchmark(wordCount as int, printValues as bool):
 	print "================= SIZE(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds
 				
 for i in (10, 100, 200, 1000, 10000, 50000, 100000):
-	benchmark i, false
+	benchmark i, i < 11

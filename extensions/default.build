@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <project name="boo-extensions" default="test">
 
-	<property name="build.dir" value="bin" />
+	<property name="build.dir" value="build" />
 	<property name="boo.dir" value="../../boo/bin" />
-	
+
+	<include buildfile="nunit.inc" />
+
 	<target name="test" depends="build">
 		<nunit2>
 			<formatter type="Plain" />
@@ -34,6 +36,7 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="${nunit.framework.dll}" />
 				<include name="Boo.Pegs.dll" />
 			</references>
 		</booc>
@@ -53,6 +56,7 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="${nunit.framework.dll}" />
 				<include name="Boo.PatternMatching.dll" />
 			</references>
 		</booc>
@@ -74,8 +78,57 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="${nunit.framework.dll}" />
 				<include name="Boo.Adt.dll" />
 				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+	</target>
+	
+	<target name="Boo.OMeta" depends="Boo.PatternMatching, Boo.Adt">
+		<booc target="library" output="${build.dir}/Boo.OMeta.dll">
+			<sources basedir="src/Boo.OMeta">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.OMeta.Tests.dll">
+			<sources basedir="src/Boo.OMeta.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.OMeta.dll" />
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+			</references>
+		</booc>
+	</target>
+	
+	<target name="Boo.OMeta.Parser" depends="Boo.PatternMatching, Boo.Adt, Boo.OMeta">
+		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
+			<sources basedir="src/Boo.OMeta.Parser">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+				<include name="Boo.OMeta.dll" />
+			</references>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.Tests.dll">
+			<sources basedir="src/Boo.OMeta.Parser.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boo.OMeta.dll" />
+				<include name="Boo.Adt.dll" />
+				<include name="Boo.PatternMatching.dll" />
+				<include name="Boo.OMeta.Parser.dll" />
 			</references>
 		</booc>
 	</target>
@@ -132,5 +185,11 @@
 		<mkdir dir="${build.dir}" />	
 		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
 	</target>
-	
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="rebuild" depends="clean, build" />
+
 </project>
