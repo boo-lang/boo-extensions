@@ -101,6 +101,7 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="${nunit.framework.dll}" />
 				<include name="Boo.OMeta.dll" />
 				<include name="Boo.Adt.dll" />
 				<include name="Boo.PatternMatching.dll" />
@@ -125,54 +126,7 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
-				<include name="Boo.OMeta.dll" />
-				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
-				<include name="Boo.OMeta.Parser.dll" />
-			</references>
-		</booc>
-	</target>
-	
-	<target name="Boo.OMeta" depends="Boo.PatternMatching, Boo.Adt">
-		<booc target="library" output="${build.dir}/Boo.OMeta.dll">
-			<sources basedir="src/Boo.OMeta">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
-			</references>
-		</booc>
-		
-		<booc target="library" output="${build.dir}/Boo.OMeta.Tests.dll">
-			<sources basedir="src/Boo.OMeta.Tests">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boo.OMeta.dll" />
-				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
-			</references>
-		</booc>
-	</target>
-	
-	<target name="Boo.OMeta.Parser" depends="Boo.PatternMatching, Boo.Adt, Boo.OMeta">
-		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
-			<sources basedir="src/Boo.OMeta.Parser">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
-				<include name="Boo.OMeta.dll" />
-			</references>
-		</booc>
-		
-		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.Tests.dll">
-			<sources basedir="src/Boo.OMeta.Parser.Tests">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
+				<include name="${nunit.framework.dll}" />
 				<include name="Boo.OMeta.dll" />
 				<include name="Boo.Adt.dll" />
 				<include name="Boo.PatternMatching.dll" />
