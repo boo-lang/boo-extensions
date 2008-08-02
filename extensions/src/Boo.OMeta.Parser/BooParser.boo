@@ -96,7 +96,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
-		"for", "in", "yield", "self", "super"
+		"for", "in", "yield", "self", "super", "of"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -163,17 +163,19 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_block = stmt_if | stmt_for
 	
-	stmt_for = (FOR, declaration_list >> dl, IN, expression >> e, block >> body) ^ newForStatement(dl, e, body)
+	stmt_for = (FOR, declaration_list >> dl, IN, rvalue >> e, block >> body) ^ newForStatement(dl, e, body)
 	
-	stmt_if = (IF, expression >> e, block >> trueBlock) ^ newIfStatement(e, trueBlock)
+	stmt_if = (IF, assignment >> e, block >> trueBlock) ^ newIfStatement(e, trueBlock)
 	
-	stmt_return = (RETURN, optional_expression >> e, stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	stmt_return = (RETURN, optional_assignment >> e, stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
 	
-	optional_expression = expression | ""
+	optional_assignment = assignment | ""
 
 	stmt_expression = ((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
 	
-	multi_assignment = (expression >> l, ASSIGN >> op, assignment_list >> items) ^ newInfixExpression(op, l, newRValue(items))
+	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
+	
+	rvalue = assignment_list >> items ^ newRValue(items)
 	
 	list_of assignment
 	
@@ -237,10 +239,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = ((member_reference >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
+	invocation = ((member_reference >> target, LPAREN, optional_assignment_list >> args, RPAREN) ^ newInvocation(target, args)) \
 		| atom
 	
-	type_reference = type_reference_simple
+	type_reference = type_reference_simple | type_reference_array
+	
+	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
@@ -270,12 +274,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	string_char = ('\\', ('\\' | '$')) | (~'\\', _)
 	
 	array_literal = array_literal_empty | array_literal_single | array_literal_multi
+			
+	array_literal_empty = (LPAREN, array_literal_type >> type, COMMA, RPAREN) ^ newArrayLiteral(type, [])
 	
-	array_literal_empty = (LPAREN, COMMA, RPAREN) ^ newArrayLiteral([])
+	array_literal_single = (LPAREN, array_literal_type >> type, assignment >> e, COMMA, RPAREN) ^ newArrayLiteral(type, [e])
 	
-	array_literal_single = (LPAREN, assignment >> e, COMMA, RPAREN) ^ newArrayLiteral([e])
+	array_literal_multi = (LPAREN, array_literal_type >> type, assignment >> e, ++(COMMA, assignment) >> tail, (COMMA | ""), RPAREN) ^ newArrayLiteral(type, prepend(e, tail))
+			
+	array_literal_type = ((OF, ranked_type_reference >> type, COLON) | "") ^ type
 	
-	array_literal_multi = (LPAREN, (assignment >> e, ++(COMMA, assignment) >> tail), (COMMA | ""), RPAREN) ^ newArrayLiteral(prepend(e, tail))
+	ranked_type_reference = ((type_reference >> type), ((COMMA,  integer >> rank) | "")) ^ ArrayTypeReference(ElementType: type, Rank: rank) 
 	
 	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)
 	
@@ -362,6 +370,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	def newMemberReference(target as Expression, name):
 		return MemberReferenceExpression(Target: target, Name: tokenValue(name))
+		
+	def newArrayLiteral(type, items):
+		node = newArrayLiteral(items)
+		node.Type = type
+		return node
 		
 	def newArrayLiteral(items):
 		literal = ArrayLiteralExpression()
