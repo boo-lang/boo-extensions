@@ -28,6 +28,14 @@ class CodeMatchingTest:
 				match arg:
 					case ReferenceExpression(Name: "b"):
 						pass
+						
+	[Test]
+	def TestTryCast():
+		code = [| a as int |]
+		match code:
+			case [| $name as $type |]:
+				assert name.ToString() == "a"
+				assert type.ToString() == "int"
 		
 	def variableName(code as Expression):
 		match code:
