@@ -24,7 +24,7 @@ macro prefix:
 	
 	rule, op, next = prefix.Arguments
 	
-	return ExpressionStatement([| $rule = (($op >> op, $rule >> e) ^ newPrefixExpression(op, e)) | $next |])
+	return ExpressionStatement([| $rule = ($op >> op, $rule >> e) ^ newPrefixExpression(op, e) | $next |])
 	
 macro list_of:
 """
@@ -63,7 +63,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		star = "*"
 		division = "/"
 		modulus = "%"
-		bitwise_not = "~"
+		ones_complement = "~"
 		bitwise_shift_left = "<<"
 		bitwise_shift_right = ">>"
 		bitwise_and = "&"
@@ -87,7 +87,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
-		"for", "in", "yield"
+		"for", "in", "yield", "self", "super"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -173,7 +173,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix and_expression, AND, not_expression
 	
-	not_expression = ((NOT >> op, expression >> e) ^ newPrefixExpression(op, e)) | membership_expression
+	prefix not_expression, NOT, membership_expression
 	
 	infix membership_expression, (IN | (NOT, IN)), identity_test_expression
 	
@@ -187,25 +187,23 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix bitwise_and_expression, BITWISE_AND, bitwise_shift_expression
 	
-	infix bitwise_shift_expression, bitwise_shift_op, term
-	
-	bitwise_shift_op = (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT)
+	infix bitwise_shift_expression, (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT), term
 	
 	infix term, (PLUS | MINUS), factor
 	
 	infix factor, (STAR | DIVISION | MODULUS), signalled_expression
 	
-	prefix signalled_expression, MINUS, bitwise_not_expression
+	prefix signalled_expression, MINUS, ones_complement_expression
 	
-	prefix bitwise_not_expression, BITWISE_NOT, exponentiation_expression
+	prefix ones_complement_expression, ONES_COMPLEMENT, exponentiation_expression
 	
 	infix exponentiation_expression, EXPONENTIATION, try_cast
 	
 	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = ((expression >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing
+	member_reference = ((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing
 	
-	slicing = ((expression >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
+	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 	
 	slice = (expression >> begin,
 				((COLON, omitted_expression >> end,
@@ -216,7 +214,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = expression | ("" ^ OmittedExpression.Default)
 		
-	invocation = ((expression >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
+	invocation = ((member_reference >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
 		| atom
 	
 	type_reference = type_reference_simple
@@ -224,13 +222,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
-		| string_literal | prefix | null_literal | parenthesized_expression
+		| string_literal | null_literal | parenthesized_expression \
+		| self_literal | super_literal
 	
 	parenthesized_expression = (LPAREN, expression >> e, RPAREN) ^ e
 		
 	null_literal = NULL ^ [| null |]
 	
-	prefix = ((BITWISE_NOT | MINUS) >> op, expression >> e) ^ newPrefixExpression(op, e)
+	super_literal = SUPER ^ [| super |]
+	
+	self_literal = SELF ^ [| self |]
 	
 	string_literal = ((SDQS | TDQS | SQS) >> s) ^ newStringLiteral(s)
 	
