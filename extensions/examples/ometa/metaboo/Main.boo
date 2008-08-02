@@ -33,24 +33,9 @@ def test(code as string):
 #return
 		
 code = """
-l = [1, 2, 3]
-assert( 1 == l[0] )
-assert( 2 == l[1] )
-assert( [1, 2] == l[:2] )
-assert( [1] == l[0:1] )
-assert( [1] == l[:1] )
-assert( 3 == l[-1] )
-assert( [2, 3] == l[1:] )
-assert( [3, 2, 1] == l[::-1] )
-assert( [1, 2, 3] == l[:] )
-assert( [1, 3] == l[::2] )
-a = not b is not null
-b = not c not in (1, 2, 3)
-c = not a and b or c and not d
-d = not i+j > 5 and h+l < 3
-e = not len([1]) == 0
-f = not a and len([1]) == 0
-a.b.c()[3]().foo()
+a as int
+print a = 2
+a.b.c()[3]().foo() if a > 2
 a = 2 *3
 i = ~2
 j = -~i

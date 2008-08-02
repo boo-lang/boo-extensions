@@ -140,18 +140,21 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	non_empty_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
 	
-	stmt = ((stmt_block >> s) | (stmt_line >> s, eol)) ^ s
+	stmt = stmt_block | stmt_line
 	
 	stmt_line = (~~(ID, AS), stmt_declaration) \
 		| stmt_expression \
+		| stmt_macro \
 		| stmt_return \
 		| stmt_yield
 		
+	stmt_macro = (ID >> name, assignment_list >> args, stmt_modifier >> m) ^ newMacro(name, args, m)
+		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
-	stmt_modifier = ((IF, assignment >> e) ^ StatementModifier(Type: StatementModifierType.If, Condition: e)) | ""
+	stmt_modifier = ((IF, assignment >> e, eol) ^ StatementModifier(Type: StatementModifierType.If, Condition: e)) | (eol ^ null)
 	
-	stmt_declaration = (declaration >> d, ASSIGN, expression >> e) ^ newDeclarationStatement(d, e)
+	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
 	
 	declaration = (ID >> name, ((AS, type_reference >> typeRef) | "")) ^ newDeclaration(name, typeRef)
 		
@@ -165,7 +168,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	optional_expression = expression | ""
 
-	stmt_expression = (multi_assignment | assignment) >> e ^ ExpressionStatement(Expression: e)
+	stmt_expression = ((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, assignment_list >> items) ^ newInfixExpression(op, l, newRValue(items))
 	
@@ -275,6 +278,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	false_literal = FALSE ^ [| false |]
 	
 	eol = ++EOL | ~_	
+	
+	def newMacro(name, args, m):
+		node = MacroStatement(Name: tokenValue(name), Modifier: m)
+		for arg in args: node.Arguments.Add(arg)
+		return node
 	
 	def newSlicing(target as Expression, slices):
 		node = SlicingExpression(Target: target)
