@@ -41,19 +41,43 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 		) >> value
 	) ^ value
 	
-	indentation = (emptyLines, --space >> value, ~whitespace) ^ value
-	emptyLines = ++(~~emptyLine, emptyLine)
-	emptyLine = spaces, newline
+	indentation = (empty_lines, --space >> value, ~whitespace) ^ value
+	empty_lines = ++(~~empty_line, empty_line)
+	empty_line = spaces, newline
 	spaces = --space
-	space = ' ' | '\t'
+	space = ' ' | '\t' | (newline and inWSA(input))
 	newline = '\n' | "\r\n" | "\r"
 	token[expected] = (scanner >> t and tokenMatches(t, expected)) ^ t
 	
+	wsa = ~~_ and inWSA(input)
+	
 	tokens = ++(~newline, _) >> t ^ makeToken("line", t)
+	
+	enterWhitespaceAgnosticRegion = $(enterWSA(input))
+	
+	leaveWhitespaceAgnosticRegion = $(leaveWSA(input))
 	
 	INDENT = token["indent"]
 	DEDENT = token["dedent"]
 	EOL = token["eol"]
+	
+	def inWSA(input as OMetaInput):
+		return wsaLevel(input) > 0
+		
+	def wsaLevel(input as OMetaInput) as int:
+		return input.GetMemo("wsaLevel") or 0
+		
+	def wsaLevel(input as OMetaInput, value as int):
+		return success(input.SetMemo("wsaLevel", value))
+	
+	def enterWSA(input as OMetaInput):
+		return wsaLevel(input, wsaLevel(input) + 1)
+		
+	def leaveWSA(input as OMetaInput):
+		return wsaLevel(input, wsaLevel(input) - 1)
+		
+	def success(input as OMetaInput):
+		return SuccessfulMatch(input, null)
 	
 	def sameIndent(i):
 		return currentIndent() == len(i)
@@ -75,6 +99,7 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 
 	def currentIndent() as int:
 		return stack[-1]
+
 		
 def tokenMatches(token as Token, expected):
 	return expected is token.kind
@@ -87,6 +112,12 @@ def makeToken(kind):
 		
 def makeToken(kind, value):
 	return Token(kind, flatString(value))
+	
+def makeString(*values):
+	buffer = StringBuilder()
+	for value in values:
+		flatString buffer, value
+	return buffer.ToString()
 
 def flatString(value) as string:
 	if value isa string: return value
@@ -96,6 +127,8 @@ def flatString(value) as string:
 	
 def flatString(buffer as StringBuilder, value):
 	match value:
+		case null:
+			return
 		case string():
 			buffer.Append(value)
 		case char():

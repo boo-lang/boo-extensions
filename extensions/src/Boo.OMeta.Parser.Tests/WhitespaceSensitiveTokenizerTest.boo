@@ -8,6 +8,38 @@ import Boo.OMeta.Parser
 [TestFixture]
 class WhitespaceSensitiveTokenizerTest:
 	
+	[Test] def WhitespaceAgnosticRegions():
+		ometa ParensForGrouping < WhitespaceSensitiveTokenizer:
+			tokens = lparen | rparen | line
+			line = ++(~("(" | ")" | (~wsa, newline) ), _) >> value ^ makeToken("line", value)
+			lparen = ("(", enterWhitespaceAgnosticRegion) ^ makeToken("lparen")
+			rparen = (")", leaveWhitespaceAgnosticRegion) ^ makeToken("rparen")
+		
+		code = """
+level1:
+	(foo
+		bar)
+	baz
+level11
+"""
+		expected = [
+			Token('eol', 'eol'), 
+			Token('line', 'level1:'), 
+			Token('indent', 'indent'), 
+			Token('lparen', 'lparen'), 
+			Token('line', 'foo\n\t\tbar'), 
+			Token('rparen', 'rparen'), 
+			Token('eol', 'eol'), 
+			Token('line', 'baz'), 
+			Token('eol', 'eol'), 
+			Token('dedent', 'dedent'), 
+			Token('line', 'level11'), 
+			Token('eol', 'eol'),
+		]
+		
+		tokenizer = ParensForGrouping()
+		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', code)])
+	
 	[Test] def IndentDedent():
 		code = """
 level 1.1:

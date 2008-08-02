@@ -39,8 +39,81 @@ class OMetaInput:
 	virtual Position:
 		get: return int.MaxValue
 		
+	virtual def SetMemo(key as string, value) as OMetaInput:
+		return OMetaInputWithMemo(key, value, self)
+		
+	virtual def GetMemo(key as string):
+		return null
+		
 	override def ToString():
 		return "OMetaInput()"
+		
+internal class DelegatingInput(OMetaInput):
+	
+	final _input as OMetaInput
+	
+	def constructor(input as OMetaInput):
+		_input = input
+	
+	override Head:
+		get: return _input.Head
+	
+	override IsEmpty:
+		get: return _input.IsEmpty
+		
+	override Tail:
+		get: return _input.Tail
+						
+	override Position:
+		get: return _input.Position
+		
+	override def SetMemo(key as string, value):
+		return _input.SetMemo(key, value)
+		
+	override def GetMemo(key as string):
+		return _input.GetMemo(key)
+		
+	override def ToString():
+		return _input.ToString()
+		
+internal class OMetaInputWithMemo(DelegatingInput):
+	
+	final _key as string
+	final _value
+	_tail as OMetaInput
+	
+	def constructor(key as string, value, input as OMetaInput):
+		super(input)
+		_key = key
+		_value = value
+	
+	override Tail:
+		get:
+			if _tail is null:
+				_tail = OMetaInputMemoTail(self, _input.Tail)
+			return _tail
+			
+	override def GetMemo(key as string):
+		if key is _key: return _value
+		return super(key)
+		
+internal class OMetaInputMemoTail(DelegatingInput):
+	
+	final _parent as OMetaInput
+	_tail as OMetaInput
+	
+	def constructor(parent as OMetaInput, input as OMetaInput):
+		super(input)
+		_parent = parent
+		
+	override Tail:
+		get:
+			if _tail is null:
+				_tail = OMetaInputMemoTail(self, _input.Tail)
+			return _tail
+		
+	override def GetMemo(key as string):
+		return _parent.GetMemo(key)
 		
 internal class OMetaInputCons(OMetaInput):
 	[getter(Head)] _argument
