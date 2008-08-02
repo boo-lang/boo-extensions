@@ -117,27 +117,43 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	qualified_name = (ID >> qualifier, --((DOT, ID >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
-	module_member = class_def | method
+	module_member = class_def | interface_def | method
 	
 	class_def = (
-		CLASS, ID >> className, begin_block, class_body >> body, end_block
-	) ^ newClass(className, body)
+		CLASS, ID >> className, super_types >> superTypes, begin_block, class_body >> body, end_block
+	) ^ newClass(className, superTypes, body)
+	
+	interface_def = (
+		INTERFACE, ID >> name, super_types >> superTypes, begin_block, interface_body >> body, end_block
+	) ^ newInterface(name, superTypes, body)
+	
+	super_types = ((LPAREN, optional_type_reference_list >> types, RPAREN) ^ types) | ""
 	
 	begin_block = COLON, INDENT
 	
 	end_block = DEDENT
 	
-	class_body = ((PASS, eol) ^ null) | (++class_member >> members ^ members)
+	class_body = no_member | (++class_member >> members ^ members)
 	
-	class_member = method | class_def
+	interface_body = no_member
+	
+	no_member = (PASS, eol) ^ null
+	
+	class_member = method | class_def | field
+	
+	field = (ID >> name, optional_type >> type, field_initializer >> initializer, eol) ^ newField(name, type, initializer)
+	
+	field_initializer = (ASSIGN, rvalue) | ""
 	
 	method = (
-		DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN, block >> body
-	) ^ newMethod(name, parameters, body)
+		DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN, optional_type >> type, block >> body
+	) ^ newMethod(name, parameters, type, body)
 	
 	list_of parameter
 	
-	parameter = ((ID >> name, AS, type_reference >> type) | (ID >> name)) ^ ParameterDeclaration(Name: tokenValue(name), Type: type)
+	parameter = (ID >> name, optional_type >> type) ^ ParameterDeclaration(Name: tokenValue(name), Type: type)
+	
+	optional_type = (AS, type_reference) | ""
 	
 	block = empty_block | non_empty_block
 	
@@ -236,7 +252,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				| "")
 			)
 		) ^ newSlice(begin, end, step)
-				
+			
+	list_of expression
+	
+	list_of declaration
+	
+	list_of type_reference
+		
 	list_of slice
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
@@ -288,10 +310,6 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	ranked_type_reference = ((type_reference >> type), ((COMMA,  integer >> rank) | "")) ^ ArrayTypeReference(ElementType: type, Rank: rank) 
 	
 	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)
-	
-	list_of expression
-	
-	list_of declaration
 		
 	reference = ID >> r ^ newReference(r) 
 	
