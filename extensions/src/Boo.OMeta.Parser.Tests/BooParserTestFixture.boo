@@ -17,7 +17,7 @@ partial class BooParserTestFixture:
 		
 		parser = BooParser()
 		match parser.module(File.ReadAllText(fullName)):
-			case SuccessfulMatch(Value: m=Module()):
+			case SuccessfulMatch(Input: OMetaInput(IsEmpty: true), Value: m=Module()):
 				assert m is not null
 				assert m.Documentation is not null
 				Assert.AreEqual(normalize(m.Documentation), normalize(m.ToCodeString()))
