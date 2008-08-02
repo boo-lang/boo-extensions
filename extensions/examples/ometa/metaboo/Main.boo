@@ -26,24 +26,36 @@ def test(code as string):
 	except x:
 		print x
 		
-code = """
-def odds(l):
-	for i in l:
-		yield i if 0 != i % 0xff
-				
-def bar():
-	pass
+#while true:
+#	line = prompt("> ")
+#	if string.IsNullOrEmpty(line) or line == "/q": break
+#	test line.Trim()
+#return
 		
-for odd in map(d, odds([1, 2, 3, 4, 5])):
-	print(odd)
-	
-a = b.c[3][4::].foo()
-a[9] = not not b + 3
-a = (1, 2, 3) == [1, 2 ** 4, 3]
-b = [1, 2, 3]
-c = 1
-d = (,)
-e = (1,)
+code = """
+l = [1, 2, 3]
+assert( 1 == l[0] )
+assert( 2 == l[1] )
+assert( [1, 2] == l[:2] )
+assert( [1] == l[0:1] )
+assert( [1] == l[:1] )
+assert( 3 == l[-1] )
+assert( [2, 3] == l[1:] )
+assert( [3, 2, 1] == l[::-1] )
+assert( [1, 2, 3] == l[:] )
+assert( [1, 3] == l[::2] )
+
+a = not b is not null
+b = not c not in (1, 2, 3)
+c = not a and b or c and not d
+d = not i+j > 5 and h+l < 3
+e = not len([1]) == 0
+f = not a and len([1]) == 0
+a.b.c()[3]().foo()
+a = 2 *3
+i = ~2
+j = -~i
+h = ~i + ~j * 2
 """
 test code
 return

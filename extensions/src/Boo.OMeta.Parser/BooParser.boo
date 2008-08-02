@@ -57,6 +57,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		assign = "="
 		assign_inplace = "+=" | "-=" | "*=" | "/=" | "%=" | "^="
 		xor = "^"
+		increment = "++"
+		decrement = "--"
 		plus = "+"
 		minus = "-"
 		exponentiation = "**"
@@ -66,6 +68,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		ones_complement = "~"
 		bitwise_shift_left = "<<"
 		bitwise_shift_right = ">>"
+		greater_than_eq = ">="
+		greater_than = ">"
+		less_than_eq = "<="
+		less_than = "<"
 		bitwise_and = "&"
 		bitwise_or = "|"
 		hexnum = ("0x", ++(hex_digit | digit) >> ds) ^ makeString(ds)
@@ -77,7 +83,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		rparen = ")", leaveWhitespaceAgnosticRegion
 		lbrack = "[", enterWhitespaceAgnosticRegion
 		rbrack = "]", leaveWhitespaceAgnosticRegion
-		kw = (keywords >> value, ~(letter | digit)) ^ value
+		kw = (keywords >> value, ~(letter | digit | '_')) ^ value
 		tdqs = ('"""', ++(~'"""', _) >> s, '"""') ^ s
 		sdqs = ('"', ++(~'"', _) >> s, '"') ^ s
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
@@ -175,11 +181,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	prefix not_expression, NOT, membership_expression
 	
-	infix membership_expression, (IN | (NOT, IN)), identity_test_expression
+	infix membership_expression, (IN | ((NOT, IN) ^ makeToken("not in"))), identity_test_expression
 	
-	infix identity_test_expression, ((IS, NOT) | IS), comparison
+	infix identity_test_expression, ((IS, NOT) ^ makeToken("is not")) | IS, comparison
 	
-	infix comparison, (EQUALITY | INEQUALITY | IS), bitwise_or_expression
+	infix comparison, (EQUALITY | INEQUALITY | IS | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
 	
 	infix bitwise_or_expression, BITWISE_OR, bitwise_xor_expression
 	
@@ -190,10 +196,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	infix bitwise_shift_expression, (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT), term
 	
 	infix term, (PLUS | MINUS), factor
-	
+
 	infix factor, (STAR | DIVISION | MODULUS), signalled_expression
 	
-	prefix signalled_expression, MINUS, ones_complement_expression
+	prefix signalled_expression, (MINUS | INCREMENT | DECREMENT), ones_complement_expression
 	
 	prefix ones_complement_expression, ONES_COMPLEMENT, exponentiation_expression
 	
@@ -205,14 +211,14 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 	
-	slice = (expression >> begin,
-				((COLON, omitted_expression >> end,
-					((COLON, omitted_expression >> step) | ""))
+	slice = ((omitted_expression >> begin),
+				((omitted_expression >> end,
+					((omitted_expression >> step) | ""))
 					| "")) ^ newSlice(begin, end, step)
 				
 	list_of slice
 				
-	omitted_expression = expression | ("" ^ OmittedExpression.Default)
+	omitted_expression = (COLON ^ OmittedExpression.Default) | expression
 		
 	invocation = ((member_reference >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
 		| atom
@@ -235,7 +241,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	string_literal = ((SDQS | TDQS | SQS) >> s) ^ newStringLiteral(s)
 	
-	array_literal = (LPAREN, (COMMA ^ (items=[])) | (expression_list >> items, (COMMA | "")), RPAREN) ^ newArrayLiteral(items)
+	array_literal = (LPAREN,
+		((COMMA ^ [])
+		| ((expression >> e, ++(COMMA, expression) >> tail) ^ prepend(e, tail))
+		| ((expression >> e, COMMA) ^ [e])) >> items
+		,RPAREN) ^ newArrayLiteral(items)
 	
 	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)
 	
@@ -343,12 +353,19 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			case "not": return UnaryOperatorType.LogicalNot
 			case "-": return UnaryOperatorType.UnaryNegation
 			case "~": return UnaryOperatorType.OnesComplement
+			case "++": return UnaryOperatorType.Increment
+			case "--": return UnaryOperatorType.Decrement
 		
 	def binaryOperatorFor(op):
 		match tokenValue(op):
 			case "is": return BinaryOperatorType.ReferenceEquality
+			case "is not": return BinaryOperatorType.ReferenceInequality
+			case "in": return BinaryOperatorType.Member
+			case "not in": return BinaryOperatorType.NotMember
 			case "and": return BinaryOperatorType.And
 			case "or": return BinaryOperatorType.Or
+			case "|": return BinaryOperatorType.BitwiseOr
+			case "&": return BinaryOperatorType.BitwiseAnd
 			case "^": return BinaryOperatorType.ExclusiveOr
 			case "+": return BinaryOperatorType.Addition
 			case "-": return BinaryOperatorType.Subtraction
@@ -364,6 +381,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			case "/=": return BinaryOperatorType.InPlaceDivision
 			case "*=": return BinaryOperatorType.InPlaceMultiply
 			case "^=": return BinaryOperatorType.InPlaceExclusiveOr
+			case ">>": return BinaryOperatorType.ShiftRight
+			case "<<": return BinaryOperatorType.ShiftLeft
+			case "<": return BinaryOperatorType.LessThan
+			case "<=": return BinaryOperatorType.LessThanOrEqual
+			case ">": return BinaryOperatorType.GreaterThan
+			case ">=": return BinaryOperatorType.GreaterThanOrEqual
 		
 	def newAssignment(l as Expression, r as Expression):
 		return [| $l = $r |]
