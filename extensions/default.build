@@ -12,6 +12,18 @@
 			<test>
 				<assemblies basedir="${build.dir}">
 					<include name="*.Tests.dll" />
+					<exclude name="*.Parser.Tests.dll" />
+				</assemblies>
+			</test>
+		</nunit2>
+	</target>
+	
+	<target name="parser-test" depends="test">
+		<nunit2>
+			<formatter type="Plain" />
+			<test>
+				<assemblies basedir="${build.dir}">
+					<include name="*.Parser.Tests.dll" />
 				</assemblies>
 			</test>
 		</nunit2>
