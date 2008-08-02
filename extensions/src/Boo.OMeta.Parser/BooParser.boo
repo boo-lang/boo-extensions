@@ -6,6 +6,8 @@ import Boo.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
+import System.Globalization
+
 macro infix:
 	
 	l, op, r = infix.Arguments
@@ -66,6 +68,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		bitwise_shift_right = ">>"
 		bitwise_and = "&"
 		bitwise_or = "|"
+		hexnum = ("0x", ++(hex_digit | digit) >> ds) ^ makeString(ds)
 		num = ++digit
 		colon = ":"
 		dot = "."
@@ -79,6 +82,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		sdqs = ('"', ++(~'"', _) >> s, '"') ^ s
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
+		
+	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
@@ -239,7 +244,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	reference = ID >> r ^ newReference(r) 
 	
-	integer = NUM >> n ^ newInteger(n)
+	integer = (NUM >> n ^ newInteger(n, NumberStyles.None)) \
+		| (HEXNUM >> n ^ newInteger(n, NumberStyles.HexNumber))
 	
 	boolean = true_literal | false_literal
 	
@@ -285,8 +291,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	def newImport(qname as string):
 		return Import(Namespace: qname)
 	
-	def newInteger(t):
-		value = int.Parse(tokenValue(t))
+	def newInteger(t, style as NumberStyles):
+		value = int.Parse(tokenValue(t), style)
 		return IntegerLiteralExpression(Value: value)
 		
 	def newMethod(name, parameters, body as Block):
