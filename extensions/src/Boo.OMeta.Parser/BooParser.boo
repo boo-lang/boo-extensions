@@ -55,7 +55,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		equality = "=="
 		inequality = "!="
 		assign = "="
-		assign_inplace = "+=" | "-=" | "*=" | "/=" | "%=" | "^="
+		assign_inplace = "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|="
 		xor = "^"
 		increment = "++"
 		decrement = "--"
@@ -391,6 +391,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			case "/=": return BinaryOperatorType.InPlaceDivision
 			case "*=": return BinaryOperatorType.InPlaceMultiply
 			case "^=": return BinaryOperatorType.InPlaceExclusiveOr
+			case "&=": return BinaryOperatorType.InPlaceBitwiseAnd
+			case "|=": return BinaryOperatorType.InPlaceBitwiseOr
 			case ">>": return BinaryOperatorType.ShiftRight
 			case "<<": return BinaryOperatorType.ShiftLeft
 			case "<": return BinaryOperatorType.LessThan
