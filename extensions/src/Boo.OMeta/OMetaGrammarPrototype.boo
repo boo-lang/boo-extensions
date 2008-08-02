@@ -1,6 +1,6 @@
 namespace Boo.OMeta
 
-class OMetaGrammarPrototype(OMetaGrammarRoot):
+class OMetaGrammarPrototype(OMetaGrammarLR):
 	
 	def constructor():
 		SetUpRule "whitespace", "char.IsWhitespace", char.IsWhiteSpace

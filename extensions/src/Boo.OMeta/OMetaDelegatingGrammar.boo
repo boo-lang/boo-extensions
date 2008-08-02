@@ -1,6 +1,6 @@
 namespace Boo.OMeta
 		
-class OMetaDelegatingGrammar(OMetaGrammarRoot):
+class OMetaDelegatingGrammar(OMetaGrammarLR):
 	
 	_prototype as OMetaGrammar
 	

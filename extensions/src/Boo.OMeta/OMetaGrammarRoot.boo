@@ -2,33 +2,13 @@ namespace Boo.OMeta
 
 import System.Collections.Specialized
 
-class OMetaGrammarRoot(OMetaGrammar):
-	
-	class MemoKey:
-		final _rule as string
-		final _input as OMetaInput
-		
-		def constructor(rule as string, input as OMetaInput):
-			_rule = rule
-			_input = input
-			
-		override def Equals(o):
-			other as MemoKey = o
-			return _input is other._input and _rule is other._rule
-			
-		override def GetHashCode():
-			return _rule.GetHashCode() ^ _input.GetHashCode()
-			
-		override def ToString():
-			return "MemoKey(${_rule}, ${_input})"
-	
-	_rules = ListDictionary()
+class OMetaGrammarRoot(OMetaGrammarBase):
+"""
+OMetaGrammar with support for direct left recursion but no support for indirect left recursion.
+"""
 	_memo = HybridDictionary()
 	
-	def InstallRule(ruleName as string, rule as OMetaRule):
-		_rules[ruleName] = rule
-	
-	def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
+	override def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
 		
 		memoKey = MemoKey(rule, input)
 		m = _memo[memoKey]
@@ -57,14 +37,4 @@ class OMetaGrammarRoot(OMetaGrammar):
 			_memo[memoKey] = lastSuccessfulMatch = m
 		return lastSuccessfulMatch
 		
-	def Eval(context as OMetaGrammar, rule as string, input as OMetaInput):
-		found as OMetaRule = _rules[rule]
-		if found is not null:
-			return found(context, input)
-		return RuleMissing(context, rule, input)
-		
-	def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
-		return Apply(context, rule, input)
-		
-	virtual def RuleMissing(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch:
-		raise "Rule '${rule}' missing!"
+	

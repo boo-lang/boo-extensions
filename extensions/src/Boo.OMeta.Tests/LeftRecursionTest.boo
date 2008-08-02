@@ -24,12 +24,16 @@ class LeftRecursionTest:
 				pass
 			
 	[Test]
-	def FailsOnIndirectRecursion():
+	def IndirectLeftRecursion():
 		ometa ILR:
-			expr = subtraction
-			num = ++digit
-			subtraction = expr, '-', num
+			option ParseTree
+			term = subtraction | factor
+			subtraction = term, '-', factor
+			factor = num
+			num = ++digit >> ds ^ join(ds, '')
 			
-		match ILR().expr(OMetaInput.For("2-1")):
-			case FailedMatch(Input):
-				Assert.AreEqual('2', Input.Head.ToString())
+		match ILR().term(OMetaInput.For("2-1")):
+			case SuccessfulMatch(
+					Input: OMetaInput(IsEmpty: true),
+					Value: ['2', '-', '1']):
+				pass
