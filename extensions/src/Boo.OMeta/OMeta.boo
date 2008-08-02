@@ -35,9 +35,9 @@ def scan(grammar as OMetaGrammar, rule as string, input as OMetaInput):
 				
 def flatten(items) as object*:
 	if items is null: return
-	for item in items:
-		e = item as System.Collections.IEnumerable
-		if e is not null:
-			yieldAll flatten(e)
-		else:
-			yield item
+	e1 = items as System.Collections.IEnumerable
+	if e1 is null:
+		yield items
+		return
+	for item in e1:
+		yieldAll flatten(item)

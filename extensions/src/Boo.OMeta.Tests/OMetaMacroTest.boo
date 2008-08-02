@@ -2,6 +2,7 @@ namespace Boo.OMeta.Tests
 
 import Boo.OMeta
 import Boo.PatternMatching
+import Boo.Adt
 
 import NUnit.Framework
 
@@ -16,6 +17,39 @@ ometa E:
   
 [TestFixture]
 class OMetaMacroTest:
+	
+	[Test]
+	def ChoiceBacktracking():
+		
+		data NC1Item(name as string, foo as string, bar as string)
+		
+		ometa NC1:
+			parse = (
+					name >> n, 
+					"{", ++whitespace,
+					(
+						(foo >> f, bar >> b)
+						| (bar >> b, foo >> f)
+						| (foo >> f)
+						| (bar >> b)
+					),
+					"}"
+				) ^ NC1Item(n, f, b)
+				
+			name = ++letter >> ls ^ join(ls, '')
+			foo = ("foo", ++whitespace) ^ "foo"
+			bar = ("bar", ++whitespace) ^ "bar"
+			
+		def t(code as string, expected):
+			match NC1().parse(code):
+				case SuccessfulMatch(Value: v):
+					assert expected == v
+					
+		t "music{ foo bar }", NC1Item("music", "foo", "bar")
+		t "music{ foo }", NC1Item("music", "foo", null)
+		t "music{ bar foo }", NC1Item("music", "foo", "bar")
+		t "music{ bar }", NC1Item("music", null, "bar")
+				
 	
 	[Test]
 	def InputVariableIsAvailableToUserCode():
