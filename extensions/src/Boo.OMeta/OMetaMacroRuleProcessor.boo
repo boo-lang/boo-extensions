@@ -7,10 +7,12 @@ class OMetaMacroRuleProcessor:
 	
 	_ruleName as string
 	_collectingParseTree as DynamicVariable[of bool]
+	_optionParseTree as bool
 
 	def constructor(ruleName as string, options as List):
 		_ruleName = ruleName
-		_collectingParseTree = DynamicVariable[of bool]("ParseTree" in options)
+		_optionParseTree = "ParseTree" in options
+		_collectingParseTree = DynamicVariable[of bool](_optionParseTree)
 	
 	def expand(e as Expression, *args as (Expression)) as Block:
 		
@@ -101,7 +103,7 @@ class OMetaMacroRuleProcessor:
 				
 	def expandSequence(block as Block, sequence as ExpressionCollection, input as Expression, lastMatch as ReferenceExpression):
 		
-		if collectingParseTree:
+		if _optionParseTree and collectingParseTree:
 			expandSequenceWithParseTree block, sequence, input, lastMatch
 		else:
 			expandSequenceWithoutParseTree block, sequence, input, lastMatch

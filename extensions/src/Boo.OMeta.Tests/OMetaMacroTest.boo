@@ -34,11 +34,13 @@ class OMetaMacroTest:
 			sequence = digit, letter
 			negation = ~digit
 			choice = digit | letter
+			repetitionOfSequence = ++(digit, letter) >> ds ^ ds
 			
 		assertRule G3(), 'repetition', "1234", char('4')
 		assertRule G3(), 'sequence', "1a", char('a')
 		assertRule G3(), 'choice', "3", char('3')
 		assertRule G3(), 'choice', "a", char('a')
+		assertRule G3(), 'repetitionOfSequence', "1a2b", [char('a'), char('b')]
 		
 		match G3().negation("a"):
 			case SuccessfulMatch(Input: OMetaInput(Head: char('a')), Value: null):
