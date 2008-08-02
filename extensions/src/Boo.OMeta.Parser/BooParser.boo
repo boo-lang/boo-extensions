@@ -18,6 +18,12 @@ macro infixr:
 	
 	return ExpressionStatement([| $l = ((($r >> l, $op >> op, $l >> r) ^ newInfixExpression(op, l, r)) | $r) |])
 	
+macro prefix:
+	
+	rule, op, next = prefix.Arguments
+	
+	return ExpressionStatement([| $rule = (($op >> op, $rule >> e) ^ newPrefixExpression(op, e)) | $next |])
+	
 macro list_of:
 """
 Generates rules for lists of the given expression.
@@ -98,12 +104,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	module_member = class_def | method
 	
 	class_def = (
-		CLASS, ID >> className, beginBlock, class_body >> body, endBlock
+		CLASS, ID >> className, begin_block, class_body >> body, end_block
 	) ^ newClass(className, body)
 	
-	beginBlock = COLON, INDENT
+	begin_block = COLON, INDENT
 	
-	endBlock = DEDENT
+	end_block = DEDENT
 	
 	class_body = ((PASS, eol) ^ null) | (++class_member >> members ^ members)
 	
@@ -119,13 +125,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	block = empty_block | non_empty_block
 	
-	empty_block = (beginBlock, (PASS, eol), endBlock) ^ Block()
+	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	non_empty_block = (beginBlock, ++stmt >> stmts, endBlock)  ^ newBlock(stmts)
+	non_empty_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
 	
 	stmt = ((stmt_block >> s) | (stmt_line >> s, eol)) ^ s
 	
-	stmt_line = (~~(ID, AS), stmt_declaration) | stmt_expression | stmt_return \
+	stmt_line = (~~(ID, AS), stmt_declaration) \
+		| stmt_expression \
+		| stmt_return \
 		| stmt_yield
 		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
@@ -162,9 +170,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	not_expression = ((NOT >> op, expression >> e) ^ newPrefixExpression(op, e)) | membership_expression
 	
-	infix membership_expression, (IN, (NOT, IN)), identity_test_expression
+	infix membership_expression, (IN | (NOT, IN)), identity_test_expression
 	
-	infix identity_test_expression, ((IS, NOT) ^ IS), comparison
+	infix identity_test_expression, ((IS, NOT) | IS), comparison
 	
 	infix comparison, (EQUALITY | INEQUALITY | IS), bitwise_or_expression
 	
@@ -182,19 +190,29 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix factor, (STAR | DIVISION | MODULUS), signalled_expression
 	
-	signalled_expression = (MINUS, signalled_expression >> e) | bitwise_not_expression
+	prefix signalled_expression, MINUS, bitwise_not_expression
 	
-	bitwise_not_expression = (BITWISE_NOT, bitwise_not_expression >> e) | exponentiation_expression
+	prefix bitwise_not_expression, BITWISE_NOT, exponentiation_expression
 	
-	exponentiation_expression = (EXPONENTIATION, exponentiation_expression >> e) | try_cast
+	infix exponentiation_expression, EXPONENTIATION, try_cast
 	
 	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = (member_reference, DOT, ID >> name) | slicing
+	member_reference = ((expression >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing
 	
-	slicing = (slicing >> e, LBRACK, expression_list, RBRACK) | invocation
+	slicing = ((expression >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 	
-	invocation = ((invocation >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) | atom
+	slice = (expression >> begin,
+				((COLON, omitted_expression >> end,
+					((COLON, omitted_expression >> step) | ""))
+					| "")) ^ newSlice(begin, end, step)
+				
+	list_of slice
+				
+	omitted_expression = expression | ("" ^ OmittedExpression.Default)
+		
+	invocation = ((expression >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
+		| atom
 	
 	type_reference = type_reference_simple
 	
@@ -230,6 +248,14 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	false_literal = FALSE ^ [| false |]
 	
 	eol = ++EOL | ~_	
+	
+	def newSlicing(target as Expression, slices):
+		node = SlicingExpression(Target: target)
+		for slice in slices: node.Indices.Add(slice)
+		return node
+		
+	def newSlice(begin as Expression, end as Expression, step as Expression):
+		return Slice(begin, end, step)
 	
 	def newRValue(items as List):
 		if len(items) > 1: return newArrayLiteral(items)
@@ -282,6 +308,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	def newReference(t):
 		return ReferenceExpression(Name: tokenValue(t))
 		
+	def newMemberReference(target as Expression, name):
+		return MemberReferenceExpression(Target: target, Name: tokenValue(name))
+		
 	def newArrayLiteral(items):
 		literal = ArrayLiteralExpression()
 		for item in items:
@@ -306,6 +335,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		match tokenValue(op):
 			case "not": return UnaryOperatorType.LogicalNot
 			case "-": return UnaryOperatorType.UnaryNegation
+			case "~": return UnaryOperatorType.OnesComplement
 		
 	def binaryOperatorFor(op):
 		match tokenValue(op):
@@ -316,6 +346,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			case "+": return BinaryOperatorType.Addition
 			case "-": return BinaryOperatorType.Subtraction
 			case "*": return BinaryOperatorType.Multiply
+			case "**": return BinaryOperatorType.Exponentiation
 			case "/": return BinaryOperatorType.Division
 			case "%": return BinaryOperatorType.Modulus
 			case "=": return BinaryOperatorType.Assign
