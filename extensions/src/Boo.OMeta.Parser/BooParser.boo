@@ -50,6 +50,8 @@ Expands to something that matches:
 ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	tokens:
+		qq_begin = "[|"
+		qq_end = "|]"
 		equality = "=="
 		inequality = "!="
 		assign = "="
@@ -274,7 +276,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
-		| self_literal | super_literal
+		| self_literal | super_literal | quasi_quote
+		
+	quasi_quote = quasi_quote_block | quasi_quote_expression
+	
+	quasi_quote_block = (QQ_BEGIN, INDENT, module >> m, DEDENT, QQ_END) ^ newQuasiquoteBlock(m)
+	
+	quasi_quote_expression = (QQ_BEGIN, stmt_line >> s, QQ_END) ^ newQuasiquoteExpression(s)
 	
 	parenthesized_expression = (LPAREN, assignment >> e, RPAREN) ^ e
 		
@@ -290,7 +298,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		DQ,
 		++(
 			((++(~('"' | '$'), string_char) >> s) ^ StringLiteralExpression(makeString(s)))
-			| (('${', expression >> v, --whitespace, '}') ^ v)
+			| (('${', expression >> v, --space, '}') ^ v)
 			| ('$', atom)
 			) >> items,
 		DQ) ^ newStringInterpolation(items)
