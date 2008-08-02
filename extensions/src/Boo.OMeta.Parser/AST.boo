@@ -37,6 +37,11 @@ def newDeclarationStatement(d as Declaration,  initializer as Expression):
 def newIfStatement(condition as Expression, trueBlock as Block):
 	return IfStatement(Condition: condition, TrueBlock: trueBlock)
 	
+def newCallable(name, parameters, type):
+	node = CallableDefinition(Name: tokenValue(name), ReturnType: type)
+	setUpParameters node, parameters
+	return node
+	
 def newModule(doc, imports, members, stmts):
 	m = Module(Documentation: doc)
 	for item in imports: m.Imports.Add(item)
@@ -92,7 +97,25 @@ def newParameterDeclaration(attributes, name, type):
 def newEnum(attributes, modifiers, name, members):
 	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, members)
 	
+def newCallableTypeReference(params, type):
+	node = CallableTypeReference(ReturnType: type)
+	i = 0
+	for p in flatten(params):
+		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
+	return node
+	
+def newGeneratorExpression(projection, dl, e, f):
+	node = GeneratorExpression(Expression: projection, Iterator: e, Filter: f)
+	for d in flatten(dl): node.Declarations.Add(d)
+	return node
+	
 def newEnumField(attributes, name, initializer):
+	match initializer:
+		case [| -$(e=IntegerLiteralExpression()) |]:
+			e.Value *= -1
+			initializer = e
+		otherwise:
+			pass
 	return setUpMember(EnumMember(Name: tokenValue(name), Initializer: initializer), attributes, null)
 	
 def newClass(attributes, modifiers, name, baseTypes, members):

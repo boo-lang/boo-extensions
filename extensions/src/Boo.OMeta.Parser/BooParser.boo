@@ -101,7 +101,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
 		"for", "interface", "in", "yield", "self", "super", "of", \
-		"event", "private", "protected", "internal", "public", "enum"
+		"event", "private", "protected", "internal", "public", "enum", \
+		"callable"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -122,7 +123,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	module_member = assembly_attribute | type_def | method
 	
-	type_def = class_def | interface_def | enum_def
+	type_def = class_def | interface_def | enum_def | callable_def
+	
+	callable_def = (CALLABLE, ID >> name, method_parameters >> parameters, optional_type >> type, eol) ^ newCallable(name, parameters, type)
 	
 	class_def = (
 		attributes >> attrs,
@@ -205,10 +208,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	method = (
 		attributes >> attrs,
-		member_modifiers >> mod, DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN,
+		member_modifiers >> mod, DEF, ID >> name, method_parameters >> parameters,
 			attributes >> returnTypeAttributes, optional_type >> type,
 			block >> body
 	) ^ newMethod(attrs, mod, name, parameters, returnTypeAttributes, type, body)
+	
+	method_parameters = (LPAREN, optional_parameter_list >> parameters, RPAREN) ^ parameters
 	
 	list_of parameter
 	
@@ -247,7 +252,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
-	stmt_modifier = ((IF, assignment >> e, eol) ^ StatementModifier(Type: StatementModifierType.If, Condition: e)) | (eol ^ null)
+	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | (eol ^ null)
+	
+	stmt_modifier_node = (IF, assignment >> e) ^ StatementModifier(Type: StatementModifierType.If, Condition: e)
 	
 	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
 	
@@ -273,7 +280,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infixr assignment, (ASSIGN | ASSIGN_INPLACE), expression
 	
-	expression = or_expression
+	expression = generator_expression | or_expression
+	
+	generator_expression = (
+		or_expression >> projection, FOR, declaration_list >> dl, IN, rvalue >> e, ((stmt_modifier_node >> f) | "")
+	) ^ newGeneratorExpression(projection, dl, e, f)
 	
 	infix or_expression, OR, and_expression
 	
@@ -283,8 +294,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix membership_expression, (IN | ((NOT, IN) ^ makeToken("not in"))), identity_test_expression
 	
-	// need to fix memoization for rule with arguments
-	infix identity_test_expression, (IS, ((NOT ^ makeToken("is not")) | ("" ^ makeToken("is")))), comparison
+	infix identity_test_expression, (((IS, NOT) ^ makeToken("is not")) | IS), comparison
 	
 	infix comparison, (EQUALITY | INEQUALITY | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
 	
@@ -348,7 +358,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_simple | type_reference_array
+	type_reference = type_reference_simple | type_reference_array | type_reference_callable
+	
+	type_reference_callable = (
+		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type
+	) ^ newCallableTypeReference(params, type)
 	
 	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	
