@@ -149,6 +149,7 @@
 	
 	<target name="init">
 		<mkdir dir="${build.dir}" />	
+		<copy file="${nunit.framework.dll}" todir="${build.dir}" />
 		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
 	</target>
 
