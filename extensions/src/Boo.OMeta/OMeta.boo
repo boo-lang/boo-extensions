@@ -32,3 +32,12 @@ def scan(grammar as OMetaGrammar, rule as string, input as OMetaInput):
 			case SuccessfulMatch(Input, Value):
 				input = Input
 				yield Value
+				
+def flatten(items) as object*:
+	if items is null: return
+	for item in items:
+		e = item as System.Collections.IEnumerable
+		if e is not null:
+			yieldAll flatten(e)
+		else:
+			yield item

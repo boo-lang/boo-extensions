@@ -1,6 +1,7 @@
 namespace Boo.OMeta.Parser
 
 import System.Globalization
+import Boo.OMeta
 import Boo.PatternMatching
 import Boo.Lang.Compiler.Ast
 
@@ -49,13 +50,21 @@ def newInteger(t, style as NumberStyles):
 	value = int.Parse(tokenValue(t), style)
 	return IntegerLiteralExpression(Value: value)
 	
-def newField(name, type, initializer):
-	return Field(Name: tokenValue(name), Type: type, Initializer: initializer)
+def newEvent(attributes, modifiers, name, type):
+	return setUpMember(Event(Name: tokenValue(name), Type: type), attributes, modifiers)
 	
-def newMethod(name, parameters, returnType as TypeReference, body as Block):
+def newField(attributes, modifiers, name, type, initializer):
+	return setUpMember(Field(Name: tokenValue(name), Type: type, Initializer: initializer), attributes, modifiers)
+	
+def setUpMember(member as TypeMember, attributes, modifiers):
+	for a in flatten(attributes): member.Attributes.Add(a)
+	for m as TypeMemberModifiers in modifiers: member.Modifiers |= m
+	return member
+	
+def newMethod(attributes, modifiers, name, parameters, returnType as TypeReference, body as Block):
 	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
 	for p in parameters: node.Parameters.Add(p)
-	return node
+	return setUpMember(node, attributes, modifiers)
 	
 def newClass(name, baseTypes, members):
 	return setUpType(ClassDefinition(Name: tokenValue(name)), baseTypes, members)
@@ -67,6 +76,9 @@ def setUpType(type as TypeDefinition, baseTypes, members):
 		for baseType in baseTypes: type.BaseTypes.Add(baseType)
 	return type
 	
+def newAttribute(name):
+	return Attribute(Name: tokenValue(name))
+	
 def newInterface(name, baseTypes, members):
 	return setUpType(InterfaceDefinition(Name: tokenValue(name)), baseTypes, members)
 	
@@ -75,10 +87,10 @@ def newInvocation(target as Expression, args as List):
 	for arg in args: mie.Arguments.Add(arg)
 	return mie
 	
-def newQuasiquoteBlock(m as Module):
+def newQuasiquoteBlock(m):
 	return QuasiquoteExpression(Node: m)
 	
-def newQuasiquoteExpression(s as Statement):
+def newQuasiquoteExpression(s):
 	return QuasiquoteExpression(Node: s)
 	
 def newReference(t):

@@ -100,7 +100,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
-		"for", "interface", "in", "yield", "self", "super", "of" 
+		"for", "interface", "in", "yield", "self", "super", "of", \
+		"event", "private", "protected", "internal", "public"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -141,17 +142,37 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = method | class_def | field
+	class_member = method | class_def | field | event_def
 	
-	field = (ID >> name, optional_type >> type, field_initializer >> initializer, eol) ^ newField(name, type, initializer)
+	event_def = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		EVENT, ID >> name, optional_type >> type, eol
+	) ^ newEvent(attrs, mod, name, type)
+	
+	field = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		ID >> name, optional_type >> type, field_initializer >> initializer, eol
+	) ^ newField(attrs, mod, name, type, initializer)
 	
 	field_initializer = (ASSIGN, rvalue) | ""
 	
+	member_modifiers = --((PRIVATE ^ TypeMemberModifiers.Private) | (PUBLIC ^ TypeMemberModifiers.Public)) >> all ^ all
+	
 	method = (
-		DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN, optional_type >> type, block >> body
-	) ^ newMethod(name, parameters, type, body)
+		attributes >> attrs,
+		member_modifiers >> mod, DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN, optional_type >> type,
+			block >> body
+	) ^ newMethod(attrs, mod, name, parameters, type, body)
 	
 	list_of parameter
+	
+	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value)
+	
+	attribute = (ID >> name) ^ newAttribute(name)
+	
+	list_of attribute
 	
 	parameter = (ID >> name, optional_type >> type) ^ ParameterDeclaration(Name: tokenValue(name), Type: type)
 	
@@ -278,11 +299,19 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote
 		
-	quasi_quote = quasi_quote_block | quasi_quote_expression
+	quasi_quote = quasi_quote_member | quasi_quote_module | quasi_quote_expression | quasi_quote_stmt
 	
-	quasi_quote_block = (QQ_BEGIN, INDENT, module >> m, DEDENT, QQ_END) ^ newQuasiquoteBlock(m)
+	quasi_quote_module = (QQ_BEGIN, INDENT, module >> m, DEDENT, QQ_END) ^ newQuasiquoteBlock(m)
 	
-	quasi_quote_expression = (QQ_BEGIN, stmt_line >> s, QQ_END) ^ newQuasiquoteExpression(s)
+	quasi_quote_member = (QQ_BEGIN, INDENT, class_member >> m, DEDENT, QQ_END) ^ newQuasiquoteBlock(m)
+	
+	quasi_quote_expression = (QQ_BEGIN, rvalue >> s, QQ_END) ^ newQuasiquoteExpression(s)
+	
+	quasi_quote_stmt = (QQ_BEGIN, (qq_return | qq_macro) >> s, QQ_END) ^ newQuasiquoteExpression(s)
+	
+	qq_return = (RETURN, optional_assignment >> e) ^ ReturnStatement(Expression: e)
+	
+	qq_macro = (ID >> name, assignment_list >> args) ^ newMacro(name, args, null, null)
 	
 	parenthesized_expression = (LPAREN, assignment >> e, RPAREN) ^ e
 		
