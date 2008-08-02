@@ -90,11 +90,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
 		
+	space = line_comment | super
+	
+	line_comment = '#', --(~newline, _)
+		
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
-		"for", "in", "yield", "self", "super", "of"
+		"for", "interface", "in", "yield", "self", "super", "of" 
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
