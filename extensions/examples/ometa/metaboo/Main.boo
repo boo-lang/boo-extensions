@@ -44,7 +44,6 @@ assert( [2, 3] == l[1:] )
 assert( [3, 2, 1] == l[::-1] )
 assert( [1, 2, 3] == l[:] )
 assert( [1, 3] == l[::2] )
-
 a = not b is not null
 b = not c not in (1, 2, 3)
 c = not a and b or c and not d

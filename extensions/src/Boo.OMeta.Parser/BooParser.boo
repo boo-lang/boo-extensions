@@ -185,7 +185,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix identity_test_expression, ((IS, NOT) ^ makeToken("is not")) | IS, comparison
 	
-	infix comparison, (EQUALITY | INEQUALITY | IS | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
+	infix comparison, (EQUALITY | INEQUALITY | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
 	
 	infix bitwise_or_expression, BITWISE_OR, bitwise_xor_expression
 	
@@ -210,15 +210,25 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	member_reference = ((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
-	
-	slice = ((omitted_expression >> begin),
+
+	slice = (
+			(
+				(COLON ^ OmittedExpression.Default) >> begin,
+				(expression | ("" ^ OmittedExpression.Default)) >> end,
+				(omitted_expression | "") >> step
+			)
+			|
+			(
+				expression >> begin,
 				((omitted_expression >> end,
 					((omitted_expression >> step) | ""))
-					| "")) ^ newSlice(begin, end, step)
+				| "")
+			)
+		) ^ newSlice(begin, end, step)
 				
 	list_of slice
 				
-	omitted_expression = (COLON ^ OmittedExpression.Default) | expression
+	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
 	invocation = ((member_reference >> target, LPAREN, optional_expression_list >> args, RPAREN) ^ newInvocation(target, args)) \
 		| atom
