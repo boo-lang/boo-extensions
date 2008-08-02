@@ -11,6 +11,6 @@ class OMetaDelegatingGrammar(OMetaGrammarLR):
 		return _prototype.Eval(context, rule, input)
 		
 	override def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
-		return _prototype.Eval(context, rule, input)
+		return _prototype.Apply(context, rule, input)
 		
 
