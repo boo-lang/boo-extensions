@@ -151,7 +151,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| stmt_return \
 		| stmt_yield
 		
-	stmt_macro = (ID >> name, assignment_list >> args, stmt_modifier >> m) ^ newMacro(name, args, m)
+	stmt_macro = (ID >> name, assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
 		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
@@ -295,8 +295,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	eol = ++EOL | ~_	
 	
-	def newMacro(name, args, m):
-		node = MacroStatement(Name: tokenValue(name), Modifier: m)
+	def newMacro(name, args, body, m):
+		node = MacroStatement(Name: tokenValue(name), Block: body, Modifier: m)
 		for arg in args: node.Arguments.Add(arg)
 		return node
 	
