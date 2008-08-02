@@ -5,8 +5,8 @@ import Boo.PatternMatching
 def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input, EndOfInput)
 	return SuccessfulMatch(input.Tail, input.Head)
-	
-def any(context as OMetaGrammar, input as OMetaInput):
+
+def any_rule(context as OMetaGrammar, input as OMetaInput):
 	return any(input)
 	
 def character(input as OMetaInput, expected as char) as OMetaMatch:
