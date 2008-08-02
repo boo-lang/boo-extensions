@@ -2,6 +2,7 @@ namespace metaboo
 
 import Boo.OMeta
 import Boo.PatternMatching
+#import Boo.Adt
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
 
@@ -11,8 +12,11 @@ def printTokens(text as string):
 def printTokens(grammar as OMetaGrammar, text as string):
 	sep = "=" * 20
 	print sep
-	for token in scan(grammar, 'scanner', text):
-		print token
+	try:
+		for token in scan(grammar, 'scanner', text):
+			print token
+	except x:
+		print x
 	print sep
 	
 def test(code as string):
@@ -26,6 +30,7 @@ def test(code as string):
 	except x:
 		print x
 		
+	
 #while true:
 #	line = prompt("> ")
 #	if string.IsNullOrEmpty(line) or line == "/q": break
@@ -33,13 +38,12 @@ def test(code as string):
 #return
 		
 code = """
-a as int
-print a = 2
-a.b.c()[3]().foo() if a > 2
-a = 2 *3
-i = ~2
-j = -~i
-h = ~i + ~j * 2
+def each(items, action as callable(object)):
+	for item in items:
+		action(item)
+
+def map(items, function as callable(object) as object):
+	return function(item) for item in items
 """
 test code
 return
