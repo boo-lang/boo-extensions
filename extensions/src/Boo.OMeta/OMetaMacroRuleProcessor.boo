@@ -193,12 +193,21 @@ class OMetaMacroRuleProcessor:
 			case [| $pattern >> $variable |]:
 				_collectingParseTree.With(true):
 					expand block, pattern, input, lastMatch
-					code = [|
-						block:
-							smatch = $lastMatch as SuccessfulMatch
-							if smatch is not null:
-								$variable = smatch.Value
-					|].Block
+					match variable:
+						case [| $name as $typeref |]:
+							code = [|
+								block:
+									smatch = $lastMatch as SuccessfulMatch
+									if smatch is not null:
+										$name = cast($typeref, smatch.Value)
+							|].Block
+						otherwise:
+							code = [|
+								block:
+									smatch = $lastMatch as SuccessfulMatch
+									if smatch is not null:
+										$variable = smatch.Value
+							|].Block
 					block.Add(code)
 				
 			case [| $_ | $_ |]:

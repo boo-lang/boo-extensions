@@ -170,6 +170,16 @@ class OMetaMacroTest:
 		parser = NumberListParser()
 		assertRule parser, 'parse', "21,42,51", [21, 42, 51]
 		
+	[Test]
+	def TestTypedBinding():
+		ometa HexParser:
+			parse = "0x", ++(hexdigit | digit) >> ds ^ join(ds, '')
+			hexdigit = (_ >> c as char) and (c >= char('a') and c <= char('f'))
+			
+		match HexParser().parse("0xff"):
+			case SuccessfulMatch(Value: "ff"):
+				pass
+		
 	def assertE(grammar as OMetaGrammar):
 		assertRule grammar, 'exp', "11+31", [['1', '1'], '+', ['3', '1']]
 		assertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
