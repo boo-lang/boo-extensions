@@ -37,3 +37,21 @@ class LeftRecursionTest:
 					Input: OMetaInput(IsEmpty: true),
 					Value: ['2', '-', '1']):
 				pass
+				
+	[Test]
+	def IndirectLeftRecursionOnExtension():
+		ometa ILRX < ILR:
+			option ParseTree
+			factor = (factor, '*', super) | super
+			
+		def test(code as string, expected):
+			match ILRX().Apply('term', code):
+				case SuccessfulMatch(
+						Input: OMetaInput(IsEmpty: true),
+						Value: actual):
+					Assert.AreEqual(expected, actual)
+					
+		test "2*2*2", [['2', '*', '2'], '*', '2']
+		test "42", '42'
+		test "42-3*2", ['42', '-', ['3', '*', '2']]
+

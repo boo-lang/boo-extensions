@@ -19,7 +19,7 @@ class OMetaGrammarBase(OMetaGrammar):
 		return Eval(context, rule, input)
 		
 	virtual def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
-		return Apply(context, rule, input)
+		return Eval(context, rule, input)
 		
 	virtual def RuleMissing(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch:
 		raise "Rule '${rule}' missing!"

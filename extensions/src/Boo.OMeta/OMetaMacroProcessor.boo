@@ -103,6 +103,9 @@ class OMetaMacroProcessor:
 				def OMetaGrammar.SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
 					return _grammar.SuperApply(context, rule, input)
 					
+				def OMetaGrammar.Eval(context as OMetaGrammar, rule as string, input as OMetaInput):
+					return _grammar.Eval(context, rule, input)
+					
 				def Apply(rule as string, input as OMetaInput):
 					return _grammar.Apply(self, rule, input)
 					

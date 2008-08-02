@@ -14,4 +14,5 @@ interface OMetaGrammar:
 	def InstallRule(ruleName as string, rule as OMetaRule)
 	def Apply(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch
 	def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch
+	def Eval(context as OMetaGrammar, rule as string, input as OMetaInput) as OMetaMatch
 
