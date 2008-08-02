@@ -189,7 +189,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix membership_expression, (IN | ((NOT, IN) ^ makeToken("not in"))), identity_test_expression
 	
-	infix identity_test_expression, ((IS, NOT) ^ makeToken("is not")) | IS, comparison
+	// need to fix memoization for rule with arguments
+	infix identity_test_expression, (IS, ((NOT ^ makeToken("is not")) | ("" ^ makeToken("is")))), comparison
 	
 	infix comparison, (EQUALITY | INEQUALITY | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
 	
