@@ -6,7 +6,7 @@ import Boo.Lang.Compiler.Ast
 import Boo.OMeta
 import Boo.OMeta.Parser
 import Boo.PatternMatching
-
+import Boo.Lang.Useful.Attributes
 import NUnit.Framework
 
 partial class BooParserTestFixture:
@@ -25,7 +25,7 @@ partial class BooParserTestFixture:
 	def normalize(s as string):
 		return s.Trim().Replace("\r\n", "\n")
 		
-	def booRoundtripTestCasesPath():
+	[once] def booRoundtripTestCasesPath():
 		
 		return Path.Combine(
 					findSiblingBooDirectory(parentDirectory(System.Environment.CurrentDirectory)),

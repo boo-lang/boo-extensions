@@ -35,5 +35,5 @@ it generates:
 def choicesRuleFrom(rules as List):
 	rule as Expression = rules[0]
 	for name as Expression in rules[1:]:
-		rule = [| $name | $rule |]
+		rule = [| $rule | $name |]
 	return rule

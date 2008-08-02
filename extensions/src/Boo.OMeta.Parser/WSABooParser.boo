@@ -3,10 +3,10 @@ namespace Boo.OMeta.Parser
 import Boo.OMeta
 	
 ometa WSABooParser < BooParser:
-	scanner = (emptyLines ^ makeToken("eol")) | ((--whitespace, tokens >> t) ^ t)
+	scanner = (empty_lines ^ makeToken("eol")) | ((--whitespace, tokens >> t) ^ t)
 	
 	keywords = "end" | super
 	
-	beginBlock = COLON, eol
-	endBlock = keyword["end"], eol
+	begin_block = COLON, eol
+	end_block = keyword["end"], eol
 	

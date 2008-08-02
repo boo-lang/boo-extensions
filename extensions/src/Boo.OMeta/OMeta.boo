@@ -19,7 +19,7 @@ def character(input as OMetaInput, expected as char) as OMetaMatch:
 def characters(input as OMetaInput, expected as string) as OMetaMatch:
 	for ch in expected:
 		m = character(input, ch)
-		if m isa FailedMatch: return m
+		if m isa FailedMatch: return FailedMatch(input, ExpectedValueFailure(expected))
 		input = m.Input
 	return SuccessfulMatch(input, expected)
 	

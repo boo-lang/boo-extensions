@@ -7,7 +7,7 @@ import Boo.Lang.Compiler.Ast
 import NUnit.Framework
 
 syntax Units:
-	expression = mass | super
+	atom = mass | super
 	mass = (integer >> value, "kg") ^ [| Mass($(value as Expression), "kg") |]
 
 [TestFixture]
