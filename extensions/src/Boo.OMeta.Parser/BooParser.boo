@@ -101,7 +101,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
 		"for", "interface", "in", "yield", "self", "super", "of", \
-		"event", "private", "protected", "internal", "public"
+		"event", "private", "protected", "internal", "public", "enum"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -120,15 +120,31 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	qualified_name = (ID >> qualifier, --((DOT, ID >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
-	module_member = class_def | interface_def | method
+	module_member = assembly_attribute | type_def | method
+	
+	type_def = class_def | interface_def | enum_def
 	
 	class_def = (
+		attributes >> attrs,
+		member_modifiers >> mod,
 		CLASS, ID >> className, super_types >> superTypes, begin_block, class_body >> body, end_block
-	) ^ newClass(className, superTypes, body)
+	) ^ newClass(attrs, mod, className, superTypes, body)
 	
 	interface_def = (
+		attributes >> attrs,
+		member_modifiers >> mod,
 		INTERFACE, ID >> name, super_types >> superTypes, begin_block, interface_body >> body, end_block
-	) ^ newInterface(name, superTypes, body)
+	) ^ newInterface(attrs, mod, name, superTypes, body)
+	
+	enum_def = (
+		attributes >> attrs, 
+		member_modifiers >> mod,
+		ENUM, ID >> name, begin_block, enum_body >> body, end_block
+	) ^ newEnum(attrs, mod, name, body)
+	
+	enum_body = ++enum_field >> fields ^ fields
+	
+	enum_field = (attributes >> attrs, ID >> name, ((ASSIGN, expression >> e) | ""), eol) ^ newEnumField(attrs, name, e)
 	
 	super_types = ((LPAREN, optional_type_reference_list >> types, RPAREN) ^ types) | ""
 	
@@ -142,13 +158,40 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = method | class_def | field | event_def
+	class_member = type_def | method | property_def | field | event_def
 	
 	event_def = (
 		attributes >> attrs,
 		member_modifiers >> mod,
 		EVENT, ID >> name, optional_type >> type, eol
 	) ^ newEvent(attrs, mod, name, type)
+	
+	property_def = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		ID >> name, property_parameters >> parameters, optional_type >> type,
+		begin_block,
+		(
+			(property_getter >> pg, property_setter >> ps)
+			| (property_setter >> ps, property_getter >> pg)
+			| (property_setter >> ps)
+			| (property_getter >> pg)
+		),
+		end_block
+	) ^ newProperty(attrs, mod, name, parameters, type, pg, ps)
+	
+	property_parameters = ((LBRACK, parameter_list >> parameters, RBRACK) | "") ^ parameters
+	
+	property_getter = accessor["get"]
+	
+	property_setter = accessor["set"]
+	
+	accessor[key] = (
+		attributes >> attrs,
+		member_modifiers >> mod, 
+		(ID >> name and (tokenValue(name) == key)),
+		block >> body
+	) ^ newMethod(attrs, mod, name, null, null, null, body)
 	
 	field = (
 		attributes >> attrs,
@@ -162,19 +205,27 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	method = (
 		attributes >> attrs,
-		member_modifiers >> mod, DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN, optional_type >> type,
+		member_modifiers >> mod, DEF, ID >> name, LPAREN, optional_parameter_list >> parameters, RPAREN,
+			attributes >> returnTypeAttributes, optional_type >> type,
 			block >> body
-	) ^ newMethod(attrs, mod, name, parameters, type, body)
+	) ^ newMethod(attrs, mod, name, parameters, returnTypeAttributes, type, body)
 	
 	list_of parameter
 	
-	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value)
+	assembly_attribute = (
+		LBRACK, (ID >> name and (tokenValue(name) == "assembly")), COLON,
+		attribute_list >> value, 
+		RBRACK, eol) ^ value
 	
-	attribute = (ID >> name) ^ newAttribute(name)
+	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
+	
+	attribute = (ID >> name, attribute_arguments >> args) ^ newAttribute(name, args)
+	
+	attribute_arguments = invocation_arguments | ""
 	
 	list_of attribute
 	
-	parameter = (ID >> name, optional_type >> type) ^ ParameterDeclaration(Name: tokenValue(name), Type: type)
+	parameter = (attributes >> attrs, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, name, type)
 	
 	optional_type = (AS, type_reference) | ""
 	
@@ -286,8 +337,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = ((member_reference >> target, LPAREN, optional_assignment_list >> args, RPAREN) ^ newInvocation(target, args)) \
+	invocation = ((member_reference >> target, invocation_arguments >> args) ^ newInvocation(target, args)) \
 		| atom
+		
+	invocation_arguments = (LPAREN, optional_invocation_argument_list >> args, RPAREN) ^ args
+	
+	invocation_argument = named_argument | assignment
+	
+	list_of invocation_argument
+	
+	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
 	type_reference = type_reference_simple | type_reference_array
 	

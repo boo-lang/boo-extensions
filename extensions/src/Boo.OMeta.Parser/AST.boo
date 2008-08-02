@@ -3,6 +3,7 @@ namespace Boo.OMeta.Parser
 import System.Globalization
 import Boo.OMeta
 import Boo.PatternMatching
+import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
 def newMacro(name, args, body, m):
@@ -39,7 +40,11 @@ def newIfStatement(condition as Expression, trueBlock as Block):
 def newModule(doc, imports, members, stmts):
 	m = Module(Documentation: doc)
 	for item in imports: m.Imports.Add(item)
-	for member in members: m.Members.Add(member)
+	for member in flatten(members):
+		if member isa Attribute:
+			m.AssemblyAttributes.Add(member)
+		else:
+			m.Members.Add(member)
 	for stmt as Statement in stmts: m.Globals.Add(stmt)
 	return m
 	
@@ -56,35 +61,76 @@ def newEvent(attributes, modifiers, name, type):
 def newField(attributes, modifiers, name, type, initializer):
 	return setUpMember(Field(Name: tokenValue(name), Type: type, Initializer: initializer), attributes, modifiers)
 	
-def setUpMember(member as TypeMember, attributes, modifiers):
-	for a in flatten(attributes): member.Attributes.Add(a)
-	for m as TypeMemberModifiers in modifiers: member.Modifiers |= m
-	return member
-	
-def newMethod(attributes, modifiers, name, parameters, returnType as TypeReference, body as Block):
-	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
-	for p in parameters: node.Parameters.Add(p)
+def newProperty(attributes, modifiers, name, parameters, type, getter, setter):
+	node = Property(Name: tokenValue(name), Type: type, Getter: getter, Setter: setter)
+	setUpParameters node, parameters
 	return setUpMember(node, attributes, modifiers)
 	
-def newClass(name, baseTypes, members):
-	return setUpType(ClassDefinition(Name: tokenValue(name)), baseTypes, members)
+def setUpAttributes(node as INodeWithAttributes, attributes) as Node:
+	for a in flatten(attributes):
+		node.Attributes.Add(a)
+	return node
 	
-def setUpType(type as TypeDefinition, baseTypes, members):
+def setUpMember(member as TypeMember, attributes, modifiers):
+	setUpAttributes member, attributes
+	for m as TypeMemberModifiers in flatten(modifiers): member.Modifiers |= m
+	return member
+	
+def setUpParameters(node as INodeWithParameters, parameters):
+	for p in flatten(parameters): node.Parameters.Add(p)
+	
+def newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType as TypeReference, body as Block):
+	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
+	setUpParameters node, parameters
+	for a in flatten(returnTypeAttributes): node.ReturnTypeAttributes.Add(a)
+	return setUpMember(node, attributes, modifiers)
+	
+def newParameterDeclaration(attributes, name, type):
+	node = ParameterDeclaration(Name: tokenValue(name), Type: type)
+	return setUpAttributes(node, attributes)
+	
+def newEnum(attributes, modifiers, name, members):
+	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, members)
+	
+def newEnumField(attributes, name, initializer):
+	return setUpMember(EnumMember(Name: tokenValue(name), Initializer: initializer), attributes, null)
+	
+def newClass(attributes, modifiers, name, baseTypes, members):
+	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
+	
+def setUpType(type as TypeDefinition, attributes, modifiers, baseTypes, members):
 	if members is not null: 
 		for member in members: type.Members.Add(member)
 	if baseTypes is not null:
 		for baseType in baseTypes: type.BaseTypes.Add(baseType)
-	return type
+	return setUpMember(type, attributes, modifiers)
 	
-def newAttribute(name):
-	return Attribute(Name: tokenValue(name))
+macro setUpArgs:
+	node, args = setUpArgs.Arguments
+	code = [|
+		if $args is not null:
+			for arg in $args:
+				if arg isa ExpressionPair:
+					$node.NamedArguments.Add(arg)
+				else:
+					$node.Arguments.Add(arg)
+	|]
+	return code
 	
-def newInterface(name, baseTypes, members):
-	return setUpType(InterfaceDefinition(Name: tokenValue(name)), baseTypes, members)
+def newAttribute(name, args):
+	node = Attribute(Name: tokenValue(name))
+	setUpArgs node, args
+	return node
+	
+def newNamedArgument(name, value):
+	return ExpressionPair(First: newReference(name), Second: value)
+	
+def newInterface(attributes, modifiers, name, baseTypes, members):
+	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
 	
 def newInvocation(target as Expression, args as List):
 	mie = MethodInvocationExpression(Target: target)
-	for arg in args: mie.Arguments.Add(arg)
+	setUpArgs mie, args
 	return mie
 	
 def newQuasiquoteBlock(m):
