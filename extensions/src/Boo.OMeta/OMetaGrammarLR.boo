@@ -25,6 +25,7 @@ for indirectly/mutually left recursive rules.
 	_heads = HybridDictionary()
 	
 	override def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
+		
 		memoKey = MemoKey(rule, input)
 		m = Recall(context, memoKey)
 		if m is null:
