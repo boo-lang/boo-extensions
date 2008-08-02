@@ -2,7 +2,6 @@ namespace metaboo
 
 import Boo.OMeta
 import Boo.PatternMatching
-import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
 
