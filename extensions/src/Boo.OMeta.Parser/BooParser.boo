@@ -83,9 +83,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		rparen = ")", leaveWhitespaceAgnosticRegion
 		lbrack = "[", enterWhitespaceAgnosticRegion
 		rbrack = "]", leaveWhitespaceAgnosticRegion
+		lbrace = "{", enterWhitespaceAgnosticRegion
+		rbrace = "}", leaveWhitespaceAgnosticRegion
+		
 		kw = (keywords >> value, ~(letter | digit | '_')) ^ value
-		tdqs = ('"""', ++(~'"""', _) >> s, '"""') ^ s
-		sdqs = ('"', ++(~'"', _) >> s, '"') ^ s
+		tdq = '"""'
+		dq = '"'
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
 		
@@ -106,7 +109,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		--whitespace
 	) ^ newModule(s, ids, members, stmts)
 	
-	docstring = (TDQS >> t, eol) ^ tokenValue(t)
+	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ, eol) ^ makeString(s)
 	
 	import_declaration = (IMPORT, qualified_name >> qn, eol) ^ newImport(qn)
 	
@@ -241,10 +244,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
-		| string_literal | null_literal | parenthesized_expression \
+		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
 		| self_literal | super_literal
 	
-	parenthesized_expression = (LPAREN, expression >> e, RPAREN) ^ e
+	parenthesized_expression = (LPAREN, assignment >> e, RPAREN) ^ e
 		
 	null_literal = NULL ^ [| null |]
 	
@@ -252,13 +255,26 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	self_literal = SELF ^ [| self |]
 	
-	string_literal = ((SDQS | TDQS | SQS) >> s) ^ newStringLiteral(s)
+	string_literal = (SQS >> s) ^ newStringLiteral(s)
 	
-	array_literal = (LPAREN,
-		((COMMA ^ [])
-		| ((expression >> e, ++(COMMA, expression) >> tail) ^ prepend(e, tail))
-		| ((expression >> e, COMMA) ^ [e])) >> items
-		,RPAREN) ^ newArrayLiteral(items)
+	string_interpolation = (
+		DQ,
+		++(
+			((++(~('"' | '$'), string_char) >> s) ^ StringLiteralExpression(makeString(s)))
+			| (('${', expression >> v, --whitespace, '}') ^ v)
+			| ('$', atom)
+			) >> items,
+		DQ) ^ newStringInterpolation(items)
+		
+	string_char = ('\\', ('\\' | '$')) | (~'\\', _)
+	
+	array_literal = array_literal_empty | array_literal_single | array_literal_multi
+	
+	array_literal_empty = (LPAREN, COMMA, RPAREN) ^ newArrayLiteral([])
+	
+	array_literal_single = (LPAREN, assignment >> e, COMMA, RPAREN) ^ newArrayLiteral([e])
+	
+	array_literal_multi = (LPAREN, (assignment >> e, ++(COMMA, assignment) >> tail), (COMMA | ""), RPAREN) ^ newArrayLiteral(prepend(e, tail))
 	
 	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)
 	
@@ -359,6 +375,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	def newStringLiteral(s):
 		return StringLiteralExpression(Value: tokenValue(s))
+		
+	def newStringInterpolation(items as List):
+		if len(items) == 1 and items[0] isa StringLiteralExpression:
+			return items[0]
+		node = ExpressionInterpolationExpression()
+		for item in items: node.Expressions.Add(item)
+		return node
 		
 	def newInfixExpression(op, l as Expression, r as Expression):
 		return BinaryExpression(Operator: binaryOperatorFor(op), Left: l, Right: r)
