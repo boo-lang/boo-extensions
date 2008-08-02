@@ -5,8 +5,6 @@ import System.Collections
 
 class OMetaInput:
 
-	public static final Empty as OMetaInput = OMetaInput()
-	
 	static def For(enumerable as IEnumerable) as OMetaInput:
 		return ForEnumerator(enumerable.GetEnumerator())
 		
@@ -16,13 +14,16 @@ class OMetaInput:
 	static def ForEnumerator(enumerator as IEnumerator, position as int) as OMetaInput:
 		if enumerator.MoveNext():
 			return EnumeratorInput(enumerator, position)
-		return Empty
+		return Empty()
 		
 	static def Prepend(argument, input as OMetaInput):
 		return OMetaInputCons(argument, input)
 		
 	static def Singleton(o):
-		return Prepend(o, Empty)
+		return Prepend(o, Empty())
+		
+	static def Empty():
+		return OMetaInput()
 	
 	protected def constructor():
 		pass
