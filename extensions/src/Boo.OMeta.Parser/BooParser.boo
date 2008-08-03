@@ -91,10 +91,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		dq = '"'
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
-		
-	space = line_comment | super
+
+	space = multi_line_comment | line_comment | super
 	
-	line_comment = '#', --(~newline, _)
+	multi_line_comment = "/*", --(~"*/", (multi_line_comment | _)), "*/"
+	
+	line_comment = ('#' | "//"), --(~newline, _)
 		
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
 		
@@ -112,7 +114,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		--import_declaration >> ids,
 		--module_member >> members,
 		--stmt >> stmts,
-		--whitespace
+		--EOL
 	) ^ newModule(s, ids, members, stmts)
 	
 	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ, eol) ^ makeString(s)
@@ -201,7 +203,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		member_modifiers >> mod,
 		ID >> name, optional_type >> type, field_initializer >> initializer, eol
 	) ^ newField(attrs, mod, name, type, initializer)
-	
+
 	field_initializer = (ASSIGN, rvalue) | ""
 	
 	member_modifiers = --((PRIVATE ^ TypeMemberModifiers.Private) | (PUBLIC ^ TypeMemberModifiers.Public)) >> all ^ all
@@ -416,7 +418,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	array_literal_multi = (LPAREN, array_literal_type >> type, assignment >> e, ++(COMMA, assignment) >> tail, (COMMA | ""), RPAREN) ^ newArrayLiteral(type, prepend(e, tail))
 			
 	array_literal_type = ((OF, ranked_type_reference >> type, COLON) | "") ^ type
-	
+
 	ranked_type_reference = ((type_reference >> type), ((COMMA,  integer >> rank) | "")) ^ ArrayTypeReference(ElementType: type, Rank: rank) 
 	
 	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)

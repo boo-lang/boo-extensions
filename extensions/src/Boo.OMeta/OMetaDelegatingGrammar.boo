@@ -1,16 +1,20 @@
 namespace Boo.OMeta
 		
-class OMetaDelegatingGrammar(OMetaGrammarLR):
+class OMetaDelegatingGrammar(OMetaGrammarBase):
 	
 	_prototype as OMetaGrammar
 	
 	def constructor(prototype as OMetaGrammar):
 		_prototype = prototype
 		
-	override def RuleMissing(context as OMetaGrammar, rule as string, input as OMetaInput):
-		return _prototype.Eval(context, rule, input)
+	def Apply(rule as string, input as OMetaInput):
+		return OMetaEvaluationContextImpl(self).Eval(rule, input)
 		
-	override def SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
+	def Apply(rule as string, input as System.Collections.IEnumerable):
+		return Apply(rule, OMetaInput.For(input))
+		
+	override def RuleMissing(context as OMetaEvaluationContext, rule as string, input as OMetaInput):
 		return _prototype.Apply(context, rule, input)
 		
-
+	def SuperApply(context as OMetaEvaluationContext, rule as string, input as OMetaInput):
+		return _prototype.Apply(context, rule, input)

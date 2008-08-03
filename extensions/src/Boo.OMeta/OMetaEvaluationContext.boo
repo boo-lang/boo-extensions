@@ -1,9 +1,22 @@
 namespace Boo.OMeta
 
+import Boo.Adt
 import System.Collections.Generic
 import System.Collections.Specialized
-import Boo.Adt		
+
+interface OMetaEvaluationContext:
+	def Eval(rule as string, input as OMetaInput) as OMetaMatch
+
+class NullEvaluationContext(OMetaEvaluationContext):
+	
+	final _grammar as OMetaGrammar
+	
+	def constructor([required] grammar as OMetaGrammar):
+		_grammar = grammar
 		
+	def Eval(rule as string, input as OMetaInput) as OMetaMatch:
+		return _grammar.Apply(self, rule, input)
+
 class RuleSet(Set[of string]):
 	def constructor():
 		super()
@@ -13,30 +26,35 @@ class RuleSet(Set[of string]):
 data LeftRecursion(@seed as OMetaMatch, rule as string, @head as Head)
 data Head(rule as string, involvedSet as RuleSet, @evalSet as RuleSet)
 
-class OMetaGrammarLR(OMetaGrammarBase):
+class OMetaEvaluationContextImpl(OMetaEvaluationContext):
 """
-OMetaGrammar implementation with full support
+Evaluation context with full support
 for indirectly/mutually left recursive rules.
 """
-	_memo = HybridDictionary()
 	
-	_lrStack = Stack[of LeftRecursion]()
+	final _memo = HybridDictionary()
 	
-	_heads = HybridDictionary()
+	final _lrStack = Stack[of LeftRecursion]()
 	
-	override def Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
+	final _heads = HybridDictionary()
+	
+	final _grammar as OMetaGrammar
+	
+	def constructor([required] grammar as OMetaGrammar):
+		_grammar = grammar
 		
+	def Eval(rule as string, input as OMetaInput) as OMetaMatch:	
 		memoKey = MemoKey(rule, input)
-		m = Recall(context, memoKey)
+		m = Recall(memoKey)
 		if m is null:
 			lr = LeftRecursion(Fail(input), rule, null)
 			_lrStack.Push(lr)
 			_memo[memoKey] = lr
-			ans = Eval(context, rule, input)
+			ans = Apply(rule, input)
 			_lrStack.Pop()
 			if lr.head is not null:
 				lr.seed = ans
-				return LRAnswer(context, memoKey, lr)
+				return LRAnswer(memoKey, lr)
 			else:
 				_memo[memoKey] = ans
 				return ans
@@ -47,6 +65,9 @@ for indirectly/mutually left recursive rules.
 				return lr.seed
 			else:
 				return m
+				
+	private def Apply(rule as string, input as OMetaInput):
+		return _grammar.Apply(self, rule, input)
 				
 	def Fail(input as OMetaInput):
 		return FailedMatch(input, LeftRecursionFailure())
@@ -61,7 +82,7 @@ for indirectly/mutually left recursive rules.
 			s.head = head
 			head.involvedSet.Add(s.rule)
 			
-	def LRAnswer(context as OMetaGrammar, memoKey as MemoKey, lr as LeftRecursion):
+	def LRAnswer(memoKey as MemoKey, lr as LeftRecursion):
 		h = lr.head
 		r = memoKey.rule
 		if h.rule != r:
@@ -69,9 +90,9 @@ for indirectly/mutually left recursive rules.
 		_memo[memoKey] = lr.seed
 		if lr.seed isa FailedMatch:
 			return lr.seed
-		return GrowLR(context, memoKey, lr)
+		return GrowLR(memoKey, lr)
 				
-	def Recall(context as OMetaGrammar, memoKey as MemoKey):
+	def Recall(memoKey as MemoKey):
 		m = _memo[memoKey]
 		input = memoKey.input
 		h as Head = _heads[input]
@@ -83,11 +104,11 @@ for indirectly/mutually left recursive rules.
 			return Fail(input)
 		if h.evalSet.Contains(r):
 			h.evalSet.Remove(r)
-			m = Eval(context, r, input)
+			m = Apply(r, input)
 			_memo[memoKey] = m
 		return m
 		
-	def GrowLR(context as OMetaGrammar, memoKey as MemoKey, lr as LeftRecursion):		
+	def GrowLR(memoKey as MemoKey, lr as LeftRecursion):		
 		rule = memoKey.rule
 		input = memoKey.input
 		h = lr.head
@@ -96,7 +117,7 @@ for indirectly/mutually left recursive rules.
 		_heads[input] = h
 		while true:
 			h.evalSet = RuleSet(h.involvedSet)
-			m = Eval(context, rule, input)
+			m = Apply(rule, input)
 			if m isa FailedMatch or m.Input.Position <= lastSuccessfulMatch.Input.Position:
 				break
 			_memo[memoKey] = lastSuccessfulMatch = m

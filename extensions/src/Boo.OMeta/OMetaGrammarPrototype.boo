@@ -1,6 +1,6 @@
 namespace Boo.OMeta
 
-class OMetaGrammarPrototype(OMetaGrammarLR):
+class OMetaGrammarPrototype(OMetaGrammarBase):
 	
 	def constructor():
 		SetUpRule "whitespace", "char.IsWhitespace", char.IsWhiteSpace
@@ -13,7 +13,7 @@ class OMetaGrammarPrototype(OMetaGrammarLR):
 		
 	def makeRule(ruleName as string, predicateDescription as string, predicate as System.Predicate[of object]) as OMetaRule:
 		predicateFailure = PredicateFailure(predicateDescription)
-		def rule(context as OMetaGrammar, input as OMetaInput) as OMetaMatch:
+		def rule(context as OMetaEvaluationContext, input as OMetaInput) as OMetaMatch:
 			if input.IsEmpty:
 				return FailedMatch(input, RuleFailure(ruleName, EndOfInput))
 			head = input.Head

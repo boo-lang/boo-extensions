@@ -82,13 +82,13 @@ class OMetaMacroRuleProcessor:
 			block:
 				$tempInput = $input
 				while true:
-					$(expand(e, [| $tempInput |], lastMatch))
+					$(expand(e, tempInput, lastMatch))
 					smatch = $lastMatch as SuccessfulMatch
 					break if smatch is null
 					$tempInput = smatch.Input
 					$(resultAppend(result))
 
-				$lastMatch = SuccessfulMatch($lastMatch.Input, $result)
+				$lastMatch = SuccessfulMatch($tempInput, $result)
 		|]
 		return code.Block
 		
@@ -237,10 +237,10 @@ class OMetaMacroRuleProcessor:
 				expandNegation block, rule, input, lastMatch
 				
 			case ReferenceExpression(Name: name):
-				block.Add([| $lastMatch = context.Apply(context, $name, $input) |])
+				block.Add([| $lastMatch = context.Eval($name, $input) |])
 				
 			case [| super |]:
-				block.Add([| $lastMatch = context.SuperApply(context, $_ruleName, $input) |])
+				block.Add([| $lastMatch = SuperApply(context, $_ruleName, $input) |])
 				
 			case [| $_() |]:
 				rules = processObjectPatternRules(e)

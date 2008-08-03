@@ -2,110 +2,67 @@ namespace metaboo
 
 import Boo.OMeta
 import Boo.PatternMatching
-#import Boo.Adt
+import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
+import NUnit.Framework
 
-def printTokens(text as string):
-	printTokens BooParser(), text
+syntax Units:
+	atom = mass | super
+	mass = (integer >> value, "kg") ^ [| Mass($(value as Expression), "kg") |]
 	
-def printTokens(grammar as OMetaGrammar, text as string):
-	sep = "=" * 20
-	print sep
-	try:
-		for token in scan(grammar, 'scanner', text):
-			print token
-	except x:
-		print x
-	print sep
+syntax Ranges:
 	
-def test(code as string):
-	printTokens code
-	try:
-		match m=BooParser().module(code):
-			case SuccessfulMatch(Value: module=Module(), Input: OMetaInput(IsEmpty: true)):
-				print module.ToCodeString()
-			otherwise:
-				print "FAILED:", m
-	except x:
-		print x
+	atom = integer_range | super
+	integer_range = (integer >> begin as Expression, DOT, DOT, integer >> end as Expression) ^ [| range($begin, $end) |]
+
+class Fixture:
+	def run():
+		code = """
+import metaboo.Units
+import metaboo.Ranges
+
+a = 3kg
+print(a)
+for i in 1..3:
+	pass
+"""
 		
+		result = parse(code)
+		assert 0 == len(result.Errors), result.Errors.ToString()
 	
-#while true:
-#	line = prompt("> ")
-#	if string.IsNullOrEmpty(line) or line == "/q": break
-#	test line.Trim()
-#return
+		expected = [|
+			import metaboo.Units
+			import metaboo.Ranges
+			
+			a = Mass(3, "kg")
+			print(a)
+			for i in range(1, 3):
+				pass
+		|]
+		Assert.AreEqual(1, len(result.CompileUnit.Modules))
+		Assert.AreEqual(expected.ToCodeString(), result.CompileUnit.Modules[0].ToCodeString())
+		print result.CompileUnit.Modules[0].ToCodeString()
 		
-code = """
-def each(items, action as callable(object)):
-	for item in items:
-		action(item)
-
-def map(items, function as callable(object) as object):
-	return function(item) for item in items
-"""
-test code
-return
-code = """
-d = 1, 2
-e = f, a = g = 42, 2
-"""
-test code
-return
-tq = '"'*3
-code = """
-${tq}foo${tq}
-class class0:
-
-	class Bar:
-		pass
+	def parse(code as string):
+		compiler = BooCompiler()
+		compiler.Parameters.References.Add(GetType().Assembly)
+		compiler.Parameters.Input.Add(IO.StringInput("code", code))
+		compiler.Parameters.Pipeline = CompilerPipeline()
+		compiler.Parameters.Pipeline.Add(BooParserStep())
+		result = compiler.Run()
+		return result
 	
-	def foo():
-		if a = l as object:
-			a = -3
-		a += 4
-		b = a is null
-		c = [1, 2]
-		b as object = [3, 4]
-		d = a + b as List
-		if true:
-			pass
-"""
-test code
-return
-code = """
-class Foo:
-	def foo():
-		a = 3
-class Bar:
-	class Baz:
-		pass
-	class Gazong:
-		pass
-"""
-#printTokens code
-#print BooParser().module(code)
+Fixture().run()
 
-
-code = """def foo():
-	a = 3
-	return bar(a)
-"""
-#printTokens code
-match BooParser().method(code):
-	case SuccessfulMatch(Input: OMetaInput(IsEmpty: true), Value: m=Method()):
-		print m.ToCodeString()
-		
 code = """
 class Foo:
 def foo():
-a = 3
-return a
+a = "\$(3 + 2)"
+return a if i > 0
 end
 end
 """
-#printTokens WSABooParser(), code
 match WSABooParser().Apply('module', code):
 	case SuccessfulMatch(Value: mod=Module()):
 		print mod.ToCodeString()

@@ -24,7 +24,7 @@ class OMetaMacroProcessor:
 				case [| $(ReferenceExpression(Name: name))[$_] = $pattern |]:
 					pass
 			
-			block.Add([| InstallRule($name, $(ReferenceExpression(Name: "${name}Rule"))) |])
+			block.Add([| InstallRule($name, $(ReferenceExpression(Name: "${name}_rule"))) |])
 		return block
 		
 	def introduceRuleMethods(type as TypeDefinition):
@@ -32,7 +32,7 @@ class OMetaMacroProcessor:
 			match stmt:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
 					m0 = [|
-						private def $("${name}Rule")(context as OMetaGrammar, input_ as OMetaInput) as OMetaMatch:
+						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
 							$(OMetaMacroRuleProcessor(name, options).expand(pattern))
 					|]
 					type.Members.Add(m0)
@@ -49,7 +49,7 @@ class OMetaMacroProcessor:
 					
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]):
 					m0 = [|
-						private def $("${name}Rule")(context as OMetaGrammar, input_ as OMetaInput) as OMetaMatch:
+						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
 							$(OMetaMacroRuleProcessor(name, options).expand(pattern, arg))
 					|]
 					type.Members.Add(m0)
@@ -78,40 +78,15 @@ class OMetaMacroProcessor:
 		declaration = ometa.Arguments[0]
 							
 		type = [|
-			class $(grammarName(declaration))(OMetaGrammar):
+			class $(grammarName(declaration))(OMetaDelegatingGrammar):
 				
-				_grammar as OMetaGrammar
-					
 				def constructor():
-					_grammar = $(prototypeFor(declaration))
-					setUpGrammar()
+					self($(prototypeFor(declaration)))
 					
 				// for syntax extensions
 				def constructor([required] prototype as OMetaGrammar):
-					_grammar = OMetaDelegatingGrammar(prototype)
-					setUpGrammar()
-					
-				private def setUpGrammar():
+					super(prototype)
 					$(expandGrammarSetup())
-					
-				def InstallRule(ruleName as string, rule as OMetaRule):
-					_grammar.InstallRule(ruleName, rule)
-			
-				def OMetaGrammar.Apply(context as OMetaGrammar, rule as string, input as OMetaInput):
-					return _grammar.Apply(context, rule, input)
-					
-				def OMetaGrammar.SuperApply(context as OMetaGrammar, rule as string, input as OMetaInput):
-					return _grammar.SuperApply(context, rule, input)
-					
-				def OMetaGrammar.Eval(context as OMetaGrammar, rule as string, input as OMetaInput):
-					return _grammar.Eval(context, rule, input)
-					
-				def Apply(rule as string, input as OMetaInput):
-					return _grammar.Apply(self, rule, input)
-					
-				def Apply(rule as string, input as System.Collections.IEnumerable):
-					return Apply(rule, OMetaInput.For(input))
-				
 		|]
 		
 		introduceRuleMethods type
@@ -155,10 +130,8 @@ class OMetaMacroProcessor:
 def prototypeFor(e as Expression) as MethodInvocationExpression:
 	match e:
 		case [| $_ < $prototype |]:
-			return [| OMetaDelegatingGrammar($prototype()) |]
-		case ReferenceExpression():
-			return [| OMetaGrammarPrototype() |]
-		case [| $_() |]:
+			return [| $prototype() |]
+		otherwise:
 			return [| OMetaGrammarPrototype() |]
 	
 def grammarName(e as Expression) as string:

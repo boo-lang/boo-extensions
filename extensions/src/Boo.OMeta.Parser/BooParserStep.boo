@@ -16,11 +16,9 @@ class BooParserStep(AbstractCompilerStep):
 	def parseModule(code as string) as Module:
 		
 		input = OMetaInput.For(code)
-		parser = BooParser()
+		parser = extendGrammar(BooParser())
 		
-		grammar = extendGrammar(parser)
-		
-		match grammar.Apply(grammar, 'module', input):
+		match OMetaEvaluationContextImpl(parser).Eval('module', input):
 			case SuccessfulMatch(Input: OMetaInput(IsEmpty: true), Value):
 				return Value
 				

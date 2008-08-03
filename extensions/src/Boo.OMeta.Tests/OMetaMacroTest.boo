@@ -11,8 +11,8 @@ ometa E:
 	
 	dig = '1' | '2' | '3'
 	num = ++dig
-	exp = (fac, '+', fac) | fac
-	fac = (atom, '*', atom) | atom
+	exp = (exp, '+', fac) | fac
+	fac = (fac, '*', atom) | atom
 	atom = num | ('(', exp, ')')
   
 [TestFixture]
@@ -172,12 +172,18 @@ class OMetaMacroTest:
 		ometa XE < E:
 			option ParseTree
 			fac = division | super /* super tries to delegate to all prototypes */
-			division = (atom, '/', atom)
+			division = (fac, '/', atom)
+			
+		ometa XXE < XE:
+			option ParseTree
+			fac = modulus | super
+			modulus = (fac, '%', atom)
 		
-		xe = XE()
-		assertE xe
-		assertRule xe, 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
-		assertRule xe, 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
+		assertE XE()
+		assertRule XE(), 'exp', "1+2/3", [['1'], '+', [['2'], '/', ['3']]]
+		assertRule XE(), 'exp', "1+(2/(3+1))", [['1'], '+', ['(', [['2'], '/', ['(', [['3'], '+', ['1']], ')']], ')']]
+		
+		assertRule XXE(), 'exp', "1%2/3", [[['1'], '%', ['2']], '/', ['3']]
 		
 	[Test]
 	def TestNot():
@@ -219,7 +225,7 @@ class OMetaMacroTest:
 		assertRule grammar, 'exp', "1+2*3", [['1'], '+', [['2'], '*', ['3']]]
 		
 	def assertRule(grammar as OMetaGrammar, rule as string, text as string, expected):
-		assertMatch expected, grammar.Apply(grammar, rule, OMetaInput.For(text))
+		assertMatch expected, OMetaEvaluationContextImpl(grammar).Eval(rule, OMetaInput.For(text))
 		
 	def assertMatch(expected, m as OMetaMatch):
 		match m:

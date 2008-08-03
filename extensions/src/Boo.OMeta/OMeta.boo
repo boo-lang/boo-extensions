@@ -6,7 +6,7 @@ def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input, EndOfInput)
 	return SuccessfulMatch(input.Tail, input.Head)
 
-def any_rule(context as OMetaGrammar, input as OMetaInput):
+def any_rule(context as OMetaEvaluationContext, input as OMetaInput):
 	return any(input)
 	
 def character(input as OMetaInput, expected as char) as OMetaMatch:
@@ -24,11 +24,11 @@ def characters(input as OMetaInput, expected as string) as OMetaMatch:
 	return SuccessfulMatch(input, expected)
 	
 def scan(grammar as OMetaGrammar, rule as string, input as System.Collections.IEnumerable):
-	return scan(grammar, rule, OMetaInput.For(input))
+	return scan(OMetaEvaluationContextImpl(grammar), rule, OMetaInput.For(input))
 	
-def scan(grammar as OMetaGrammar, rule as string, input as OMetaInput):
+def scan(context as OMetaEvaluationContext, rule as string, input as OMetaInput):
 	while not input.IsEmpty:
-		match grammar.Apply(grammar, rule, input):
+		match context.Eval(rule, input):
 			case SuccessfulMatch(Input, Value):
 				input = Input
 				yield Value

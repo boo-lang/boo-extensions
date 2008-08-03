@@ -37,14 +37,14 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 			| (((indentation >> i) and sameIndent(i)) ^ makeToken("eol"))
 			| (((indentation >> i) and largerIndent(i)) ^ makeToken("indent"))
 			| (((indentation >> i) and smallerIndent(i), $(processDedent(input, i)) >> value) ^ value)
-			| ((--whitespace, tokens >> t) ^ t)
+			| ((--space, tokens >> t) ^ t)
 		) >> value
 	) ^ value
 	
-	indentation = (empty_lines, --space >> value, ~whitespace) ^ value
-	empty_lines = ++(~~empty_line, empty_line)
+	indentation = empty_lines, spaces
+	empty_lines = ~~empty_line, ++empty_line
 	empty_line = spaces, newline
-	spaces = --space
+	spaces = --space >> value ^ value
 	space = ' ' | '\t' | (newline and inWSA(input))
 	newline = '\n' | "\r\n" | "\r"
 	token[expected] = (scanner >> t and tokenMatches(t, expected)) ^ t

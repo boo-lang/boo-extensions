@@ -66,14 +66,19 @@ def benchmark(wordCount as int, printValues as bool):
 		wordList = pegWords(words)
 		if printValues: print wordList
 	
-	ometa = time("ometa"):
-		input = OMetaInput.For(words)
-		match WordCollector().parse(input):
+	ometa = time("ometa - full LR"):
+		match WordCollector().parse(words):
 			case SuccessfulMatch(Input, Value):
 				assert Input.IsEmpty
 				if printValues: print Value
 				
-	print "================= SIZE(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds
+	ometaNoMemoization = time("ometa - no memoization"):
+		match NullEvaluationContext(WordCollector()).Eval('parse', OMetaInput.For(words)):
+			case SuccessfulMatch(Input, Value):
+				assert Input.IsEmpty
+				if printValues: print Value
+				
+	print "================= SIZE(${len(words)}):", ometa.TotalMilliseconds / peg.TotalMilliseconds, ometaNoMemoization.TotalMilliseconds / peg.TotalMilliseconds
 				
 for i in (10, 100, 200, 1000, 10000, 50000, 100000):
 	benchmark i, i < 11
