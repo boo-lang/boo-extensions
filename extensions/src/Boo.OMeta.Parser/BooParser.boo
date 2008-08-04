@@ -412,7 +412,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	string_interpolation = (
 		DQ,
-		++(
+		--(
 			((++(~('"' | '$'), string_char) >> s) ^ StringLiteralExpression(makeString(s)))
 			| (('${', expression >> v, --space, '}') ^ v)
 			| ('$', atom)

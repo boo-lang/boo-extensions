@@ -205,6 +205,7 @@ def newStringLiteral(s):
 	return StringLiteralExpression(Value: tokenValue(s))
 	
 def newStringInterpolation(items as List):
+	if len(items) == 0: return StringLiteralExpression("")
 	if len(items) == 1 and items[0] isa StringLiteralExpression:
 		return items[0]
 	node = ExpressionInterpolationExpression()

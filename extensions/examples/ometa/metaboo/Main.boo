@@ -24,7 +24,8 @@ import metaboo.Ranges
 
 a = 3kg
 print(a)
-for i in 1..3:
+for i \
+	in 1..3:
 	pass
 """
 		
@@ -62,6 +63,13 @@ a = "\$(3 + 2)"
 return a if i > 0
 end
 end
+class Customer:
+	[Property(Name, Name: "")]
+	_fname as string
+end
+
+Foo(Name: 'bar')
+assert( [1, 3] == l[::2] )
 """
 match WSABooParser().Apply('module', code):
 	case SuccessfulMatch(Value: mod=Module()):
