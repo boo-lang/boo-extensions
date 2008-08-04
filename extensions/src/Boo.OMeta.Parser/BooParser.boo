@@ -104,9 +104,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	keywords "class", "def", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
-		"for", "interface", "in", "yield", "self", "super", "of", \
-		"event", "private", "protected", "internal", "public", "enum", \
-		"callable", "unless"
+		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
+		"event", "private", "protected", "public", "enum", \
+		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
+		"transient"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -208,7 +209,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	field_initializer = (ASSIGN, rvalue) | ""
 	
-	member_modifiers = --((PRIVATE ^ TypeMemberModifiers.Private) | (PUBLIC ^ TypeMemberModifiers.Public)) >> all ^ all
+	member_modifiers = --(
+		(PRIVATE ^ TypeMemberModifiers.Private)
+		| (PUBLIC ^ TypeMemberModifiers.Public)
+		| (INTERNAL ^ TypeMemberModifiers.Internal)
+		| (PROTECTED ^ TypeMemberModifiers.Protected)
+		| (FINAL ^ TypeMemberModifiers.Final)
+		| (STATIC ^ TypeMemberModifiers.Static)
+		| (VIRTUAL ^ TypeMemberModifiers.Virtual)
+		| (OVERRIDE ^ TypeMemberModifiers.Override)
+		| (TRANSIENT ^ TypeMemberModifiers.Transient)
+		| (ABSTRACT ^ TypeMemberModifiers.Abstract)
+	) >> all ^ all
 	
 	method = (
 		attributes >> attrs,
