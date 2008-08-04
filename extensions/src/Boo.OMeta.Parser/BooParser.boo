@@ -290,8 +290,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_return = (RETURN, optional_assignment >> e, stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
 	
 	optional_assignment = assignment | ""
+	
+	stmt_expression_block = (expression >> l, (ASSIGN | ASSIGN_INPLACE) >> op, block_expression >> r) ^ ExpressionStatement(newInfixExpression(op, l, r))
+	
+	block_expression = (DEF, optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
+	
+	optional_parameters = method_parameters | ("" ^ [])
 
-	stmt_expression = ((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
+	stmt_expression = stmt_expression_block \
+	| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	

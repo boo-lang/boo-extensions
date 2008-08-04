@@ -212,6 +212,11 @@ def newStringInterpolation(items as List):
 	for item in items: node.Expressions.Add(item)
 	return node
 	
+def newBlockExpression(parameters, body):
+	node = BlockExpression(Body: body)
+	for p in parameters: node.Parameters.Add(p)
+	return node
+	
 def newInfixExpression(op, l as Expression, r as Expression):
 	return BinaryExpression(Operator: binaryOperatorFor(op), Left: l, Right: r)
 	
