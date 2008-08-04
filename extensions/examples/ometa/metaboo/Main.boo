@@ -22,6 +22,10 @@ class Fixture:
 import metaboo.Units
 import metaboo.Ranges
 
+a = [1, 2, 3].Find() do (item as int):
+	return item > 2
+		
+	
 a = 3kg
 print(a)
 for i \
@@ -42,8 +46,8 @@ for i \
 				pass
 		|]
 		Assert.AreEqual(1, len(result.CompileUnit.Modules))
-		Assert.AreEqual(expected.ToCodeString(), result.CompileUnit.Modules[0].ToCodeString())
 		print result.CompileUnit.Modules[0].ToCodeString()
+		Assert.AreEqual(expected.ToCodeString(), result.CompileUnit.Modules[0].ToCodeString())
 		
 	def parse(code as string):
 		compiler = BooCompiler()

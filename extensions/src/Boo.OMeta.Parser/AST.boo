@@ -217,6 +217,11 @@ def newBlockExpression(parameters, body):
 	for p in parameters: node.Parameters.Add(p)
 	return node
 	
+def newInvocationWithBlock(invocation as MethodInvocationExpression, block as BlockExpression):
+	node = invocation.CloneNode()
+	node.Arguments.Add(block)
+	return node
+	
 def newInfixExpression(op, l as Expression, r as Expression):
 	return BinaryExpression(Operator: binaryOperatorFor(op), Left: l, Right: r)
 	

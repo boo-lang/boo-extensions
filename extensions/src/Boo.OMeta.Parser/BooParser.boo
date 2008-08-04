@@ -75,6 +75,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		greater_than = ">"
 		less_than_eq = "<="
 		less_than = "<"
+		semicolon = ";"
 		bitwise_and = "&"
 		bitwise_or = "|"
 		hexnum = ("0x", ++(hex_digit | digit) >> ds) ^ makeString(ds)
@@ -105,12 +106,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
 		
-	keywords "class", "def", "import", "pass", "return", "true", \
+	keywords "class", "def", "do", "import", "pass", "return", "true", \
 		"false", "and", "or", "as", "not", "if", "is", "null", \
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient"
+		"transient", "raise"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -169,7 +170,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = type_def | method | property_def | field | event_def
+	class_member = type_def | property_def | method | field | event_def
 	
 	event_def = (
 		attributes >> attrs,
@@ -207,10 +208,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	field = (
 		attributes >> attrs,
 		member_modifiers >> mod,
-		ID >> name, optional_type >> type, field_initializer >> initializer, eol
+		ID >> name, optional_type >> type, field_initializer >> initializer
 	) ^ newField(attrs, mod, name, type, initializer)
 
-	field_initializer = (ASSIGN, rvalue) | ""
+	field_initializer = (ASSIGN, block_expression) | ((ASSIGN, rvalue >> v, eol) ^ v) | eol
 	
 	member_modifiers = --(
 		(PRIVATE ^ TypeMemberModifiers.Private)
@@ -265,13 +266,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| stmt_expression \
 		| stmt_macro \
 		| stmt_return \
-		| stmt_yield
+		| stmt_yield \
+		| stmt_raise
+		
+	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
 	stmt_macro = (ID >> name, assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
 		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
-	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | (eol ^ null)
+	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | eol
 	
 	stmt_modifier_node = (
 		stmt_modifier_type >> t,
@@ -290,18 +294,24 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_if = (IF, assignment >> e, block >> trueBlock) ^ newIfStatement(e, trueBlock)
 	
-	stmt_return = (RETURN, optional_assignment >> e, stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	stmt_return = (
+		RETURN, ((optional_assignment >> e, stmt_modifier >> m) | (block_expression >> e))
+		) ^ ReturnStatement(Expression: e, Modifier: m)
 	
 	optional_assignment = assignment | ""
 	
 	stmt_expression_block = (expression >> l, (ASSIGN | ASSIGN_INPLACE) >> op, block_expression >> r) ^ ExpressionStatement(newInfixExpression(op, l, r))
 	
-	block_expression = (DEF, optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
+	block_expression = invocation_with_block | closure_block
+	
+	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), closure_block >> c) ^ newInvocationWithBlock(e, c)
+	
+	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
 	optional_parameters = method_parameters | ("" ^ [])
 
 	stmt_expression = stmt_expression_block \
-	| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
+		| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	
@@ -383,8 +393,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = ((member_reference >> target, invocation_arguments >> args) ^ newInvocation(target, args)) \
-		| atom
+	invocation = invocation_expression | atom
+	
+	invocation_expression = (member_reference >> target, invocation_arguments >> args) ^ newInvocation(target, args)
 		
 	invocation_arguments = (LPAREN, optional_invocation_argument_list >> args, RPAREN) ^ args
 	
@@ -406,7 +417,21 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
-		| self_literal | super_literal | quasi_quote | hash_literal
+		| self_literal | super_literal | quasi_quote | closure | hash_literal
+		
+	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body))
+	
+	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ parameters) | ("" ^ [])
+	
+	list_of closure_stmt, SEMICOLON
+	
+	closure_stmt = closure_stmt_expression | closure_stmt_return
+	
+	closure_stmt_return = (RETURN, rvalue >> e, optional_stmt_modifier_node >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	
+	closure_stmt_expression = (assignment >> e, optional_stmt_modifier_node >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
+	
+	optional_stmt_modifier_node = stmt_modifier_node | ""
 		
 	quasi_quote = quasi_quote_member | quasi_quote_module | quasi_quote_expression | quasi_quote_stmt
 	
@@ -476,5 +501,5 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	false_literal = FALSE ^ [| false |]
 	
-	eol = ++EOL | ~_	
+	eol = (++EOL | ~_) ^ null	
 	
