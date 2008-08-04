@@ -104,10 +104,22 @@ def newCallableTypeReference(params, type):
 		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
 	return node
 	
-def newGeneratorExpression(projection, dl, e, f):
-	node = GeneratorExpression(Expression: projection, Iterator: e, Filter: f)
+def newStatementModifier(t, e as Expression):
+	return StatementModifier(Type: t, Condition: e)
+	
+def newGeneratorExpressionBody(dl, e, f):
+	node = GeneratorExpression(Iterator: e, Filter: f)
 	for d in flatten(dl): node.Declarations.Add(d)
 	return node
+	
+def newGeneratorExpression(projection, body as List):
+	node as GeneratorExpression = body[0]
+	node.Expression = projection
+	if len(body) == 1: return node
+	
+	e = ExtendedGeneratorExpression()
+	for item in body: e.Items.Add(item)
+	return e
 	
 def newEnumField(attributes, name, initializer):
 	match initializer:

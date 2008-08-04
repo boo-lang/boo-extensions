@@ -257,9 +257,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | (eol ^ null)
 	
 	stmt_modifier_node = (
-		((IF ^ StatementModifierType.If) | (UNLESS ^ StatementModifierType.Unless)) >> t,
+		stmt_modifier_type >> t,
 		assignment >> e
-	) ^ StatementModifier(Type: t, Condition: e)
+	) ^ newStatementModifier(t, e)
+	
+	stmt_modifier_type = (IF ^ StatementModifierType.If) | (UNLESS ^ StatementModifierType.Unless)
 	
 	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
 	
@@ -288,8 +290,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	expression = generator_expression | or_expression
 	
 	generator_expression = (
-		or_expression >> projection, FOR, declaration_list >> dl, IN, rvalue >> e, ((stmt_modifier_node >> f) | "")
-	) ^ newGeneratorExpression(projection, dl, e, f)
+		or_expression >> projection,
+		++generator_expression_body >> body
+	) ^ newGeneratorExpression(projection, body)
+	
+	generator_expression_body = (FOR, declaration_list >> dl, IN, or_expression >> e, optional_filter >> f) ^ newGeneratorExpressionBody(dl, e, f)
+	
+	optional_filter = ((stmt_modifier_type >> t, or_expression >> e) ^ newStatementModifier(t, e)) | ""
 	
 	infix or_expression, OR, and_expression
 	
