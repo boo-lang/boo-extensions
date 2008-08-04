@@ -92,7 +92,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
 
-	space = multi_line_comment | line_comment | super
+	space = line_continuation | multi_line_comment | line_comment | super
+	
+	line_continuation = "\\", newline
 	
 	multi_line_comment = "/*", --(~"*/", (multi_line_comment | _)), "*/"
 	
