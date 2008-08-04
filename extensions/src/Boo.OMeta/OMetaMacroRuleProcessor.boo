@@ -174,10 +174,12 @@ class OMetaMacroRuleProcessor:
 				expand block, rule, newInput, lastMatch
 				
 			case [| $pattern and $predicate |]:
+				oldInput = uniqueName()
+				block.Add([| $oldInput = $input |])
 				expand block, pattern, input, lastMatch
 				checkPredicate = [|
 					if $lastMatch isa SuccessfulMatch and not $(processVariables(predicate, input)):
-						$lastMatch = FailedMatch($input, PredicateFailure($(predicate.ToCodeString())))
+						$lastMatch = FailedMatch($oldInput, PredicateFailure($(predicate.ToCodeString())))
 				|]
 				block.Add(checkPredicate)
 				
