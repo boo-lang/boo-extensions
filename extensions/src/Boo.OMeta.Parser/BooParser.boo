@@ -375,7 +375,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
-		| self_literal | super_literal | quasi_quote
+		| self_literal | super_literal | quasi_quote | hash_literal
 		
 	quasi_quote = quasi_quote_member | quasi_quote_module | quasi_quote_expression | quasi_quote_stmt
 	
@@ -424,7 +424,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	ranked_type_reference = ((type_reference >> type), ((COMMA,  integer >> rank) | "")) ^ ArrayTypeReference(ElementType: type, Rank: rank) 
 	
-	list_literal = (LBRACK, optional_expression_list >> items, RBRACK) ^ newListLiteral(items)
+	list_literal = (LBRACK, optional_expression_list >> items, optional_comma, RBRACK) ^ newListLiteral(items)
+	
+	hash_literal = (LBRACE, optional_expression_pair_list >> items, optional_comma, RBRACE) ^ newHashLiteral(items)
+	
+	optional_comma = COMMA | ""
+	
+	expression_pair = (assignment >> first, COLON, assignment >> second) ^ ExpressionPair(First: first, Second: second)
+	
+	list_of expression_pair
 		
 	reference = ID >> r ^ newReference(r) 
 	

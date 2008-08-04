@@ -184,6 +184,11 @@ def newListLiteral(items):
 	for item in items: literal.Items.Add(item)
 	return literal
 	
+def newHashLiteral(items):
+	literal = HashLiteralExpression()
+	for item in items: literal.Items.Add(item)
+	return literal
+	
 def newStringLiteral(s):
 	return StringLiteralExpression(Value: tokenValue(s))
 	
