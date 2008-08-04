@@ -286,7 +286,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
 	
-	declaration = (ID >> name, ((AS, type_reference >> typeRef) | "")) ^ newDeclaration(name, typeRef)
+	declaration = (ID >> name, optional_type >> typeRef) ^ newDeclaration(name, typeRef)
 		
 	stmt_block = stmt_if | stmt_for
 	
@@ -425,11 +425,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	list_of closure_stmt, SEMICOLON
 	
-	closure_stmt = closure_stmt_expression | closure_stmt_return
+	closure_stmt = closure_stmt_expression | closure_stmt_macro | closure_stmt_return | closure_stmt_raise
 	
-	closure_stmt_return = (RETURN, rvalue >> e, optional_stmt_modifier_node >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	closure_stmt_macro = (ID >> name, assignment_list >> args, closure_stmt_modifier >> m) ^ newMacro(name, args, null, m)
 	
-	closure_stmt_expression = (assignment >> e, optional_stmt_modifier_node >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
+	closure_stmt_modifier = stmt_modifier_node | ~~(RBRACE | SEMICOLON)
+	
+	closure_stmt_return = (RETURN, rvalue >> e, closure_stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	
+	closure_stmt_raise = (RAISE, expression >> e, closure_stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
+	
+	closure_stmt_expression = (assignment >> e, closure_stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
 	
 	optional_stmt_modifier_node = stmt_modifier_node | ""
 		
