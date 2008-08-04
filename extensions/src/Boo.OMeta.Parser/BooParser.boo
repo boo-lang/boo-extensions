@@ -35,12 +35,15 @@ Expands to something that matches:
 	expression (COMMA expression)+
 """
 	
-	rule, = list_of.Arguments
+	if len(list_of.Arguments) == 2:
+		rule, separator = list_of.Arguments
+	else:
+		rule, separator = list_of.Arguments[0], [| COMMA |]
 	
 	block as Block = list_of.ParentNode
 	
 	listRuleName = ReferenceExpression(Name: "${rule}_list")
-	listRule = [| $listRuleName = ((($rule >> first), ++((COMMA, $rule >> e) ^ e) >> rest) ^ prepend(first, rest)) | ($rule >> v ^ [v]) |]
+	listRule = [| $listRuleName = ((($rule >> first), ++(($separator, $rule >> e) ^ e) >> rest) ^ prepend(first, rest)) | ($rule >> v ^ [v]) |]
 	block.Add(listRule)
 	
 	optionalRuleName = ReferenceExpression(Name: "optional_${rule}_list")
