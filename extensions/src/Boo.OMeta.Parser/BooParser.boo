@@ -104,7 +104,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"false", "and", "or", "as", "not", "if", "is", "null", \
 		"for", "interface", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "internal", "public", "enum", \
-		"callable"
+		"callable", "unless"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -256,7 +256,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | (eol ^ null)
 	
-	stmt_modifier_node = (IF, assignment >> e) ^ StatementModifier(Type: StatementModifierType.If, Condition: e)
+	stmt_modifier_node = (
+		((IF ^ StatementModifierType.If) | (UNLESS ^ StatementModifierType.Unless)) >> t,
+		assignment >> e
+	) ^ StatementModifier(Type: t, Condition: e)
 	
 	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
 	
