@@ -212,6 +212,9 @@ def newStringInterpolation(items as List):
 	for item in items: node.Expressions.Add(item)
 	return node
 	
+def newConditionalExpression(condition, trueValue, falseValue):
+	return ConditionalExpression(Condition: condition, TrueValue: trueValue, FalseValue: falseValue)
+	
 def newBlockExpression(parameters, body):
 	node = BlockExpression(Body: body)
 	for p in parameters: node.Parameters.Add(p)

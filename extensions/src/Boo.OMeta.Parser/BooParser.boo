@@ -111,7 +111,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise"
+		"transient", "raise", "else"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -284,7 +284,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_modifier_type = (IF ^ StatementModifierType.If) | (UNLESS ^ StatementModifierType.Unless)
 	
-	stmt_declaration = (declaration >> d, ((ASSIGN, expression >> e) | ""), eol) ^ newDeclarationStatement(d, e)
+	stmt_declaration = (declaration >> d,
+			(ASSIGN, block_expression >> e)
+			| ((ASSIGN, rvalue >> e), eol)
+			| eol
+		) ^ newDeclarationStatement(d, e)
 	
 	declaration = (ID >> name, optional_type >> typeRef) ^ newDeclaration(name, typeRef)
 		
@@ -321,16 +325,20 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infixr assignment, (ASSIGN | ASSIGN_INPLACE), expression
 	
-	expression = generator_expression | or_expression
+	expression = generator_expression | conditional_expression
 	
 	generator_expression = (
 		or_expression >> projection,
 		++generator_expression_body >> body
 	) ^ newGeneratorExpression(projection, body)
 	
-	generator_expression_body = (FOR, declaration_list >> dl, IN, or_expression >> e, optional_filter >> f) ^ newGeneratorExpressionBody(dl, e, f)
+	generator_expression_body = (FOR, declaration_list >> dl, IN, conditional_expression >> e, optional_filter >> f) ^ newGeneratorExpressionBody(dl, e, f)
 	
 	optional_filter = ((stmt_modifier_type >> t, or_expression >> e) ^ newStatementModifier(t, e)) | ""
+	
+	conditional_expression = (
+		(or_expression >> trueValue, IF, conditional_expression >> condition, ELSE, conditional_expression >> falseValue) ^  newConditionalExpression(condition, trueValue, falseValue)
+	) | or_expression
 	
 	infix or_expression, OR, and_expression
 	
