@@ -29,18 +29,15 @@
 		</nunit2>
 	</target>
 	
-	<target name="build" depends="Boo.Pegs, Boo.PatternMatching, Boo.Adt, Boo.OMeta, Boo.OMeta.Parser">
+	<target name="build" depends="Boo.Pegs, Boo.Adt, Boo.OMeta, Boo.OMeta.Parser">
 	</target>
 	
-	<target name="Boo.Pegs" depends="Boo.PatternMatching">
+	<target name="Boo.Pegs" depends="init">
 	
 		<booc target="library" output="${build.dir}/Boo.Pegs.dll">
 			<sources basedir="src/Boo.Pegs">
 				<include name="*.boo" />
 			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boo.PatternMatching.dll" />
-			</references>
 		</booc>
 		
 		<booc target="library" output="${build.dir}/Boo.Pegs.Tests.dll">
@@ -55,34 +52,11 @@
 		
 	</target>
 	
-	<target name="Boo.PatternMatching" depends="init">
-	
-		<booc target="library" output="${build.dir}/Boo.PatternMatching.dll">
-			<sources basedir="src/Boo.PatternMatching">
-				<include name="*.boo" />
-			</sources>
-		</booc>
-		
-		<booc target="library" output="${build.dir}/Boo.PatternMatching.Tests.dll">
-			<sources basedir="src/Boo.PatternMatching.Tests">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="${nunit.framework.dll}" />
-				<include name="Boo.PatternMatching.dll" />
-			</references>
-		</booc>
-		
-	</target>
-	
-	<target name="Boo.Adt" depends="Boo.PatternMatching">
+	<target name="Boo.Adt" depends="init">
 		<booc target="library" output="${build.dir}/Boo.Adt.dll">
 			<sources basedir="src/Boo.Adt">
 				<include name="*.boo" />
 			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boo.PatternMatching.dll" />
-			</references>
 		</booc>
 		
 		<booc target="library" output="${build.dir}/Boo.Adt.Tests.dll">
@@ -92,19 +66,17 @@
 			<references basedir="${build.dir}">
 				<include name="${nunit.framework.dll}" />
 				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
 			</references>
 		</booc>
 	</target>
 	
-	<target name="Boo.OMeta" depends="Boo.PatternMatching, Boo.Adt">
+	<target name="Boo.OMeta" depends="Boo.Adt">
 		<booc target="library" output="${build.dir}/Boo.OMeta.dll">
 			<sources basedir="src/Boo.OMeta">
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
 				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
 			</references>
 		</booc>
 		
@@ -116,19 +88,17 @@
 				<include name="${nunit.framework.dll}" />
 				<include name="Boo.OMeta.dll" />
 				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
 			</references>
 		</booc>
 	</target>
 	
-	<target name="Boo.OMeta.Parser" depends="Boo.PatternMatching, Boo.Adt, Boo.OMeta">
+	<target name="Boo.OMeta.Parser" depends="Boo.Adt, Boo.OMeta">
 		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
 			<sources basedir="src/Boo.OMeta.Parser">
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
 				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
 				<include name="Boo.OMeta.dll" />
 			</references>
 		</booc>
@@ -141,7 +111,6 @@
 				<include name="${nunit.framework.dll}" />
 				<include name="Boo.OMeta.dll" />
 				<include name="Boo.Adt.dll" />
-				<include name="Boo.PatternMatching.dll" />
 				<include name="Boo.OMeta.Parser.dll" />
 			</references>
 		</booc>
