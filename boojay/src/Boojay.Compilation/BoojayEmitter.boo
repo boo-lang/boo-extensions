@@ -93,7 +93,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def writeClassFile(node as TypeDefinition):
 		fname = classFullFileName(node)
 		ensurePath(fname)
-		File.WriteAllBytes(fname, _classWriter.toByteArray())
+		File.WriteAllBytes(Path.Combine(outputDirectory(), fname), _classWriter.toByteArray())
+		
+	def outputDirectory():
+		return Parameters.OutputAssembly
 		
 	override def OnIfStatement(node as IfStatement):
 		

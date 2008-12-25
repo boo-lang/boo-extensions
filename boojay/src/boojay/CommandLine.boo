@@ -21,12 +21,15 @@ class CommandLine(AbstractCommandLine):
 			yield srcFile
 			
 		for srcDir in _srcDirs:
-			for fname in Directory.GetFiles(srcDir, "*.js"):
+			for fname in Directory.GetFiles(srcDir, "*.boo"):
 				yield fname
 
 		
 	IsValid:
-		get: return len(self._sourceFiles) > 0
+		get: return len(self._sourceFiles) > 0 or len(self._srcDirs) > 0
+		
+	[Option("Output directory", ShortForm: "o", LongForm: "output")]
+	public OutputDirectory as string
 		
 	[Option("Print the resulting bytecode to stdout.", ShortForm: 'p', LongForm: "print")]
 	public PrintCode = false
