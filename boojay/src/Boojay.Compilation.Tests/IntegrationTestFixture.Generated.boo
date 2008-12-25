@@ -46,6 +46,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/arrays/SimpleStringArray.boo")
 		
 	[Test]
+	def Join_1():
+		runTestCase("../boojay/tests/integration/builtins/Join-1.boo")
+		
+	[Test]
 	def Callables_1():
 		runTestCase("../boojay/tests/integration/callables/Callables-1.boo")
 		

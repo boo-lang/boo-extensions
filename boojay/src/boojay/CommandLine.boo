@@ -23,7 +23,6 @@ class CommandLine(AbstractCommandLine):
 		for srcDir in _srcDirs:
 			for fname in Directory.GetFiles(srcDir, "*.boo"):
 				yield fname
-
 		
 	IsValid:
 		get: return len(self._sourceFiles) > 0 or len(self._srcDirs) > 0
