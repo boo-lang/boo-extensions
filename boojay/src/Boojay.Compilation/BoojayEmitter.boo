@@ -163,13 +163,18 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitMethod "<init>", node
 		
 	_methodMappings = {
+		".ctor": "<init>",
+		"constructor": "<init>",
 		"Main": "main",
 		"ToString": "toString",
+		"Equals": "equals",
 	}
 	
 	override def OnMethod(node as Method):
-		methodName = _methodMappings[node.Name] or node.Name
-		emitMethod methodName, node
+		emitMethod methodName(node.Name), node
+		
+	def methodName(name as string):
+		return _methodMappings[name] or name
 		
 	def emitMethod(methodName as string, node as Method):
 		_code = _classWriter.visitMethod(
@@ -272,7 +277,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					otherwise:
 						emitObjectCreation ctor, node
 			case method = IMethod():
-				emitMethodInvocation method, node
+				match node.Target:
+					case SuperLiteralExpression():
+						ALOAD 0
+						emit node.Arguments
+						INVOKESPECIAL method
+					otherwise:
+						emitMethodInvocation method, node
 			case builtin = BuiltinFunction():
 				emitBuiltinInvocation builtin, node
 				
@@ -793,7 +804,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_code.visitMethodInsn(
 				opcode,
 				javaType(method.DeclaringType),
-				("<init>" if method isa IConstructor else method.Name),
+				methodName(method.Name),
 				javaSignature(method))
 	
 		
