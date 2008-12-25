@@ -2,6 +2,6 @@ namespace Boojay.Compilation
 
 import Boo.Lang.Compiler.Steps
 
-class InitializeJavaTypeSystem(AbstractCompilerStep):
-	override def Run():
-		_context.TypeSystemServices = JavaTypeSystem(_context)
+class InitializeJavaTypeSystem(InitializeTypeSystemServices):
+	override def CreateTypeSystemServices():
+		return JavaTypeSystem(_context)

@@ -6,9 +6,8 @@ import Boo.Lang.Compiler.Pipelines
 class BoojayPipeline(Compile):
 	
 	def constructor():
-		InsertAfter(InitializeTypeSystemServices, BoojaySemantics())
-#		Add(BoojayNormalizer())
-		Add(BoojayEmitter())
-		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
+		InsertAfter(NormalizeTypeAndMemberDefinitions, BoojayPreNormalizer())
 		Replace(IntroduceGlobalNamespaces, IntroduceBoojayNamespaces())
-		
+		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
+		Add(BoojayNormalizer())
+		Add(BoojayEmitter())

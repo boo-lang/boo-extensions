@@ -162,8 +162,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	override def OnConstructor(node as Constructor):
 		emitMethod "<init>", node
 		
+	_methodMappings = {
+		"Main": "main",
+		"ToString": "toString",
+	}
+	
 	override def OnMethod(node as Method):
-		methodName = ("main" if node.Name == "Main" else node.Name)
+		methodName = _methodMappings[node.Name] or node.Name
 		emitMethod methodName, node
 		
 	def emitMethod(methodName as string, node as Method):
@@ -251,7 +256,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			RETURN
 		else:
 			emit node.Expression
-			ARETURN
+			if isInteger(node.Expression):
+				IRETURN
+			else:
+				ARETURN
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
 		
@@ -392,35 +400,71 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			
 	override def OnBinaryExpression(node as BinaryExpression):
 		match node.Operator:
+			
 			case BinaryOperatorType.Assign:
 				emitAssignment node
+				
 			case BinaryOperatorType.Subtraction:
 				emitSubtraction node
 			case BinaryOperatorType.Addition:
 				emitAddition node
+			case BinaryOperatorType.Multiply:
+				emitMultiply node
+				
 			case BinaryOperatorType.TypeTest:
 				emitTypeTest node
+				
+			case BinaryOperatorType.Equality:
+				emitEquality node
+			case BinaryOperatorType.Inequality:
+				emitInequality node
+				
 			case BinaryOperatorType.ReferenceEquality:
 				emitReferenceEquality node
+			case BinaryOperatorType.ReferenceInequality:
+				emitReferenceInequality node
 				
-	def emitReferenceEquality(node as BinaryExpression):
+	def emitComparison(node as BinaryExpression, instruction as int):
 		L1 = Label()
 		L2 = Label()
 		
 		emit node.Left
 		emit node.Right
-		IF_ACMPNE L1
+		emitJumpInsn instruction, L1
 		ICONST_1
 		GOTO L2
 		mark L1
 		ICONST_0
-		mark L2	
+		mark L2 
+				
+	def emitReferenceInequality(node as BinaryExpression):
+		emitComparison node, Opcodes.IF_ACMPEQ
+	    				
+	def emitReferenceEquality(node as BinaryExpression):
+		emitComparison node, Opcodes.IF_ACMPNE	
+		
+	def emitInequality(node as BinaryExpression):
+		assert isInteger(node.Left) and isInteger(node.Right)
+		emitComparison node, Opcodes.IF_ICMPEQ
+	    				
+	def emitEquality(node as BinaryExpression):
+		assert isInteger(node.Left) and isInteger(node.Right)
+		emitComparison node, Opcodes.IF_ICMPNE	
+		
+	def isInteger(e as Expression):
+		return typeSystem.IsIntegerOrBool(expressionType(e))
 					
 	def emitTypeTest(node as BinaryExpression):
 		match node.Right:
 			case TypeofExpression(Type: t):
 				emit node.Left
 				INSTANCEOF javaType(t)
+				
+				
+	def emitMultiply(node as BinaryExpression):
+		emit node.Left
+		emit node.Right
+		IMUL
 				
 	def emitAddition(node as BinaryExpression):
 		emit node.Left
@@ -589,6 +633,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def IFEQ(label as Label):
 		emitJumpInsn Opcodes.IFEQ, label
 		
+	def IF_ACMPEQ(label as Label):
+		emitJumpInsn Opcodes.IF_ACMPEQ, label
+		
 	def IF_ICMPGE(label as Label):
 		emitJumpInsn Opcodes.IF_ICMPGE, label
 		
@@ -699,6 +746,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def ARETURN():
 	   emitInsn(Opcodes.ARETURN)
+	   
+	def IRETURN():
+	   emitInsn(Opcodes.IRETURN)
 		
 	def POP():
 		emitInsn(Opcodes.POP)
@@ -714,6 +764,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def IADD():
 		emitInsn(Opcodes.IADD)
+		
+	def IMUL():
+		emitInsn(Opcodes.IMUL)
 		
 	def emitVarInsn(opcode as int, index as int):
 		_code.visitVarInsn(opcode, index)

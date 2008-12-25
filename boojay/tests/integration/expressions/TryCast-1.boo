@@ -5,7 +5,7 @@ null
 def sysout(o):
 	if o is null:
 		print "null"
-	else:
+	if o is not null:
 		print o
 
 o as object = "foo"

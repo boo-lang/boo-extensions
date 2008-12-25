@@ -129,3 +129,7 @@ partial class IntegrationTestFixture:
 	def Objects_2():
 		runTestCase("../boojay/tests/integration/types/Objects-2.boo")
 		
+	[Test]
+	def Overrides_1():
+		runTestCase("../boojay/tests/integration/types/Overrides-1.boo")
+		

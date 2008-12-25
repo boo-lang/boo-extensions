@@ -4,7 +4,7 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.Steps
 
-class BoojaySemantics(AbstractTransformerCompilerStep):
+class BoojayPreNormalizer(AbstractTransformerCompilerStep):
 	
 	override def Run():
 		Visit CompileUnit
