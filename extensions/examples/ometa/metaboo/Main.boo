@@ -26,6 +26,8 @@ c1 = { print "foo" }
 c2 = { item | print item if item is not null }
 a = [1, 2, 3].Find() do (item as int):
 	return item > 2
+	
+d = [| print name if name is not null |]
 		
 	
 a = 3kg

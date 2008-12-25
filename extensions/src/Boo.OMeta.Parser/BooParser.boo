@@ -457,9 +457,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	quasi_quote_stmt = (QQ_BEGIN, (qq_return | qq_macro) >> s, QQ_END) ^ newQuasiquoteExpression(s)
 	
-	qq_return = (RETURN, optional_assignment >> e) ^ ReturnStatement(Expression: e)
+	qq_return = (RETURN, optional_assignment >> e, optional_stmt_modifier_node >> m) ^ ReturnStatement(Expression: e, Modifier: m)
 	
-	qq_macro = (ID >> name, assignment_list >> args) ^ newMacro(name, args, null, null)
+	qq_macro = (ID >> name, assignment_list >> args, optional_stmt_modifier_node >> m) ^ newMacro(name, args, null, m)
 	
 	parenthesized_expression = (LPAREN, assignment >> e, RPAREN) ^ e
 		
