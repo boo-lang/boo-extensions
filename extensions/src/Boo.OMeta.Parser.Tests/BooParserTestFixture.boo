@@ -5,7 +5,7 @@ import System.IO
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta
 import Boo.OMeta.Parser
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Useful.Attributes
 import NUnit.Framework
 

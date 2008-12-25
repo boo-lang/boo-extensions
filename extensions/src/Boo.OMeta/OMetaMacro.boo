@@ -1,6 +1,6 @@
 namespace Boo.OMeta
 
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler.Ast
 
 macro ometa:

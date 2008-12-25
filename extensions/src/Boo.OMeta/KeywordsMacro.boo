@@ -2,7 +2,7 @@ namespace Boo.OMeta
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 
 macro keywords:
 """

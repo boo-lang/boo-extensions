@@ -1,6 +1,6 @@
 namespace Boo.Pegs
 
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 

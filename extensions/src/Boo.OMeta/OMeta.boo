@@ -1,6 +1,6 @@
 namespace Boo.OMeta
 
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 
 def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input, EndOfInput)

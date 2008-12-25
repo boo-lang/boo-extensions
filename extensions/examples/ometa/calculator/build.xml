@@ -24,8 +24,8 @@
 		<boojay srcdir="${dir.src}" destdir="${dir.build}">
 			<args>
 				<arg value="-verbose+" />
+				<arg value="-r:Boo.Lang.Extensions" />
 				<arg value="-r:Boo.Lang.Compiler" />
-				<arg value="-r:Boo.PatternMatching.dll" />
 				<arg value="-r:Boo.OMeta.dll" />
 				<arg value="-r:Boo.Adt.dll" />
 			</args>

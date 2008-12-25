@@ -1,5 +1,7 @@
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Adt
+
+data Expression = Const(value as int) | Add(left as Expression, right as Expression)
 
 def eval(e as Expression) as int:
    match e:
@@ -19,7 +21,6 @@ def simplify(e as Expression) as Expression:
 		otherwise:
 			return e
       
-data Expression = Const(value as int) | Add(left as Expression, right as Expression)
 
 e = Add(Add(Const(19), Const(0)), Add(Const(0), Const(23)))
 

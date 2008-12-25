@@ -6,9 +6,6 @@
       <path>/boo-extensions/boojay/lib/asm.dll</path>
     </monolipse.core.internal.LocalAssemblyReference-Remembrance>
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
-      <path>/boo-extensions/extensions/src/Boo.PatternMatching</path>
-    </monolipse.core.internal.AssemblySourceReference-Remembrance>
-    <monolipse.core.internal.AssemblySourceReference-Remembrance>
       <path>/boo-extensions/boojay/src/Boojay.Macros</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
     <monolipse.core.internal.AssemblySourceReference-Remembrance>

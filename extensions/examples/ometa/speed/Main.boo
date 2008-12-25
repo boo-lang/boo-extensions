@@ -1,7 +1,7 @@
 namespace speed
 
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Pegs
 import System.Text
 

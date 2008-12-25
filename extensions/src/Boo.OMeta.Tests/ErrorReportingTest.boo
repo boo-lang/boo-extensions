@@ -1,7 +1,7 @@
 namespace Boo.OMeta.Tests
 
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import NUnit.Framework
 
 ometa FailureParser:

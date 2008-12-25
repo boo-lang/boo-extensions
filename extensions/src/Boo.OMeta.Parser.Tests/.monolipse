@@ -8,9 +8,6 @@
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
       <path>/boo-extensions/extensions/src/Boo.OMeta.Parser</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
-    <monolipse.core.internal.AssemblySourceReference-Remembrance>
-      <path>/boo-extensions/extensions/src/Boo.PatternMatching</path>
-    </monolipse.core.internal.AssemblySourceReference-Remembrance>
     <monolipse.core.internal.GlobalAssemblyCacheReference-Remembrance>
       <name>nunit.framework</name>
       <version>2.2.0.0</version>

@@ -1,7 +1,7 @@
 namespace Boo.OMeta.Parser
 
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.Steps
 

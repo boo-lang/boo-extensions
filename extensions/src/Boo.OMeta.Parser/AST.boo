@@ -2,7 +2,7 @@ namespace Boo.OMeta.Parser
 
 import System.Globalization
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
@@ -33,6 +33,11 @@ def newDeclaration(name, type as TypeReference):
 
 def newDeclarationStatement(d as Declaration,  initializer as Expression):
 	return DeclarationStatement(Declaration: d, Initializer: initializer)
+	
+def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
+	stmt = UnpackStatement(Expression: e, Modifier: m)
+	for d in declarations: stmt.Declarations.Add(d)
+	return stmt
 
 def newIfStatement(condition as Expression, trueBlock as Block):
 	return IfStatement(Condition: condition, TrueBlock: trueBlock)

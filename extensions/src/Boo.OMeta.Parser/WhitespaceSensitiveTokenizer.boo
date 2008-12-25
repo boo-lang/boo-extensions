@@ -2,7 +2,7 @@ namespace Boo.OMeta.Parser
 
 import System.Text
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Adt
 
 data Token(kind as string, value as string)

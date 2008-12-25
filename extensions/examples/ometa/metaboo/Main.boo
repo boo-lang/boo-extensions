@@ -1,7 +1,7 @@
 namespace metaboo
 
 import Boo.OMeta
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
@@ -22,14 +22,6 @@ class Fixture:
 import metaboo.Units
 import metaboo.Ranges
 
-c1 = { print "foo" }
-c2 = { item | print item if item is not null }
-a = [1, 2, 3].Find() do (item as int):
-	return item > 2
-	
-d = [| print name if name is not null |]
-		
-	
 a = 3kg
 print(a)
 for i \

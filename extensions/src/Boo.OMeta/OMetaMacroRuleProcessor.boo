@@ -1,7 +1,7 @@
 namespace Boo.OMeta
 
 import Boo.Lang.Compiler.Ast
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 
 class OMetaMacroRuleProcessor:
 	

@@ -267,7 +267,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| stmt_macro \
 		| stmt_return \
 		| stmt_yield \
-		| stmt_raise
+		| stmt_raise \
+		| stmt_unpack
+		
+	stmt_unpack = (declaration_list >> declarations, ASSIGN, rvalue >> e, stmt_modifier >> m) ^ newUnpackStatement(declarations, e, m)
 		
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		

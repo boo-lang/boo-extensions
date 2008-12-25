@@ -2,7 +2,7 @@ namespace Boo.Adt
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 
 macro data:
 """

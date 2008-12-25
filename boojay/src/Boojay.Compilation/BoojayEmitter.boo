@@ -7,7 +7,7 @@ import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.Steps
 import Boo.Lang.Compiler.TypeSystem
 
-import Boo.PatternMatching
+import Boo.Lang.PatternMatching
 
 import org.objectweb.asm
 import org.objectweb.asm.Type
