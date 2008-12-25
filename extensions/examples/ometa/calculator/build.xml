@@ -1,0 +1,40 @@
+<project name="ometa.calculator" default="build">
+	
+	<property name="dir.bin" location="../../../../bin" />
+	<property name="dir.build" location="bin" />
+	<property name="dir.src" location="." />
+	
+	<macrodef name="boojay">
+		<attribute name="srcdir" />
+		<attribute name="destdir" />
+		<element name="args" optional="true" />
+		<sequential>
+			<exec taskname="boojay" executable="mono" dir="${dir.bin}">
+				<arg value="--debug" />
+				<arg file="${dir.bin}/boojay.exe" />
+				<arg value="-srcdir:@{srcdir}" />
+				<arg value="-output:@{destdir}" />
+				<args />
+			</exec>
+		</sequential>
+	</macrodef>
+	
+	<target name="build" depends="init">
+		
+		<boojay srcdir="${dir.src}" destdir="${dir.build}">
+			<args>
+				<arg value="-verbose+" />
+				<arg value="-r:Boo.Lang.Compiler" />
+				<arg value="-r:Boo.PatternMatching.dll" />
+				<arg value="-r:Boo.OMeta.dll" />
+				<arg value="-r:Boo.Adt.dll" />
+			</args>
+		</boojay>
+		
+	</target>
+		
+	<target name="init">
+		
+		<mkdir dir="${dir.build}" />
+	</target>
+</project>
