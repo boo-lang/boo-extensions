@@ -6,10 +6,6 @@ import NUnit.Framework
 partial class IntegrationTestFixture:
 
 	[Test]
-	def Constructors_1():
-		runTestCase("../boojay/tests/integration/Constructors-1.boo")
-		
-	[Test]
 	def HelloWorld():
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
 		
@@ -112,6 +108,14 @@ partial class IntegrationTestFixture:
 	[Test]
 	def Classes_1():
 		runTestCase("../boojay/tests/integration/types/Classes-1.boo")
+		
+	[Test]
+	def Constructors_1():
+		runTestCase("../boojay/tests/integration/types/Constructors-1.boo")
+		
+	[Test]
+	def Equals_1():
+		runTestCase("../boojay/tests/integration/types/Equals-1.boo")
 		
 	[Test]
 	def Integers_1():

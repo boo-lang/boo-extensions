@@ -9,8 +9,12 @@
 true
 false
 true
+42
 """
 import java.lang
+
+class I:
+	public value as int
 
 def sysout(i as int):
 	System.out.println(i)
@@ -26,3 +30,4 @@ sysout 256
 print 42 == (21*2)
 print 41 == (21*2)
 print 41 != (21*2)
+print I(value: 42).value

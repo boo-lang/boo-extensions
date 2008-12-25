@@ -1,4 +1,5 @@
 """
+FOO
 foo
 null
 """
@@ -9,5 +10,7 @@ def sysout(o):
 		print o
 
 o as object = "foo"
+s as string = o
+sysout s.toUpperCase()
 sysout o as string
 sysout o as java.lang.Integer

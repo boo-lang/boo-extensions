@@ -32,6 +32,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.ObjectType: "java/lang/Object",
 			typeSystem.StringType: "java/lang/String",
 			typeSystem.ICallableType: "Boo/Lang/ICallable",
+			typeSystem.TypeType: "java/lang/Class",
 		}
 		
 		_primitiveMappings = {
@@ -168,6 +169,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		"Main": "main",
 		"ToString": "toString",
 		"Equals": "equals",
+		"GetType": "getClass",
 	}
 	
 	override def OnMethod(node as Method):
@@ -273,6 +275,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				match node.Target:
 					case SuperLiteralExpression():
 						ALOAD 0
+						emit node.Arguments
 						INVOKESPECIAL ctor
 					otherwise:
 						emitObjectCreation ctor, node

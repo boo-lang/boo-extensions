@@ -1,5 +1,8 @@
-namespace boojay.runtime
+namespace Boo.Lang.Runtime
 
 static class RuntimeServices:
 	
-	pass
+	def EqualityOperator(x, y):
+		if x is y: return true
+		if x is null: return false
+		return x.Equals(y)
