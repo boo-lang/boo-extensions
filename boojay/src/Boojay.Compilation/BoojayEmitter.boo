@@ -31,14 +31,19 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_typeMappings = {
 			typeSystem.ObjectType: "java/lang/Object",
 			typeSystem.StringType: "java/lang/String",
-			typeSystem.ICallableType: "Boo/Lang/ICallable",
+			typeSystem.ICallableType: "Boojay/Runtime/Callable",
 			typeSystem.TypeType: "java/lang/Class",
+			typeSystem.IEnumerableType: "Boojay/Runtime/Enumerable",
+			typeSystem.IEnumeratorType: "Boojay/Runtime/Enumerator",
+			typeSystem.RuntimeServicesType: "Boojay/Runtime/RuntimeServices",
+			typeSystem.Map(typeof(System.IDisposable)): "Boojay/Runtime/Disposable",
 		}
 		
 		_primitiveMappings = {
 			typeSystem.BoolType: BOOLEAN_TYPE.getDescriptor(),
 			typeSystem.IntType: INT_TYPE.getDescriptor(),
 			typeSystem.VoidType: VOID_TYPE.getDescriptor(),
+			typeSystem.CharType: CHAR_TYPE.getDescriptor(),
 		}
 		
 	override def OnInterfaceDefinition(node as InterfaceDefinition):
@@ -169,7 +174,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		"Main": "main",
 		"ToString": "toString",
 		"Equals": "equals",
-		"GetType": "getClass",
+		"GetType": "getClass"
 	}
 	
 	override def OnMethod(node as Method):
@@ -263,10 +268,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			RETURN
 		else:
 			emit node.Expression
-			if isInteger(node.Expression):
-				IRETURN
-			else:
+			if isReferenceType(node.Expression):
 				ARETURN
+			else:
+				IRETURN
+				
+	def isReferenceType(e as Expression):
+		return not expressionType(e).IsValueType
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
 		
@@ -311,6 +319,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			emit node.Target
 			ARRAYLENGTH
 			return
+			
+		if handleSpecialStringMethod(method, node):
+			return
 		
 		emit node.Target
 		emit node.Arguments
@@ -321,6 +332,23 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			INVOKEINTERFACE method
 		else:
 			INVOKEVIRTUAL method 	
+			
+	def handleSpecialStringMethod(method as IMethod, node as MethodInvocationExpression):
+		if method.DeclaringType is not typeSystem.StringType:
+			return false
+			
+		match method.Name:
+			case "get_Item":
+				emit node.Target
+				emit node.Arguments
+				invokeWithName Opcodes.INVOKEVIRTUAL, method, "charAt"
+			case "get_Length":
+				emit node.Target
+				invokeWithName Opcodes.INVOKEVIRTUAL, method, "length"
+			otherwise:
+				return false
+				
+		return true			
 			
 	def isArrayLength(method as IMethod):
 		return method.FullName == "System.Array.get_Length"
@@ -437,6 +465,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				emitReferenceEquality node
 			case BinaryOperatorType.ReferenceInequality:
 				emitReferenceInequality node
+			
+			case BinaryOperatorType.GreaterThanOrEqual:
+				emitComparison node, Opcodes.IF_ICMPLT
 				
 	def emitComparison(node as BinaryExpression, instruction as int):
 		L1 = Label()
@@ -504,7 +535,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					case local = ILocalEntity():
 						if not local.Type.IsValueType:
 							ASTORE index(local)
-						elif isIntegerOrBool(local.Type):
+						else:
 							ISTORE index(local)
 						
 	
@@ -535,13 +566,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def emitLoad(type as IType, index as int):
 		if not type.IsValueType:
 			ALOAD index
-		elif isIntegerOrBool(type):
+		else:
 			ILOAD index
-		else:			
-			raise "Unsupported type: ${type}"
+			
+	def isChar(type as IType):
+		return type == typeSystem.CharType
 			
 	def isIntegerOrBool(type as IType):
-		return self.TypeSystemServices.IsIntegerOrBool(type)
+		return typeSystem.IsIntegerOrBool(type)
 				
 	def stripGetterPrefix(name as string):
 		return name[len("get_"):]				
@@ -804,12 +836,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_code.visitLabel(label)
 		
 	def invoke(opcode as int, method as IMethod):
+		invokeWithName opcode, method, methodName(method.Name)
+				
+	def invokeWithName(opcode as int, method as IMethod, methodName as string):
 		_code.visitMethodInsn(
 				opcode,
 				javaType(method.DeclaringType),
-				methodName(method.Name),
+				methodName,
 				javaSignature(method))
-	
 		
 	def emitLoadStaticField(declaringType as IType, fieldName as string, fieldType as IType):
 		emitField Opcodes.GETSTATIC, declaringType, fieldName, fieldType

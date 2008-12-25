@@ -1,18 +1,15 @@
-namespace Boojay.Macros
+namespace Boojay.Runtime
 
 import java.io
 import java.lang
 
 def join(items):
 	builder = StringBuilder()
-	enumerator = iteratorFor(items)
-	while enumerator.hasNext():
-		builder.append(enumerator.next())
+	for item in items:
+		builder.append(item)
 	return builder.toString()
 	
 def prompt(msg as string):
 	System.out.println(msg)
 	return BufferedReader(InputStreamReader(System.get_in())).readLine()
 	
-def iteratorFor(source):
-	return (source as Iterable).iterator()

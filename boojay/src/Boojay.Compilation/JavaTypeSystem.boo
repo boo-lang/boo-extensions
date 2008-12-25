@@ -18,7 +18,17 @@ class JavaTypeSystem(TypeSystemServices):
 		Cache(existing, mapping)
 		return mapping
 		
-class JavaLangString:
+class JavaLangString(System.Collections.IEnumerable):
+
+	self[index as int] as char:
+		get: return char.MinValue
+	
+	Length:
+		get: return 0
+	
+	def GetEnumerator():
+		return null
+		
 	def toUpperCase():
 		return self
 		

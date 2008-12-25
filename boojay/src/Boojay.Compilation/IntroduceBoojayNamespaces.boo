@@ -8,4 +8,5 @@ class IntroduceBoojayNamespaces(IntroduceGlobalNamespaces):
 		NameResolutionService.Reset();			
 		NameResolutionService.GlobalNamespace = NamespaceDelegator(
 										NameResolutionService.GlobalNamespace,
-										SafeGetNamespace("Boojay.Macros"))
+										SafeGetNamespace("Boojay.Macros"),
+										SafeGetNamespace("Boojay.Runtime"))

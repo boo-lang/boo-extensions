@@ -9,5 +9,6 @@ class BoojayPipeline(Compile):
 		InsertAfter(NormalizeTypeAndMemberDefinitions, BoojayPreNormalizer())
 		Replace(IntroduceGlobalNamespaces, IntroduceBoojayNamespaces())
 		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
+		InsertBefore(NormalizeIterationStatements, NormalizeIterations())
 		Add(BoojayNormalizer())
 		Add(BoojayEmitter())

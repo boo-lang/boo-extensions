@@ -74,6 +74,14 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/statements/ForItemInArray.boo")
 		
 	[Test]
+	def ForItemInIterable():
+		runTestCase("../boojay/tests/integration/statements/ForItemInIterable.boo")
+		
+	[Test]
+	def ForItemInString():
+		runTestCase("../boojay/tests/integration/statements/ForItemInString.boo")
+		
+	[Test]
 	def If_Bool_1():
 		runTestCase("../boojay/tests/integration/statements/If-Bool-1.boo")
 		

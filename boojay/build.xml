@@ -23,10 +23,7 @@
 		
 		<boojay srcdir="${dir.src}" destdir="${dir.build}">
 			<args>
-				<!--
 				<arg value="-verbose+" />
-				<arg value="-r:Boo.Lang.Compiler" />
-				-->
 				<arg value="-r:IKVM.OpenJDK.ClassLibrary" />
 			</args>
 		</boojay>

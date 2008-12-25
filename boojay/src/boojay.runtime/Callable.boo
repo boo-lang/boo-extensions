@@ -1,4 +1,4 @@
-namespace Boo.Lang
+namespace Boojay.Runtime
 
-interface ICallable:
+interface Callable:
 	def Call(args as (object)) as object

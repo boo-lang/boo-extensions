@@ -1,8 +1,5 @@
 Getting ometa.calculator to run
 ===============================
-* 'for' iterator support
-* string iteration (for ch in "foo")
-* list literals
 * logical or
 * logical and
 * callables
@@ -10,3 +7,4 @@ Getting ometa.calculator to run
 * autoboxing
 * GetHashCode
 * xor
+* list literals
