@@ -62,6 +62,22 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/expressions/Isa-1.boo")
 		
 	[Test]
+	def Or_1():
+		runTestCase("../boojay/tests/integration/expressions/Or-1.boo")
+		
+	[Test]
+	def Or_2():
+		runTestCase("../boojay/tests/integration/expressions/Or-2.boo")
+		
+	[Test]
+	def Or_3():
+		runTestCase("../boojay/tests/integration/expressions/Or-3.boo")
+		
+	[Test]
+	def Or_4():
+		runTestCase("../boojay/tests/integration/expressions/Or-4.boo")
+		
+	[Test]
 	def StringInterpolation():
 		runTestCase("../boojay/tests/integration/expressions/StringInterpolation.boo")
 		

@@ -82,9 +82,6 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def typeBinding(node as Node) as IType:
 		return entity(node)
 		
-	def expressionType(e as Expression) as IType:
-		return self.TypeSystemServices.GetExpressionType(e)
-		
 	def typeAttributes(node as TypeDefinition):
 		attrs = 0
 		match node.NodeType:
@@ -120,31 +117,29 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 
 	def emitBranchFalse(e as Expression, label as Label):
 		match e:
-			case UnaryExpression(
-					Operator: UnaryOperatorType.LogicalNot,
-					Operand: condition):
+			case [| not $condition |]:
 				emitBranchTrue condition, label
 			otherwise:
-				emit e
+				emitCondition e
 				IFEQ label
 				
 	def emitBranchTrue(e as Expression, label as Label):
 		match e:
-			case UnaryExpression(
-					Operator: UnaryOperatorType.LogicalNot,
-					Operand: condition):
+			case [| not $condition |]:
 				emitBranchFalse condition, label
 				
-			case BinaryExpression(
-					Operator: BinaryOperatorType.LessThan,
-					Left: l,
-					Right: r):
+			case [| $l < $r |]:
 				emit l
 				emit r
 				IF_ICMPLT label
+				
 			otherwise:
-				emit e
+				emitCondition e
 				IFNE label
+				
+	def emitCondition(e as Expression):
+		emit e
+		ensureBool typeOf(e)
 	
 	override def OnWhileStatement(node as WhileStatement):
 		
@@ -274,7 +269,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				IRETURN
 				
 	def isReferenceType(e as Expression):
-		return not expressionType(e).IsValueType
+		return not typeOf(e).IsValueType
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
 		match entity(node.Target):
@@ -452,6 +447,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			
 	override def OnBinaryExpression(node as BinaryExpression):
 		match node.Operator:
+			case BinaryOperatorType.Or:
+				emitOr node
 			
 			case BinaryOperatorType.Assign:
 				emitAssignment node
@@ -491,6 +488,25 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		mark L1
 		ICONST_0
 		mark L2 
+		
+	def emitOr(node as BinaryExpression):
+		
+		L1 = Label()
+		L2 = Label()
+		
+		left = ensureLocal(node.Left)
+		emitLoad left
+		ensureBool left.Type
+		IFNE L1
+		emit node.Right
+		GOTO L2
+		mark L1
+		emitLoad left
+		mark L2
+		
+	def ensureBool(topOfStack as IType):
+		if topOfStack.IsValueType: return
+		INVOKESTATIC resolveRuntimeMethod("ToBool")
 				
 	def emitReferenceInequality(node as BinaryExpression):
 		emitComparison node, Opcodes.IF_ACMPEQ
@@ -507,14 +523,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitComparison node, Opcodes.IF_ICMPNE	
 		
 	def isInteger(e as Expression):
-		return typeSystem.IsIntegerOrBool(expressionType(e))
+		return typeSystem.IsIntegerOrBool(typeOf(e))
 					
 	def emitTypeTest(node as BinaryExpression):
 		match node.Right:
 			case TypeofExpression(Type: t):
 				emit node.Left
 				INSTANCEOF javaType(t)
-				
 				
 	def emitMultiply(node as BinaryExpression):
 		emit node.Left
@@ -569,9 +584,21 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			case param = InternalParameter():
 				emitLoad param.Type, param.Index
 			case local = ILocalEntity():
-				emitLoad local.Type, index(local)
+				emitLoad local
 			case type = IType():
 				LDC type
+				
+	def emitLoad(local as ILocalEntity):
+		emitLoad local.Type, index(local)
+		
+	def emitStore(local as ILocalEntity):
+		emitStore local.Type, index(local)
+		
+	def emitStore(type as IType, index as int):
+		if not type.IsValueType:
+			ASTORE index
+		else:
+			ISTORE index
 				
 	def emitLoad(type as IType, index as int):
 		if not type.IsValueType:
@@ -590,7 +617,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	override def OnArrayLiteralExpression(node as ArrayLiteralExpression):
 		ICONST len(node.Items)
-		ANEWARRAY javaType(expressionType(node).GetElementType())
+		ANEWARRAY javaType(typeOf(node).GetElementType())
 		i = 0
 		for item in node.Items:
 			DUP
@@ -633,9 +660,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		local = optionalEntity(e) as InternalLocal
 		if local is not null: return local
 		
-		local = newTemp(expressionType(e))
+		local = newTemp(typeOf(e))
 		emit e
-		ASTORE index(local)
+		emitStore local
 		return local
 		
 	override def OnStringLiteralExpression(node as StringLiteralExpression):
@@ -706,6 +733,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	
 	def IFNE(label as Label):
 		emitJumpInsn Opcodes.IFNE, label
+		
+	def IFNONNULL(label as Label):
+		emitJumpInsn Opcodes.IFNONNULL, label
 	
 	def IF_ACMPNE(label as Label):
 		emitJumpInsn Opcodes.IF_ACMPNE, label
