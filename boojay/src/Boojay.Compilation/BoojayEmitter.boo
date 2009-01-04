@@ -277,26 +277,27 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return not expressionType(e).IsValueType
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
-		
 		match entity(node.Target):
 			case ctor = IConstructor():
-				match node.Target:
-					case SuperLiteralExpression():
-						ALOAD 0
-						emit node.Arguments
-						INVOKESPECIAL ctor
-					otherwise:
-						emitObjectCreation ctor, node
+				emitConstructorInvocation ctor, node
 			case method = IMethod():
-				match node.Target:
-					case SuperLiteralExpression():
-						ALOAD 0
-						emit node.Arguments
-						INVOKESPECIAL method
-					otherwise:
-						emitMethodInvocation method, node
+				emitMethodInvocation method, node
 			case builtin = BuiltinFunction():
 				emitBuiltinInvocation builtin, node
+				
+	def emitSuperMethodInvocation(method as InternalMethod, node as MethodInvocationExpression):
+		ALOAD 0
+		emit node.Arguments
+		INVOKESPECIAL method.Overriden
+				
+	def emitConstructorInvocation(ctor as IConstructor, node as MethodInvocationExpression):
+		match node.Target:
+			case SuperLiteralExpression():
+				ALOAD 0
+				emit node.Arguments
+				INVOKESPECIAL ctor
+			otherwise:
+				emitObjectCreation ctor, node
 				
 	def emitBuiltinInvocation(builtin as BuiltinFunction, node as MethodInvocationExpression):
 		match builtin.FunctionType:
@@ -310,7 +311,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emit node.Arguments[-1]
 				
 	def emitMethodInvocation(method as IMethod, node as MethodInvocationExpression):
-		
+		match node.Target:
+			case SuperLiteralExpression():
+				emitSuperMethodInvocation method, node
+			otherwise:
+				emitMethodInvocationHandlingSpecialCases method, node
+				
+	def emitMethodInvocationHandlingSpecialCases(method as IMethod, node as MethodInvocationExpression):
 		if isSpecialIkvmGetter(method):
 			emitSpecialIkvmGetter(method)
 			return
@@ -322,7 +329,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			
 		if handleSpecialStringMethod(method, node):
 			return
+			
+		emitRegularMethodInvocation method, node
 		
+	def emitRegularMethodInvocation(method as IMethod, node as MethodInvocationExpression):
 		emit node.Target
 		emit node.Arguments
 		
