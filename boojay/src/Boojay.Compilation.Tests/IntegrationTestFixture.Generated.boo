@@ -54,6 +54,18 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/callables/Callables-1.boo")
 		
 	[Test]
+	def And_1():
+		runTestCase("../boojay/tests/integration/expressions/And-1.boo")
+		
+	[Test]
+	def And_2():
+		runTestCase("../boojay/tests/integration/expressions/And-2.boo")
+		
+	[Test]
+	def And_3():
+		runTestCase("../boojay/tests/integration/expressions/And-3.boo")
+		
+	[Test]
 	def Cast_1():
 		runTestCase("../boojay/tests/integration/expressions/Cast-1.boo")
 		

@@ -429,7 +429,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	override def OnCastExpression(node as CastExpression):
 		emit node.Target
-		CHECKCAST javaType(node.Type)
+		if typeOf(node).IsValueType:
+			pass
+		else:
+			CHECKCAST javaType(node.Type)
 			
 	override def OnTryCastExpression(node as TryCastExpression):
 		emit node.Target
@@ -450,6 +453,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			case BinaryOperatorType.Or:
 				emitOr node
 			
+			case BinaryOperatorType.And:
+				emitAnd node
+				
 			case BinaryOperatorType.Assign:
 				emitAssignment node
 				
@@ -487,6 +493,21 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		GOTO L2
 		mark L1
 		ICONST_0
+		mark L2
+		
+	def emitAnd(node as BinaryExpression):
+		
+		L1 = Label()
+		L2 = Label()
+		
+		left = ensureLocal(node.Left)
+		emitLoad left
+		ensureBool left.Type
+		IFEQ L1
+		emit node.Right
+		GOTO L2
+		mark L1
+		emitLoad left
 		mark L2 
 		
 	def emitOr(node as BinaryExpression):

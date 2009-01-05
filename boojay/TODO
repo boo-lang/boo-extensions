@@ -1,9 +1,9 @@
 Getting ometa.calculator to run
 ===============================
-* logical and
 * callables
-* properties
+* generators
 * autoboxing
 * GetHashCode
 * xor
 * list literals
+* properties

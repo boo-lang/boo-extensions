@@ -6,9 +6,11 @@ import java.util
 static class RuntimeServices:
 	
 	def ToBool(o):
-		if o is null: return false
+		if o is null:
+			return false
 		boolean = o as Boolean
-		if boolean is not null: return boolean.booleanValue()
+		if boolean is not null:
+			return boolean.booleanValue()
 		return true
 	
 	def UnboxChar(o):

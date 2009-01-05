@@ -23,14 +23,20 @@ class BoojayNormalizer(AbstractVisitorCompilerStep):
 				node.Right = checkCast(typeOf(node.Left), node.Right)
 				
 			case BinaryOperatorType.Or:
-				node.Right = checkCast(typeOf(node), node.Right)
-				node.Left = checkCast(typeOf(node), node.Left)
+				checkOperands node
+			
+			case BinaryOperatorType.And:
+				checkOperands node
 				
 			case BinaryOperatorType.TypeTest:
 				node.Right = mapBoxedType(node.Right)
 				
 			otherwise:
 				return
+				
+	def checkOperands(node as BinaryExpression):
+		node.Right = checkCast(typeOf(node), node.Right)
+		node.Left = checkCast(typeOf(node), node.Left)
 				
 	def mapBoxedType(e as TypeofExpression):
 		boxedType = boxedTypeFor(entity(e.Type)) 
