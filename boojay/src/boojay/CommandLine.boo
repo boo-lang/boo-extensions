@@ -28,10 +28,13 @@ class CommandLine(AbstractCommandLine):
 		get: return len(self._sourceFiles) > 0 or len(self._srcDirs) > 0
 		
 	[Option("Output directory", ShortForm: "o", LongForm: "output")]
-	public OutputDirectory as string
+	public OutputDirectory = "."
 		
 	[Option("Print the resulting bytecode to stdout.", ShortForm: 'p', LongForm: "print")]
 	public PrintCode = false
+	
+	[Option("Print the expanded boo code to stdout.", LongForm: "boo")]
+	public Boo = false
 
 	[Option("Enable duck typing.", LongForm: "ducky")]
 	public Ducky = false

@@ -1,9 +1,9 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.BoojayPipelines
 
+import Boojay.Compilation
 import Boo.Lang.Compiler.Steps
-import Boo.Lang.Compiler.Pipelines
 
-class BoojayPipeline(Compile):
+class BoojayCompilation(Boo.Lang.Compiler.Pipelines.Compile):
 	
 	def constructor():
 		InsertAfter(NormalizeTypeAndMemberDefinitions, BoojayPreNormalizer())
@@ -11,4 +11,14 @@ class BoojayPipeline(Compile):
 		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
 		InsertBefore(NormalizeIterationStatements, NormalizeIterations())
 		Add(BoojayNormalizer())
+		
+
+class ProduceBytecode(BoojayCompilation):
+	
+	def constructor():
 		Add(BoojayEmitter())
+		
+class ProduceBoo(BoojayCompilation):
+	
+	def constructor():
+		Add(PrintBoo())	

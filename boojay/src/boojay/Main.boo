@@ -19,7 +19,7 @@ if (not cmdLine.IsValid) or cmdLine.DoHelp:
 	cmdLine.PrintOptions()
 	return
 
-compiler = newBoojayCompiler()
+compiler = newBoojayCompiler(cmdLine.Boo and BoojayPipelines.ProduceBoo() or BoojayPipelines.ProduceBytecode())
 params = compiler.Parameters
 
 for fname in cmdLine.SourceFiles():
@@ -29,7 +29,7 @@ for fname in cmdLine.SourceFiles():
 for reference in cmdLine.References:
 	params.References.Add(loadAssembly(reference))
 	
-params.OutputAssembly = cmdLine.OutputDirectory or ""
+params.OutputAssembly = cmdLine.OutputDirectory
 if cmdLine.Verbose:
 	params.EnableTraceSwitch()
 	params.TraceLevel = System.Diagnostics.TraceLevel.Verbose
