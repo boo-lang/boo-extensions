@@ -206,10 +206,28 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 		_code.visitCode()
 		
-		emit node.Body		
+		emit node.Body
+		emitEmptyReturn
 		RETURN
 	
 		_code.visitMaxs(0, 0)
+		
+	def currentReturnType() as IType:
+		returnType = _currentMethod.ReturnType
+		if returnType is null: return null
+		return entity(returnType)
+		
+	def emitEmptyReturn():
+		returnType = currentReturnType()
+		if returnType is null: return
+		if returnType is typeSystem().VoidType: return
+		
+		if returnType.IsValueType:
+			ICONST_0
+			IRETURN
+		else:
+			ACONST_NULL
+			ARETURN
 		
 	def memberAttributes(node as TypeMember):
 		attributes = Opcodes.ACC_PUBLIC
@@ -270,7 +288,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	override def OnReturnStatement(node as ReturnStatement):
 		if node.Expression is null:
-			RETURN
+			emitEmptyReturn
 		else:
 			emit node.Expression
 			if isReferenceType(node.Expression):

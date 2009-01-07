@@ -42,8 +42,11 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 		invocation = CodeBuilder.CreateMethodInvocation(method)
 		for p in invoke.Parameters:
 			invocation.Arguments.Add(CodeBuilder.CreateReference(p))
-		invoke.Body.Add(ReturnStatement(invocation))
 		
+		if prototype.ReturnType is not typeSystem().VoidType:
+			invoke.Body.Add(ReturnStatement(invocation))
+		else:
+			invoke.Body.Add(invocation)
 		return invoke
 		
 	def addToCurrentClass(member as TypeMember):

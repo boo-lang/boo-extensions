@@ -6,6 +6,10 @@ import NUnit.Framework
 partial class IntegrationTestFixture:
 
 	[Test]
+	def DefaultReturnValues_1():
+		runTestCase("../boojay/tests/integration/DefaultReturnValues-1.boo")
+		
+	[Test]
 	def HelloWorld():
 		runTestCase("../boojay/tests/integration/HelloWorld.boo")
 		
@@ -62,6 +66,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/callables/Callables-3.boo")
 		
 	[Test]
+	def Closures_1():
+		runTestCase("../boojay/tests/integration/callables/Closures-1.boo")
+		
+	[Test]
 	def And_1():
 		runTestCase("../boojay/tests/integration/expressions/And-1.boo")
 		
@@ -104,6 +112,10 @@ partial class IntegrationTestFixture:
 	[Test]
 	def TryCast_1():
 		runTestCase("../boojay/tests/integration/expressions/TryCast-1.boo")
+		
+	[Test]
+	def Assert_1():
+		runTestCase("../boojay/tests/integration/macros/Assert-1.boo")
 		
 	[Test]
 	def ForItemInArray():
