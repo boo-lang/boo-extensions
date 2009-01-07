@@ -70,6 +70,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/callables/Closures-1.boo")
 		
 	[Test]
+	def InstanceMethodReference_1():
+		runTestCase("../boojay/tests/integration/callables/InstanceMethodReference-1.boo")
+		
+	[Test]
 	def And_1():
 		runTestCase("../boojay/tests/integration/expressions/And-1.boo")
 		
