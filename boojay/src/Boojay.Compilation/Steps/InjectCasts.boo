@@ -1,11 +1,11 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.Steps
 
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.TypeSystem
 import Boo.Lang.Compiler.Steps
 import Boo.Lang.PatternMatching
 
-class BoojayNormalizer(AbstractVisitorCompilerStep):
+class InjectCasts(AbstractVisitorCompilerStep):
 	
 	_currentReturnType as IType
 	

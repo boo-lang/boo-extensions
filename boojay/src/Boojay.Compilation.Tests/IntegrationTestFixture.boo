@@ -24,7 +24,7 @@ partial class IntegrationTestFixture:
 	def compile(unit as CompileUnit):
 		compiler = newBoojayCompiler()
 		result = compiler.Run(unit)
-		assert 0 == len(result.Errors), result.Errors.ToString(true)
+		assert 0 == len(result.Errors), result.Errors.ToString(true) + unit.ToCodeString()
 			
 	def parse(fname as string):
 		return BooParser.ParseFile(System.IO.Path.GetFullPath(fname))

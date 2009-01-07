@@ -1,10 +1,10 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.Steps
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.Steps
 
-class BoojayPreNormalizer(AbstractTransformerCompilerStep):
+class TransformExpressionInterpolation(AbstractTransformerCompilerStep):
 	
 	override def Run():
 		Visit CompileUnit

@@ -1,4 +1,4 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.Steps
 
 import System.IO
 
@@ -57,16 +57,25 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_classWriter.visit(
 			Opcodes.V1_5,
 			typeAttributes(node),
-			javaType(node.FullName), 
+			javaType(entity(node)), 
 			null,
 			javaType(baseType(node)),
 			implementedInterfaces(node))
 			
-		emit node.Members
+		if node.ParentNode isa ClassDefinition:
+			_classWriter.visitInnerClass(javaType(entity(node)), javaType(entity(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
+		
+		preservingClassWriter:
+			emit node.Members
 		
 		_classWriter.visitEnd()
 		
 		writeClassFile node
+		
+	def preservingClassWriter(code as callable()):
+		previousClassWriter = _classWriter
+		code()
+		_classWriter = previousClassWriter
 		
 	def implementedInterfaces(node as TypeDefinition):
 		interfaces = array(
@@ -87,6 +96,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		match node.NodeType:
 			case NodeType.ClassDefinition:
 				attrs += Opcodes.ACC_SUPER
+				if node.IsAbstract: attrs += Opcodes.ACC_ABSTRACT
 			case NodeType.InterfaceDefinition:
 				attrs += (Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT)
 		if node.IsPublic:
@@ -935,7 +945,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def javaType(type as IType) as string:
 		if type in _typeMappings: return _typeMappings[type]
+		if type.DeclaringEntity is not null: return innerClassName(type)
 		return javaType(type.FullName)
+		
+	def innerClassName(type as IType):
+		return javaType(type.DeclaringEntity) + "$" + type.Name
 		
 	def javaType(typeName as string):
 		return typeName.Replace('.', '/')

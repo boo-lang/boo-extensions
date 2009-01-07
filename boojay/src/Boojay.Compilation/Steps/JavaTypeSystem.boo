@@ -1,4 +1,4 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.Steps
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.TypeSystem
@@ -8,6 +8,7 @@ class JavaTypeSystem(TypeSystemServices):
 	def constructor(context as CompilerContext):
 		super(context)
 		self.StringType = ReplaceMapping(System.String, JavaLangString)
+		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Runtime.MulticastDelegate)
 		self.AddPrimitiveType("string", self.StringType)
 		
 	override ExceptionType:

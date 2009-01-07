@@ -1,6 +1,9 @@
 Getting ometa.calculator to run
 ===============================
 * callables
+** instance methods
+** adaptation
+* events
 * generators
 * autoboxing
 * GetHashCode

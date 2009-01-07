@@ -1,4 +1,4 @@
-namespace Boojay.Compilation
+namespace Boojay.Compilation.Steps
 
 import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler.Ast
