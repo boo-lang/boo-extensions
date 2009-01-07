@@ -40,7 +40,7 @@ ometa Evaluator:
 
 while true:
 	line = prompt("> ")
-	if string.IsNullOrEmpty(line) or line == "/q": break
+	if line is null or line == "" or line == "/q": break
 	m=Parser().parse(OMetaInput.For(line.Trim()))
 	match m:
 		case SuccessfulMatch(Value, Input: OMetaInput(IsEmpty: true)):
