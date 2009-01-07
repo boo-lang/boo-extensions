@@ -34,3 +34,6 @@ class JavaLangString(System.Collections.IEnumerable):
 		
 	def toLowerCase():
 		return self
+		
+	def trim():
+		return self
