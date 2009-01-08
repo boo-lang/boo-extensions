@@ -1,12 +1,14 @@
 Getting ometa.calculator to run
 ===============================
-* callables
-** instance methods
-** adaptation
-* events
-* generators
-* autoboxing
-* GetHashCode
-* xor
+* refactor all primitive dependent information into a PrimitiveInfo() tuple with things like
+	* array store opcode
+	* array load opcode
+	* type descriptor
 * list literals
+* hash literals
+* GetHashCode
+* generators
+* events
+* autoboxing
+* xor
 * properties

@@ -46,6 +46,14 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/ReturnValue-2.boo")
 		
 	[Test]
+	def BoolArray():
+		runTestCase("../boojay/tests/integration/arrays/BoolArray.boo")
+		
+	[Test]
+	def CharArray():
+		runTestCase("../boojay/tests/integration/arrays/CharArray.boo")
+		
+	[Test]
 	def SimpleStringArray():
 		runTestCase("../boojay/tests/integration/arrays/SimpleStringArray.boo")
 		
@@ -128,6 +136,10 @@ partial class IntegrationTestFixture:
 	[Test]
 	def ForItemInArray():
 		runTestCase("../boojay/tests/integration/statements/ForItemInArray.boo")
+		
+	[Test]
+	def ForItemInIntArray():
+		runTestCase("../boojay/tests/integration/statements/ForItemInIntArray.boo")
 		
 	[Test]
 	def ForItemInIterable():

@@ -42,10 +42,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		}
 		
 		_primitiveMappings = {
+			typeSystem.CharType: CHAR_TYPE.getDescriptor(),
 			typeSystem.BoolType: BOOLEAN_TYPE.getDescriptor(),
 			typeSystem.IntType: INT_TYPE.getDescriptor(),
 			typeSystem.VoidType: VOID_TYPE.getDescriptor(),
-			typeSystem.CharType: CHAR_TYPE.getDescriptor(),
 		}
 		
 	override def OnInterfaceDefinition(node as InterfaceDefinition):
@@ -658,7 +658,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			ILOAD index
 			
 	def isChar(type as IType):
-		return type == typeSystem.CharType
+		return type is typeSystem.CharType
 			
 	def isIntegerOrBool(type as IType):
 		return typeSystem.IsIntegerOrBool(type)
@@ -667,14 +667,58 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return name[len("get_"):]				
 		
 	override def OnArrayLiteralExpression(node as ArrayLiteralExpression):
+		
+		elementType = typeOf(node).GetElementType()
+		
 		ICONST len(node.Items)
-		ANEWARRAY javaType(typeOf(node).GetElementType())
+		emitNewArrayOpcodeFor elementType
 		i = 0
 		for item in node.Items:
 			DUP
 			ICONST i++
 			emit item
-			AASTORE
+			emitArrayStoreOpcodeFor elementType
+			
+	def emitNewArrayOpcodeFor(elementType as IType):
+		if elementType.IsValueType:
+			NEWARRAY elementType
+		else:
+			ANEWARRAY elementType
+			
+	def NEWARRAY(elementType as IType):
+		emitIntInsn Opcodes.NEWARRAY, primitiveTypeIdFor(elementType)
+		
+	def primitiveTypeIdFor(type as IType):
+		if isInt(type): return Opcodes.T_INT
+		if isBool(type): return Opcodes.T_BOOLEAN
+		if isChar(type): return Opcodes.T_CHAR
+		assert false, type.ToString()
+		
+	def isInt(type as IType):
+		return type is typeSystem().IntType
+		
+	def isBool(type as IType):
+		return type is typeSystem().BoolType
+			
+	def ANEWARRAY(elementType as IType):
+		emitTypeInsn Opcodes.ANEWARRAY, javaType(elementType)
+		
+	def emitArrayStoreOpcodeFor(elementType as IType):
+		emitInstruction arrayStoreOpcodeFor(elementType)
+		
+	def arrayStoreOpcodeFor(type as IType):
+		if type.IsValueType:
+			if isChar(type): return Opcodes.CASTORE
+			if isBool(type): return Opcodes.BASTORE
+			return Opcodes.IASTORE
+		return Opcodes.AASTORE
+		
+	def arrayLoadOpcodeFor(type as IType):
+		if type.IsValueType:
+			if isChar(type): return Opcodes.CALOAD
+			if isBool(type): return Opcodes.BALOAD
+			return Opcodes.IALOAD
+		return Opcodes.AALOAD
 			
 	override def OnSlicingExpression(node as SlicingExpression):
 		assert 1 == len(node.Indices)
@@ -684,14 +728,19 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 					emitNormalizedArraySlicing node
 				else:
 					emitRawArraySlicing node
-					
 			otherwise:
 				emitNormalizedArraySlicing node
 				
 	def emitRawArraySlicing(node as SlicingExpression):
 		emit node.Target
 		emit node.Indices[0].Begin
-		AALOAD
+		emitArrayLoadOpcodeFor node
+		
+	def emitArrayLoadOpcodeFor(node as SlicingExpression):
+		emitArrayLoadOpcodeFor typeOf(node.Target).GetElementType()
+		
+	def emitArrayLoadOpcodeFor(elementType as IType):
+		emitInstruction arrayLoadOpcodeFor(elementType)
 				
 	def emitNormalizedArraySlicing(node as SlicingExpression):
 		L1 = Label()
@@ -705,7 +754,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		ARRAYLENGTH
 		IADD
 		mark L1
-		AALOAD
+		emitArrayLoadOpcodeFor node
 		
 	def ensureLocal(e as Expression):
 		local = optionalEntity(e) as InternalLocal
@@ -718,6 +767,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	override def OnStringLiteralExpression(node as StringLiteralExpression):
 		LDC node.Value
+		
+	override def OnCharLiteralExpression(node as CharLiteralExpression):
+		ICONST cast(int, node.Value[0])
 		
 	override def OnIntegerLiteralExpression(node as IntegerLiteralExpression):
 		ICONST node.Value
@@ -805,17 +857,17 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def ICONST(value as int):
 		if value >= -1 and value <= 5:
-			emitInsn iconstOpcodeFor(value)
+			emitInstruction iconstOpcodeFor(value)
 		elif value >= -127 and value <= 127:
 			emitIntInsn Opcodes.BIPUSH, value
 		else:
 			emitIntInsn Opcodes.SIPUSH, value
 			
 	def ICONST_0():
-		emitInsn Opcodes.ICONST_0
+		emitInstruction Opcodes.ICONST_0
 		
 	def ICONST_1():
-		emitInsn Opcodes.ICONST_1
+		emitInstruction Opcodes.ICONST_1
 		
 	def iconstOpcodeFor(value as int):
 		if value == 0: return Opcodes.ICONST_0
@@ -831,22 +883,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitVarInsn(Opcodes.ISTORE, index)
 		
 	def ACONST_NULL():
-		emitInsn Opcodes.ACONST_NULL
+		emitInstruction Opcodes.ACONST_NULL
 		
 	def ALOAD(index as int):
 		emitVarInsn(Opcodes.ALOAD, index)
 		
-	def ANEWARRAY(type as string):
-		emitTypeInsn Opcodes.ANEWARRAY, type
-		
 	def ARRAYLENGTH():
-		emitInsn Opcodes.ARRAYLENGTH
-		
-	def AASTORE():
-		emitInsn Opcodes.AASTORE
-		
-	def AALOAD():
-		emitInsn Opcodes.AALOAD
+		emitInstruction Opcodes.ARRAYLENGTH
 		
 	def ASTORE(index as int):
 		emitVarInsn(Opcodes.ASTORE, index)
@@ -876,39 +919,39 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_code.visitTryCatchBlock(begin, end, target, type)
 		
 	def ATHROW():
-		emitInsn(Opcodes.ATHROW)
+		emitInstruction(Opcodes.ATHROW)
 		
 	def RETURN():
-	   emitInsn(Opcodes.RETURN)
+	   emitInstruction(Opcodes.RETURN)
 		
 	def ARETURN():
-	   emitInsn(Opcodes.ARETURN)
+	   emitInstruction(Opcodes.ARETURN)
 	   
 	def IRETURN():
-	   emitInsn(Opcodes.IRETURN)
+	   emitInstruction(Opcodes.IRETURN)
 		
 	def POP():
-		emitInsn(Opcodes.POP)
+		emitInstruction(Opcodes.POP)
 		
 	def NEW(type as IType):
 		emitTypeInsn(Opcodes.NEW, javaType(type))
 		
 	def DUP():
-		emitInsn(Opcodes.DUP)
+		emitInstruction(Opcodes.DUP)
 		
 	def ISUB():
-		emitInsn(Opcodes.ISUB)
+		emitInstruction(Opcodes.ISUB)
 		
 	def IADD():
-		emitInsn(Opcodes.IADD)
+		emitInstruction(Opcodes.IADD)
 		
 	def IMUL():
-		emitInsn(Opcodes.IMUL)
+		emitInstruction(Opcodes.IMUL)
 		
 	def emitVarInsn(opcode as int, index as int):
 		_code.visitVarInsn(opcode, index)
 		
-	def emitInsn(i as int):
+	def emitInstruction(i as int):
 		_code.visitInsn(i)
 		
 	def emitIntInsn(opcode as int, value as int):

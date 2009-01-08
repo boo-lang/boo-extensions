@@ -38,3 +38,6 @@ class JavaLangString(System.Collections.IEnumerable):
 		
 	def trim():
 		return self
+		
+	def toCharArray() as (char):
+		return null
