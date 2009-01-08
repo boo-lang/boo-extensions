@@ -6,46 +6,6 @@ import NUnit.Framework
 partial class IntegrationTestFixture:
 
 	[Test]
-	def DefaultReturnValues_1():
-		runTestCase("../boojay/tests/integration/DefaultReturnValues-1.boo")
-		
-	[Test]
-	def HelloWorld():
-		runTestCase("../boojay/tests/integration/HelloWorld.boo")
-		
-	[Test]
-	def Locals_1():
-		runTestCase("../boojay/tests/integration/Locals-1.boo")
-		
-	[Test]
-	def Locals_2():
-		runTestCase("../boojay/tests/integration/Locals-2.boo")
-		
-	[Test]
-	def Methods_1():
-		runTestCase("../boojay/tests/integration/Methods-1.boo")
-		
-	[Test]
-	def ModuleFunction_1():
-		runTestCase("../boojay/tests/integration/ModuleFunction-1.boo")
-		
-	[Test]
-	def ModuleFunction_2():
-		runTestCase("../boojay/tests/integration/ModuleFunction-2.boo")
-		
-	[Test]
-	def Namespaces():
-		runTestCase("../boojay/tests/integration/Namespaces.boo")
-		
-	[Test]
-	def ReturnValue_1():
-		runTestCase("../boojay/tests/integration/ReturnValue-1.boo")
-		
-	[Test]
-	def ReturnValue_2():
-		runTestCase("../boojay/tests/integration/ReturnValue-2.boo")
-		
-	[Test]
 	def BoolArray():
 		runTestCase("../boojay/tests/integration/arrays/BoolArray.boo")
 		
@@ -56,6 +16,50 @@ partial class IntegrationTestFixture:
 	[Test]
 	def SimpleStringArray():
 		runTestCase("../boojay/tests/integration/arrays/SimpleStringArray.boo")
+		
+	[Test]
+	def DefaultReturnValues_1():
+		runTestCase("../boojay/tests/integration/assorted/DefaultReturnValues-1.boo")
+		
+	[Test]
+	def HelloWorld():
+		runTestCase("../boojay/tests/integration/assorted/HelloWorld.boo")
+		
+	[Test]
+	def ListLiteral():
+		runTestCase("../boojay/tests/integration/assorted/ListLiteral.boo")
+		
+	[Test]
+	def Locals_1():
+		runTestCase("../boojay/tests/integration/assorted/Locals-1.boo")
+		
+	[Test]
+	def Locals_2():
+		runTestCase("../boojay/tests/integration/assorted/Locals-2.boo")
+		
+	[Test]
+	def Methods_1():
+		runTestCase("../boojay/tests/integration/assorted/Methods-1.boo")
+		
+	[Test]
+	def ModuleFunction_1():
+		runTestCase("../boojay/tests/integration/assorted/ModuleFunction-1.boo")
+		
+	[Test]
+	def ModuleFunction_2():
+		runTestCase("../boojay/tests/integration/assorted/ModuleFunction-2.boo")
+		
+	[Test]
+	def Namespaces():
+		runTestCase("../boojay/tests/integration/assorted/Namespaces.boo")
+		
+	[Test]
+	def ReturnValue_1():
+		runTestCase("../boojay/tests/integration/assorted/ReturnValue-1.boo")
+		
+	[Test]
+	def ReturnValue_2():
+		runTestCase("../boojay/tests/integration/assorted/ReturnValue-2.boo")
 		
 	[Test]
 	def Join_1():

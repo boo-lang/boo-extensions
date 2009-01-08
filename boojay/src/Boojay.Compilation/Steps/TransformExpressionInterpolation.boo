@@ -14,4 +14,14 @@ class TransformExpressionInterpolation(AbstractTransformerCompilerStep):
 		for e in node.Expressions:
 			code = [| $code.append($e) |]
 		ReplaceCurrentNode([| $code.toString() |])
+		
+	override def LeaveListLiteralExpression(node as ListLiteralExpression):
+		temp = uniqueReference()
+		code = [| __eval__($temp = java.util.ArrayList($(len(node.Items)))) |]
+		for item in node.Items:
+			code.Arguments.Add([| $temp.add($item) |])
+		code.Arguments.Add(temp)
+		
+		code.LexicalInfo = node.LexicalInfo
+		ReplaceCurrentNode(code)
 	

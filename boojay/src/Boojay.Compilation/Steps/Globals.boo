@@ -27,4 +27,7 @@ def context():
 	
 def uniqueName():
 	return "$" + context().AllocIndex()
+	
+def uniqueReference():
+	return ReferenceExpression(uniqueName())
 		

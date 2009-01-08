@@ -39,6 +39,7 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 		
 	def newConcreteCallableInstance(callableType as ICallableType, target as Expression, method as IMethod):
 		concreteType = newAnonymousTypeWithBase(callableType)
+		
 		targetField = concreteType.AddField("_target", method.DeclaringType) if target is not null
 		ctor = concreteType.AddConstructor()
 		ctor.Body.Add(CodeBuilder.CreateSuperConstructorInvocation(callableType))
@@ -61,7 +62,6 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 		typeBuilder.AddBaseType(baseType)
 		addToCurrentClass(typeBuilder.ClassDefinition)
 		return typeBuilder
-		
 		
 	def implementInvokeFor(target as Field, prototype as IMethod, method as IMethod):
 		
