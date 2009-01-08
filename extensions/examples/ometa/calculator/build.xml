@@ -3,13 +3,14 @@
 	<property name="dir.bin" location="../../../../bin" />
 	<property name="dir.build" location="bin" />
 	<property name="dir.src" location="." />
+	<property name="mono" value="mono" />
 	
 	<macrodef name="boojay">
 		<attribute name="srcdir" />
 		<attribute name="destdir" />
 		<element name="args" optional="true" />
 		<sequential>
-			<exec taskname="boojay" executable="mono" dir="${dir.bin}">
+			<exec taskname="boojay" executable="${mono}" dir="${dir.bin}">
 				<arg value="--debug" />
 				<arg file="${dir.bin}/boojay.exe" />
 				<arg value="-srcdir:@{srcdir}" />
