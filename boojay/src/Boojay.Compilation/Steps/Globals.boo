@@ -24,4 +24,7 @@ def nameResolutionService():
 	
 def context():
 	return CompilerContext.Current
+	
+def uniqueName():
+	return "$" + context().AllocIndex()
 		

@@ -25,6 +25,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		initializeTypeMappings()
 
 	def Run():
+		if len(Errors) > 0:
+			return
 		Visit(CompileUnit)
 		
 	def initializeTypeMappings():

@@ -22,30 +22,28 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 	override def LeaveMethodInvocationExpression(node as MethodInvocationExpression):
 		match node:
 			case [| $ctor(null, __addressof__($method)) |]:
-				ReplaceCurrentNode(newCallableConstruction(declaringTypeOf(ctor), entity(method)))
+				ReplaceCurrentNode(callableForStaticMethod(declaringTypeOf(ctor), entity(method)))
 			case [| $ctor($target, __addressof__($method)) |]:
-				ReplaceCurrentNode(newCallableConstructionWithTarget(target, declaringTypeOf(ctor), entity(method)))
+				ReplaceCurrentNode(callableForInstanceMethod(declaringTypeOf(ctor), target, entity(method)))
 			otherwise:
 				pass
 				
 	def declaringTypeOf(reference as Expression):
 		return cast(IMember, entity(reference)).DeclaringType
 				
-	def newCallableConstruction(callableType as ICallableType, method as IMethod):
-		return newConcreteCallableInstance(null, callableType, method)
+	def callableForStaticMethod(callableType as ICallableType, method as IMethod):
+		return newConcreteCallableInstance(callableType, null, method)
 		
-	def newCallableConstructionWithTarget(target as Expression, callableType as ICallableType, method as IMethod):
-		return newConcreteCallableInstance(target, callableType, method)
+	def callableForInstanceMethod(callableType as ICallableType, target as Expression, method as IMethod):
+		return newConcreteCallableInstance(callableType, target, method)
 		
-	def newConcreteCallableInstance(target as Expression, callableType as ICallableType, method as IMethod):
-		concreteType = CodeBuilder.CreateClass(uniqueName(), TypeMemberModifiers.Private)
-		concreteType.AddBaseType(callableType)
+	def newConcreteCallableInstance(callableType as ICallableType, target as Expression, method as IMethod):
+		concreteType = newAnonymousTypeWithBase(callableType)
 		targetField = concreteType.AddField("_target", method.DeclaringType) if target is not null
 		ctor = concreteType.AddConstructor()
 		ctor.Body.Add(CodeBuilder.CreateSuperConstructorInvocation(callableType))
 		concreteType.ClassDefinition.Members.Add(implementInvokeFor(targetField, resolveMethod(callableType, "Invoke"), method))
 		ctorInvocation = CodeBuilder.CreateConstructorInvocation(ctor.Entity as IConstructor)
-		addToCurrentClass(concreteType.ClassDefinition)
 		
 		if target is null:
 			return ctorInvocation
@@ -57,6 +55,12 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 				CodeBuilder.CreateReference(targetParameter)))
 		ctorInvocation.Arguments.Add(target)
 		return ctorInvocation
+		
+	def newAnonymousTypeWithBase(baseType as IType):
+		typeBuilder = CodeBuilder.CreateClass(uniqueName(), TypeMemberModifiers.Private)
+		typeBuilder.AddBaseType(baseType)
+		addToCurrentClass(typeBuilder.ClassDefinition)
+		return typeBuilder
 		
 		
 	def implementInvokeFor(target as Field, prototype as IMethod, method as IMethod):
