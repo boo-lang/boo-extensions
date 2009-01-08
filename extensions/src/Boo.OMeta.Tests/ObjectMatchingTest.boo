@@ -27,12 +27,9 @@ class ObjectMatchingTest:
 		ometa Evaluator:
 			eval = const | sum
 			const = Const(value) ^ value
-			sum = Sum(left: eval >> l, right: eval >> r) ^ add(l, r)
-			def add(x as int, y as int):
-				return x + y
+			sum = Sum(left: eval >> l as int, right: eval >> r as int) ^ (l + r)
 				
 		match Evaluator().eval(OMetaInput.Singleton(Sum(Const(21), Sum(Const(11), Const(10))))):
 			case SuccessfulMatch(Input, Value):
 				assert Input.IsEmpty
 				Assert.AreEqual(42, Value)
-			
