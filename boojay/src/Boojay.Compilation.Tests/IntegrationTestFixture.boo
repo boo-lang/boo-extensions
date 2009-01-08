@@ -14,7 +14,7 @@ partial class IntegrationTestFixture:
 		unit = parse(fname)	
 		main = unit.Modules[0]
 		compile(unit)
-		output = runJavaClass(moduleClass(main))
+		output = runJavaClass(moduleClassFor(main))
 		Assert.IsNotNull(main.Documentation, "Expecting documentation for '${fname}'")
 		Assert.AreEqual(normalizeWhiteSpace(main.Documentation), normalizeWhiteSpace(output))
 		
@@ -29,7 +29,7 @@ partial class IntegrationTestFixture:
 	def parse(fname as string):
 		return BooParser.ParseFile(System.IO.Path.GetFullPath(fname))
 		
-	def moduleClass(module as Module):
+	def moduleClassFor(module as Module):
 		return module.FullName + "Module"
 		
 	def runJavaClass(className as string):
