@@ -18,6 +18,9 @@ static class RuntimeServices:
 		
 	def BoxChar(ch as char):
 		return Character(ch)
+		
+	def UnboxInt32(o):
+		return cast(Number, o).intValue()
 	
 	def EqualityOperator(x, y):
 		if x is y: return true
