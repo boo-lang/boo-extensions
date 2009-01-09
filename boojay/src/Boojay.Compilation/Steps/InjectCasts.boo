@@ -39,12 +39,12 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		node.Left = checkCast(typeOf(node), node.Left)
 				
 	def mapBoxedType(e as TypeofExpression):
-		boxedType = boxedTypeFor(entity(e.Type)) 
+		boxedType = boxedTypeFor(bindingFor(e.Type)) 
 		if boxedType is null: return e
 		return CodeBuilder.CreateTypeofExpression(boxedType)
 		
 	override def LeaveMethodInvocationExpression(node as MethodInvocationExpression):
-		m = optionalEntity(node.Target) as IMethodBase
+		m = optionalBindingFor(node.Target) as IMethodBase
 		if m is null: return
 		
 		parameters = m.GetParameters()
@@ -56,11 +56,14 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		
 		node.Expression = checkCast(_currentReturnType, node.Expression)
 			
-	def optionalEntity(node as Node):
+	def optionalBindingFor(node as Node):
 		return typeSystem().GetOptionalEntity(node)
 		
 	def checkCast(expected as IType, e as Expression):
 		actual = typeOf(e)
+		
+		if expected is actual:
+			return e
 		
 		if isUnbox(expected, actual):
 			return unbox(expected, e)
@@ -68,10 +71,18 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		if isBox(expected, actual):
 			return box(actual, e)
 		
-		if expected.IsAssignableFrom(actual):
+		if actual.IsSubclassOf(expected):
+			return e
+			
+		if isJavaLangObject(expected):
 			return e
 			
 		return CodeBuilder.CreateCast(expected, e)
+		
+	def isJavaLangObject(type as IType):
+		if typeSystem().IsSystemObject(type):
+			return true
+		return type is Null.Default
 		
 	def isBox(expected as IType, actual as IType):
 		return actual.IsValueType and not expected.IsValueType

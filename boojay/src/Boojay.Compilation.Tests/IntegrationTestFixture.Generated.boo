@@ -134,6 +134,10 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/expressions/TryCast-1.boo")
 		
 	[Test]
+	def Simplest():
+		runTestCase("../boojay/tests/integration/generators/Simplest.boo")
+		
+	[Test]
 	def Assert_1():
 		runTestCase("../boojay/tests/integration/macros/Assert-1.boo")
 		

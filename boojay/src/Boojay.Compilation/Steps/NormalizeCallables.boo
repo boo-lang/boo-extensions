@@ -22,7 +22,7 @@ class NormalizeCallables(AbstractTransformerCompilerStep):
 		return true
 		
 	override def LeaveClassDefinition(node as ClassDefinition):
-		callableType = entity(node) as InternalCallableType
+		callableType = bindingFor(node) as InternalCallableType
 		if callableType is null:
 			return
 		normalize callableType

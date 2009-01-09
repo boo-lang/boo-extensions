@@ -3,6 +3,7 @@ namespace Boojay.Compilation.Steps
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.TypeSystem
 import Boo.Lang.Compiler.Ast
+import Boo.Lang.PatternMatching
 
 def resolveRuntimeMethod(methodName as string):
 	return resolveMethod(typeSystem().RuntimeServicesType, methodName)
@@ -10,11 +11,15 @@ def resolveRuntimeMethod(methodName as string):
 def resolveMethod(type as IType, name as string):
 	return nameResolutionService().ResolveMethod(type, name)
 	
-def entity(node as Node):
+def bindingFor(node as Node):
 	return typeSystem().GetEntity(node)
 	
 def typeOf(e as Expression):
-	return typeSystem().GetExpressionType(e)
+	match e:
+		case [| null |]:
+			return Null.Default
+		otherwise:
+			return typeSystem().GetExpressionType(e)
 	
 def typeSystem():
 	return context().TypeSystemServices

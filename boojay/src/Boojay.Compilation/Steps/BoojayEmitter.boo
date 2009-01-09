@@ -32,6 +32,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def initializeTypeMappings():
 		_typeMappings = {
 			typeSystem.ObjectType: "java/lang/Object",
+			Null.Default: "java/lang/Object",
 			typeSystem.StringType: "java/lang/String",
 			typeSystem.ICallableType: "Boojay/Runtime/Callable",
 			typeSystem.TypeType: "java/lang/Class",
@@ -59,13 +60,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_classWriter.visit(
 			Opcodes.V1_5,
 			typeAttributes(node),
-			javaType(entity(node)), 
+			javaType(bindingFor(node)), 
 			null,
 			javaType(baseType(node)),
 			implementedInterfaces(node))
 			
 		if node.ParentNode isa ClassDefinition:
-			_classWriter.visitInnerClass(javaType(entity(node)), javaType(entity(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
+			_classWriter.visitInnerClass(javaType(bindingFor(node)), javaType(bindingFor(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
 		
 		preservingClassWriter:
 			emit node.Members
@@ -91,7 +92,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return typeBinding(typeRef).IsInterface
 		
 	def typeBinding(node as Node) as IType:
-		return entity(node)
+		return bindingFor(node)
 		
 	def typeAttributes(node as TypeDefinition):
 		attrs = 0
@@ -112,6 +113,12 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def outputDirectory():
 		return Parameters.OutputAssembly
+		
+	override def OnLabelStatement(node as LabelStatement):
+		mark labelFor(node)
+		
+	override def OnGotoStatement(node as GotoStatement):
+		GOTO labelFor(node.Label)
 		
 	override def OnIfStatement(node as IfStatement):
 		
@@ -167,7 +174,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		field = _classWriter.visitField(
 					memberAttributes(node),
 					node.Name,
-					typeDescriptor(entity(node.Type)),
+					typeDescriptor(bindingFor(node.Type)),
 					null,
 					null)
 		field.visitEnd() 
@@ -217,7 +224,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def currentReturnType() as IType:
 		returnType = _currentMethod.ReturnType
 		if returnType is null: return null
-		return entity(returnType)
+		return bindingFor(returnType)
 		
 	def emitEmptyReturn():
 		returnType = currentReturnType()
@@ -250,7 +257,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return lastParameterIndex(node) + 1
 		
 	def lastParameterIndex(node as Method):
-		param as InternalParameter = entity(node.Parameters[-1])
+		param as InternalParameter = bindingFor(node.Parameters[-1])
 		return param.Index
 		
 	def newTemp(type as IType):
@@ -262,13 +269,13 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def nextLocalIndex():
 		locals = _currentMethod.Locals
 		if len(locals) == 0: return firstLocalIndex(_currentMethod)
-		return index(entity(locals[-1])) + 1
+		return index(bindingFor(locals[-1])) + 1
 			
 	def index(node as Local, index as int):
 		node["index"] = index
 		
-	def index(entity as InternalLocal) as int:
-		return entity.Local["index"]
+	def index(bindingFor as InternalLocal) as int:
+		return bindingFor.Local["index"]
 		
 	override def LeaveExpressionStatement(node as ExpressionStatement):
 		discardValueOnStack node.Expression
@@ -277,7 +284,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		mie = node as MethodInvocationExpression
 		if mie is null: return
 		
-		m = entity(mie.Target) as IMethod
+		m = bindingFor(mie.Target) as IMethod
 		if m is null: return
 		
 		if hasReturnValue(m): POP
@@ -302,7 +309,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return not typeOf(e).IsValueType
 		
 	override def OnMethodInvocationExpression(node as MethodInvocationExpression):
-		match entity(node.Target):
+		match bindingFor(node.Target):
 			case ctor = IConstructor():
 				emitConstructorInvocation ctor, node
 			case method = IMethod():
@@ -328,6 +335,33 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		match builtin.FunctionType:
 			case BuiltinFunctionType.Eval:
 				emitEval node
+			case BuiltinFunctionType.Switch:
+				emitSwitch node
+				
+	def emitSwitch(node as MethodInvocationExpression):
+		targetLabels = array(labelFor(arg) for arg in node.Arguments.ToArray()[1:])
+		defaultLabel = Label()
+		
+		emit node.Arguments[0]
+		TABLESWITCH 0, len(targetLabels)-1, defaultLabel, targetLabels
+		
+		mark defaultLabel
+		emitObjectCreation defaultConstructorFor(java.lang.IllegalStateException), MethodInvocationExpression()
+		ATHROW
+		
+	def labelFor(e as Expression):
+		labelBinding as InternalLabel = bindingFor(e)
+		return labelFor(labelBinding.LabelStatement)
+		
+	def labelFor(stmt as LabelStatement):
+		label as Label = stmt["label"]
+		if label is null:
+			label = Label()
+			stmt["label"] = label
+		return label
+		
+	def defaultConstructorFor(type as System.Type):
+		return typeSystem().GetDefaultConstructor(typeSystem().Map(type))
 				
 	def emitEval(node as MethodInvocationExpression):
 		for e in node.Arguments.ToArray()[:-1]:
@@ -415,7 +449,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			emit node.Exception
 			ATHROW
 		else:
-			ALOAD index(entity(enclosingHandler(node).Declaration))
+			ALOAD index(bindingFor(enclosingHandler(node).Declaration))
 			ATHROW
 			
 	def enclosingHandler(node as Node) as ExceptionHandler:
@@ -435,7 +469,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			mark L4
 			decl = handler.Declaration
 			TRYCATCHBLOCK L1, L2, L4, javaType(decl.Type)
-			ASTORE index(entity(decl))
+			ASTORE index(bindingFor(decl))
 			emit handler.Block
 			GOTO L3
 			
@@ -600,14 +634,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def emitAssignment(node as BinaryExpression):
 		match node.Left:
 			case memberRef = MemberReferenceExpression():
-				match entity(memberRef):
+				match bindingFor(memberRef):
                     case field = IField(IsStatic: false):
                     	emit memberRef.Target
                     	emit node.Right
                     	PUTFIELD field
 			case reference = ReferenceExpression():
 				emit node.Right
-				match entity(reference):
+				match bindingFor(reference):
 					case local = ILocalEntity():
 						if not local.Type.IsValueType:
 							ASTORE index(local)
@@ -616,7 +650,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 						
 	
 	override def OnMemberReferenceExpression(node as MemberReferenceExpression):
-		match entity(node):
+		match bindingFor(node):
 			case field = IField(IsStatic: true):
 				GETSTATIC field
 			case field = IField(IsStatic: false):
@@ -631,7 +665,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		ALOAD 0
 				
 	override def OnReferenceExpression(node as ReferenceExpression):
-		match entity(node):
+		match bindingFor(node):
 			case param = InternalParameter():
 				emitLoad param.Type, param.Index
 			case local = ILocalEntity():
@@ -794,7 +828,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			+ typeDescriptor(method.ReturnType))
 		
 	def javaSignature(node as Method):
-		return javaSignature(entity(node) as IMethod)
+		return javaSignature(bindingFor(node) as IMethod)
 		
 	def ensurePath(fname as string):
 		path = Path.GetDirectoryName(fname)
@@ -802,7 +836,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			Directory.CreateDirectory(path)
 		
 	def classFullFileName(node as TypeDefinition):
-		return javaType(entity(node)) + ".class"
+		return javaType(bindingFor(node)) + ".class"
 		
 	def emit(node as Node):
 		Visit(node)
@@ -918,6 +952,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def TRYCATCHBLOCK(begin as Label, end as Label, target as Label, type as string):
 		_code.visitTryCatchBlock(begin, end, target, type)
 		
+	def TABLESWITCH(min as int, max as int, defaultLabel as Label, targets as (Label)):
+		_code.visitTableSwitchInsn(min, max, defaultLabel, targets)
+		
 	def ATHROW():
 		emitInstruction(Opcodes.ATHROW)
 		
@@ -992,14 +1029,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				fieldName,
 				typeDescriptor(fieldType))
 				
-	def entity(node as Node):
+	def bindingFor(node as Node):
 		return GetEntity(node)
 		
 	def optionalEntity(node as Node):
 		return self.TypeSystemServices.GetOptionalEntity(node)
 		
 	def javaType(typeRef as TypeReference):
-		return javaType(entity(typeRef) as IType)
+		return javaType(bindingFor(typeRef) as IType)
 		
 	def typeDescriptor(type as IType) as string:
 		if type in _primitiveMappings: return _primitiveMappings[type]

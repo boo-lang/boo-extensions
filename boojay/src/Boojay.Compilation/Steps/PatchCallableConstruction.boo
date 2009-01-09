@@ -22,14 +22,14 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 	override def LeaveMethodInvocationExpression(node as MethodInvocationExpression):
 		match node:
 			case [| $ctor(null, __addressof__($method)) |]:
-				ReplaceCurrentNode(callableForStaticMethod(declaringTypeOf(ctor), entity(method)))
+				ReplaceCurrentNode(callableForStaticMethod(declaringTypeOf(ctor), bindingFor(method)))
 			case [| $ctor($target, __addressof__($method)) |]:
-				ReplaceCurrentNode(callableForInstanceMethod(declaringTypeOf(ctor), target, entity(method)))
+				ReplaceCurrentNode(callableForInstanceMethod(declaringTypeOf(ctor), target, bindingFor(method)))
 			otherwise:
 				pass
 				
 	def declaringTypeOf(reference as Expression):
-		return cast(IMember, entity(reference)).DeclaringType
+		return cast(IMember, bindingFor(reference)).DeclaringType
 				
 	def callableForStaticMethod(callableType as ICallableType, method as IMethod):
 		return newConcreteCallableInstance(callableType, null, method)
@@ -49,7 +49,7 @@ class PatchCallableConstruction(AbstractTransformerCompilerStep):
 		if target is null:
 			return ctorInvocation
 		
-		targetParameter = ctor.AddParameter("target", entity(targetField.Type))
+		targetParameter = ctor.AddParameter("target", bindingFor(targetField.Type))
 		ctor.Body.Add(
 			CodeBuilder.CreateAssignment(
 				CodeBuilder.CreateReference(targetField),
