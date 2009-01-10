@@ -1,4 +1,4 @@
-namespace Boojay.Runtime
+namespace Boojay.Lang
 
 class MulticastDelegate:
 	pass

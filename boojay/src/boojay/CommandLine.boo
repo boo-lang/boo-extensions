@@ -30,20 +30,23 @@ class CommandLine(AbstractCommandLine):
 	[Option("Output directory", ShortForm: "o", LongForm: "output")]
 	public OutputDirectory = "."
 		
-	[Option("Print the resulting bytecode to stdout.", ShortForm: 'p', LongForm: "print")]
+	[Option("Prints the resulting bytecode to stdout.", ShortForm: 'p', LongForm: "print")]
 	public PrintCode = false
 	
-	[Option("Print the expanded boo code to stdout.", LongForm: "boo")]
+	[Option("Prints the expanded boo code to stdout.", LongForm: "boo")]
 	public Boo = false
 
-	[Option("Enable duck typing.", LongForm: "ducky")]
+	[Option("Enables duck typing.", LongForm: "ducky")]
 	public Ducky = false
 	
-	[Option("Enable writing debug symbols.", LongForm: "debug")]
+	[Option("Enables writing debug symbols.", LongForm: "debug")]
 	public Debug = false
 	
-	[Option("Enable verbose mode.", LongForm: "verbose")]
+	[Option("Enables verbose mode.", LongForm: "verbose")]
 	public Verbose = false
+	
+	[Option("Prints additional compiler internal messages to stdout.", LongForm: "debug-compiler")]
+	public DebugCompiler = false 
 
 	[Option("References the specified {assembly}", ShortForm: 'r', LongForm: "reference", MaxOccurs: int.MaxValue)]
 	def AddReference(reference as string):

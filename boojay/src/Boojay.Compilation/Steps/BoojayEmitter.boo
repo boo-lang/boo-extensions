@@ -34,12 +34,18 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.ObjectType: "java/lang/Object",
 			Null.Default: "java/lang/Object",
 			typeSystem.StringType: "java/lang/String",
-			typeSystem.ICallableType: "Boojay/Runtime/Callable",
+			typeSystem.ICallableType: "Boojay/Lang/Callable",
 			typeSystem.TypeType: "java/lang/Class",
-			typeSystem.IEnumerableType: "Boojay/Runtime/Enumerable",
-			typeSystem.IEnumeratorType: "Boojay/Runtime/Enumerator",
-			typeSystem.RuntimeServicesType: "Boojay/Runtime/RuntimeServices",
-			typeSystem.Map(typeof(System.IDisposable)): "Boojay/Runtime/Disposable",
+			typeSystem.IEnumerableType: "Boojay/Lang/Enumerable",
+			typeSystem.IEnumerableGenericType: "Boojay/Lang/Enumerable",
+			typeSystem.IEnumeratorType: "Boojay/Lang/Enumerator",
+			typeSystem.IEnumeratorGenericType: "Boojay/Lang/Enumerator",
+			typeSystem.Map(typeof(Boo.Lang.GenericGenerator[of*])): "Boojay/Lang/Generator",
+			typeSystem.Map(typeof(Boo.Lang.GenericGeneratorEnumerator[of*])): "Boojay/Lang/GeneratorEnumerator",
+			typeSystem.RuntimeServicesType: "Boojay/Lang/RuntimeServices",
+			typeSystem.Map(System.Exception): "java/lang/Exception",
+			typeSystem.Map(System.NotImplementedException): "Boojay/Lang/NotImplementedException",
+			typeSystem.Map(System.IDisposable): "Boojay/Lang/Disposable",
 		}
 		
 		_primitiveMappings = {
@@ -159,6 +165,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def emitCondition(e as Expression):
 		emit e
 		ensureBool typeOf(e)
+		
+	override def OnModule(node as Module):
+		emit node.Members
 	
 	override def OnWhileStatement(node as WhileStatement):
 		
@@ -1045,6 +1054,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def javaType(type as IType) as string:
 		if type in _typeMappings: return _typeMappings[type]
+		if type.ConstructedInfo is not null: return javaType(type.ConstructedInfo.GenericDefinition)
 		if type.DeclaringEntity is not null: return innerClassName(type)
 		return javaType(type.FullName)
 		

@@ -1,7 +1,7 @@
-namespace Boojay.Runtime
+namespace Boojay.Lang
 
 import java.io
-import java.lang
+import java.lang from IKVM.OpenJdk.ClassLibrary
 
 def join(items):
 	return join(items, ' ')

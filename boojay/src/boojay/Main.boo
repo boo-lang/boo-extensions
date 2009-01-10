@@ -30,7 +30,7 @@ for reference in cmdLine.References:
 	params.References.Add(loadAssembly(reference))
 	
 params.OutputAssembly = cmdLine.OutputDirectory
-if cmdLine.Verbose:
+if cmdLine.DebugCompiler:
 	params.EnableTraceSwitch()
 	params.TraceLevel = System.Diagnostics.TraceLevel.Verbose
 	Trace.Listeners.Add(TextWriterTraceListener(Console.Error))

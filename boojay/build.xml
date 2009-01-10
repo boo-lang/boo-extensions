@@ -2,12 +2,11 @@
 	
 	<property name="dir.bin" location="../bin" />
 	<property name="dir.build" location="../bin" />
-	<property name="dir.src" location="src/boojay.runtime" />
 	<property name="mono" value="mono" />
 	
 	<macrodef name="boojay">
 		<attribute name="srcdir" />
-		<attribute name="destdir" />
+		<attribute name="destdir" default="${dir.build}" />
 		<element name="args" optional="true" />
 		<sequential>
 			<exec taskname="boojay" executable="${mono}" dir="${dir.bin}">
@@ -15,6 +14,8 @@
 				<arg file="${dir.bin}/boojay.exe" />
 				<arg value="-srcdir:@{srcdir}" />
 				<arg value="-output:@{destdir}" />
+				<arg value="-verbose" />
+				<arg value="-r:IKVM.OpenJDK.ClassLibrary" />
 				<args />
 			</exec>
 		</sequential>
@@ -22,14 +23,8 @@
 	
 	<target name="build" depends="init">
 		
-		<boojay srcdir="${dir.src}" destdir="${dir.build}">
-			<args>
-				<!--
-				<arg value="-verbose+" />
-				-->
-				<arg value="-r:IKVM.OpenJDK.ClassLibrary" />
-			</args>
-		</boojay>
+		<property name="Boojay.Lang" location="src/Boojay.Lang" />
+		<boojay srcdir="${Boojay.Lang}" />
 		
 	</target>
 		

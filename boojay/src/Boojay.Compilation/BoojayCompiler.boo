@@ -11,5 +11,5 @@ def newBoojayCompiler(pipeline as CompilerPipeline):
 	compiler.Parameters.Pipeline = pipeline
 	compiler.Parameters.References.Add(typeof(lang.Object).Assembly)
 	compiler.Parameters.References.Add(typeof(Boojay.Macros.PrintMacro).Assembly)
-	compiler.Parameters.References.Add(typeof(Boojay.Runtime.BuiltinsModule).Assembly)
+	compiler.Parameters.References.Add(typeof(Boojay.Lang.BuiltinsModule).Assembly)
 	return compiler

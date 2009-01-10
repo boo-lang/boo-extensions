@@ -1,4 +1,4 @@
-namespace Boojay.Runtime
+namespace Boojay.Lang
 
 interface Enumerable:
 	def GetEnumerator() as Enumerator
