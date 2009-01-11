@@ -11,6 +11,9 @@ class JavaTypeSystem(TypeSystemServices):
 		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Lang.MulticastDelegate)
 		self.AddPrimitiveType("string", self.StringType)
 		
+	override ExceptionType:
+		get: return Map(java.lang.Exception)
+	
 	def ReplaceMapping(existing as System.Type, new as System.Type):
 		mapping = Map(new)
 		Cache(existing, mapping)
