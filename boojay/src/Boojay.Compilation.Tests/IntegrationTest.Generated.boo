@@ -3,7 +3,7 @@ namespace Boojay.Compilation.Tests
 
 import NUnit.Framework
 
-partial class IntegrationTestFixture:
+partial class IntegrationTest:
 
 	[Test]
 	def BoolArray():
@@ -134,8 +134,16 @@ partial class IntegrationTestFixture:
 		runTestCase("../boojay/tests/integration/expressions/TryCast-1.boo")
 		
 	[Test]
+	def IntGenerator():
+		runTestCase("../boojay/tests/integration/generators/IntGenerator.boo")
+		
+	[Test]
 	def Simplest():
 		runTestCase("../boojay/tests/integration/generators/Simplest.boo")
+		
+	[Test]
+	def StringGenerator():
+		runTestCase("../boojay/tests/integration/generators/StringGenerator.boo")
 		
 	[Test]
 	def Assert_1():

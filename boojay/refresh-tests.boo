@@ -1,6 +1,6 @@
 """
 Finds all test cases under tests/integration and generates runTestCase calls
-in IntegrationTestFixture.Generated.boo
+in IntegrationTest.Generated.boo
 """
 import System.IO
 
@@ -24,13 +24,13 @@ def writeTestCase(writer as TextWriter, fname as string):
 		runTestCase("../boojay/${fname.Replace('\\', '/')}")
 		""")
 		
-using writer = StreamWriter("src/Boojay.Compilation.Tests/IntegrationTestFixture.Generated.boo"):
+using writer = StreamWriter("src/Boojay.Compilation.Tests/IntegrationTest.Generated.boo"):
 	writer.Write("""
 namespace Boojay.Compilation.Tests
 
 import NUnit.Framework
 
-partial class IntegrationTestFixture:
+partial class IntegrationTest:
 """)
 
 	writeTestCases(writer, "tests/integration") 

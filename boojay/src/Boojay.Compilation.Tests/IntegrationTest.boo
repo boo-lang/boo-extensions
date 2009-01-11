@@ -8,7 +8,7 @@ import Boo.Lang.Compiler.Ast
 import Boojay.Compilation
 
 [TestFixture]
-partial class IntegrationTestFixture:
+partial class IntegrationTest:
 	
 	def runTestCase(fname as string):
 		unit = parse(fname)	
