@@ -14,3 +14,7 @@ abstract class GeneratorEnumerator(Enumerator):
 		_state = state
 		_current = value
 		return true
+		
+	def Dispose():
+		_current = null
+		_state = 0

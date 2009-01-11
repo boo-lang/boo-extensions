@@ -14,6 +14,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/arrays/CharArray.boo")
 		
 	[Test]
+	def IntArray():
+		runTestCase("tests/integration/arrays/IntArray.boo")
+		
+	[Test]
 	def SimpleStringArray():
 		runTestCase("tests/integration/arrays/SimpleStringArray.boo")
 		
@@ -110,6 +114,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/expressions/Isa-1.boo")
 		
 	[Test]
+	def MultiAssignment():
+		runTestCase("tests/integration/expressions/MultiAssignment.boo")
+		
+	[Test]
 	def Or_1():
 		runTestCase("tests/integration/expressions/Or-1.boo")
 		
@@ -134,8 +142,24 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/expressions/TryCast-1.boo")
 		
 	[Test]
+	def GeneratorExpressionAsClosure():
+		runTestCase("tests/integration/generators/GeneratorExpressionAsClosure.boo")
+		
+	[Test]
 	def IntGenerator():
 		runTestCase("tests/integration/generators/IntGenerator.boo")
+		
+	[Test]
+	def IntGeneratorExpression():
+		runTestCase("tests/integration/generators/IntGeneratorExpression.boo")
+		
+	[Test]
+	def MultiGeneratorExpression():
+		runTestCase("tests/integration/generators/MultiGeneratorExpression.boo")
+		
+	[Test]
+	def MultiGeneratorExpressionWithFilter():
+		runTestCase("tests/integration/generators/MultiGeneratorExpressionWithFilter.boo")
 		
 	[Test]
 	def Simplest():

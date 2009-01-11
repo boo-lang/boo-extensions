@@ -1,7 +1,6 @@
 namespace Boojay.Lang
 
 import java.lang
-import java.util
 
 static class RuntimeServices:
 	
@@ -31,55 +30,24 @@ static class RuntimeServices:
 		if source isa Enumerable:
 			return source
 		if source isa Iterable:
-			return IterableEnumerable(source)
+			return enumerableForIterable(source)
 		if source isa string:
-			return StringEnumerable(source)
+			return enumerableForString(source)
+		if source isa (int):
+			return enumerableForIntArray(source)
 		raise IllegalArgumentException("source")
-			
-	internal class StringEnumerable(Enumerable):
-		_string as string
-		def constructor(value as string):
-			_string = value
-		def GetEnumerator():
-			return StringEnumerator(_string)
-			
-	internal class StringEnumerator(Enumerator):
 		
-		_string as string
-		_current = -1
-		
-		def constructor(value as string):
-			_string = value
+	def enumerableForIntArray(a as (int)):
+		for i in a:
+			yield i
 			
-		def MoveNext():
-			next = _current + 1
-			if next >= len(_string):
-				return false
-			_current = next
-			return true 
+	def enumerableForString(s as string):
+		i = 0
+		while i < len(s):
+			yield s[i]
+			++i
 			
-		Current:
-			get: return _string[_current]
-			
-	internal class IterableEnumerable(Enumerable):
-		_iterable as Iterable
-		def constructor(iterable as Iterable):
-			_iterable = iterable
-		def GetEnumerator() as Enumerator:
-			return IteratorEnumerator(_iterable.iterator())
-		
-	internal class IteratorEnumerator(Enumerator):
-		
-		_iterator as Iterator
-		_current
-		
-		def constructor(iterator as Iterator):
-			_iterator = iterator
-			
-		def MoveNext():
-			if not _iterator.hasNext(): return false
-			_current = _iterator.next()
-			return true
-			
-		Current:
-			get: return _current
+	def enumerableForIterable(iterable as Iterable):
+		iterator = iterable.iterator()
+		while iterator.hasNext():
+			yield iterator.next()

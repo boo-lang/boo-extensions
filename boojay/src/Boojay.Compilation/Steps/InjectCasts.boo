@@ -5,7 +5,7 @@ import Boo.Lang.Compiler.TypeSystem
 import Boo.Lang.Compiler.Steps
 import Boo.Lang.PatternMatching
 
-class InjectCasts(AbstractVisitorCompilerStep):
+class InjectCasts(AbstractTransformerCompilerStep):
 	
 	_currentReturnType as IType
 	
@@ -13,7 +13,7 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		Visit CompileUnit
 		
 	override def EnterMethod(node as Method):
-		_currentReturnType = GetEntity(node).ReturnType
+		_currentReturnType = bindingFor(node).ReturnType
 		return true
 		
 	override def LeaveBinaryExpression(node as BinaryExpression):
@@ -47,20 +47,23 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		m = optionalBindingFor(node.Target) as IMethodBase
 		if m is null: return
 		
-		parameterTypes = erasedParameterTypesFor(m)
+		definition = definitionFor(m)
+		parameterTypes = erasedParameterTypesFor(definition)
 		for i in range(len(parameterTypes)):
 			node.Arguments[i] = checkCast(parameterTypes[i], node.Arguments[i])
+		
+		returnType = m.CallableType.GetSignature().ReturnType
+		if returnType is null:
+			return
+			
+		ReplaceCurrentNode(checkCast(returnType, definition.CallableType.GetSignature().ReturnType, node))
 			
 	def erasedParameterTypesFor(m as IMethodBase):
-		if m.DeclaringType.ConstructedInfo is null:
-			return array(p.Type for p in m.GetParameters())
-			
-		definition = GenericMethodDefinitionFinder(m).find()
-		return array(erasureFor(p.Type) for p in definition.GetParameters())
+		return array(erasureFor(p.Type) for p in m.GetParameters())
 			
 	override def LeaveReturnStatement(node as ReturnStatement):
-		if node.Expression is null: return
-		
+		if node.Expression is null:
+			return
 		node.Expression = checkCast(_currentReturnType, node.Expression)
 			
 	def optionalBindingFor(node as Node):
@@ -68,6 +71,9 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		
 	def checkCast(expected as IType, e as Expression):
 		actual = typeOf(e)
+		return checkCast(expected, actual, e)
+		
+	def checkCast(expected as IType, actual as IType, e as Expression):
 		
 		if expected is actual:
 			return e
@@ -85,11 +91,6 @@ class InjectCasts(AbstractVisitorCompilerStep):
 			return e
 			
 		return CodeBuilder.CreateCast(expected, e)
-		
-	def isJavaLangObject(type as IType):
-		if typeSystem().IsSystemObject(type):
-			return true
-		return type is Null.Default
 		
 	def isBox(expected as IType, actual as IType):
 		return actual.IsValueType and not expected.IsValueType

@@ -6,8 +6,6 @@ import Boo.Lang.Compiler.Steps
 
 class NormalizeCallables(AbstractTransformerCompilerStep):
 	
-	_currentClass as ClassDefinition
-	
 	override def Run():
 		if len(Errors) > 0:
 			return
@@ -17,8 +15,6 @@ class NormalizeCallables(AbstractTransformerCompilerStep):
 		if node.Name == "CompilerGeneratedExtensions":
 			RemoveCurrentNode()
 			return false
-			
-		_currentClass = node
 		return true
 		
 	override def LeaveClassDefinition(node as ClassDefinition):

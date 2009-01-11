@@ -46,6 +46,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.Map(System.Exception): "java/lang/Exception",
 			typeSystem.Map(System.NotImplementedException): "Boojay/Lang/NotImplementedException",
 			typeSystem.Map(System.IDisposable): "Boojay/Lang/Disposable",
+			typeSystem.Map(System.ICloneable): "java/lang/Cloneable",
 		}
 		
 		_primitiveMappings = {
@@ -228,7 +229,15 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	}
 	
 	override def OnMethod(node as Method):
+		
+		if isBlockedMethod(node):
+			return
+		
 		emitMethod methodName(node.Name), node
+		
+	def isBlockedMethod(node as Method):
+		m = bindingFor(node) as IMethod
+		return node.Name == "get_Current" and hasReturnValue(m) and not isJavaLangObject(m.ReturnType)
 		
 	def methodName(name as string):
 		return _methodMappings[name] or name
@@ -253,7 +262,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		_code.visitCode()
 		
 		emit node.Body
-		emitEmptyReturn
+		if node.Body.Statements.Count == 0 or not node.Body.Statements[-1] isa ReturnStatement:
+			emitEmptyReturn
 		RETURN
 	
 		_code.visitMaxs(0, 0)
@@ -345,6 +355,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		ACONST_NULL
 		
 	override def OnReturnStatement(node as ReturnStatement):
+
+		emitDebuggingInfoFor node
+		
 		if node.Expression is null:
 			emitEmptyReturn
 		else:
@@ -414,8 +427,12 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				
 	def emitEval(node as MethodInvocationExpression):
 		for e in node.Arguments.ToArray()[:-1]:
-			emit e
-			discardValueOnStack e
+			match e:
+				case [| $l = $r |]:
+					emitAssignmentStatement e
+				otherwise:
+					emit e
+					discardValueOnStack e
 		emit node.Arguments[-1]
 				
 	def emitMethodInvocation(method as IMethod, node as MethodInvocationExpression):
@@ -578,6 +595,10 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				emitAddition node
 			case BinaryOperatorType.Multiply:
 				emitMultiply node
+			case BinaryOperatorType.Division:
+				emitDivision node
+			case BinaryOperatorType.Modulus:
+				emitModulus node
 				
 			case BinaryOperatorType.TypeTest:
 				emitTypeTest node
@@ -595,13 +616,19 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			case BinaryOperatorType.GreaterThanOrEqual:
 				emitComparison node, Opcodes.IF_ICMPLT
 				
-	def emitComparison(node as BinaryExpression, instruction as int):
+			case BinaryOperatorType.LessThan:
+				emitComparison node, Opcodes.IF_ICMPGE
+				
+			case BinaryOperatorType.GreaterThan:
+				emitComparison node, Opcodes.IF_ICMPLE
+				
+	def emitComparison(node as BinaryExpression, branchIfFalseOpcode as int):
 		L1 = Label()
 		L2 = Label()
 		
 		emit node.Left
 		emit node.Right
-		emitJumpInsn instruction, L1
+		emitJumpInsn branchIfFalseOpcode, L1
 		ICONST_1
 		GOTO L2
 		mark L1
@@ -666,37 +693,59 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				INSTANCEOF javaType(t)
 				
 	def emitMultiply(node as BinaryExpression):
-		emit node.Left
-		emit node.Right
-		IMUL
+		emitArithmeticExpression node, Opcodes.IMUL
 				
 	def emitAddition(node as BinaryExpression):
-		emit node.Left
-		emit node.Right
-		IADD
+		emitArithmeticExpression node, Opcodes.IADD
 
 	def emitSubtraction(node as BinaryExpression):
+		emitArithmeticExpression node, Opcodes.ISUB
+		
+	def emitDivision(node as BinaryExpression):
+		emitArithmeticExpression node, Opcodes.IDIV
+		
+	def emitModulus(node as BinaryExpression):
+		emitArithmeticExpression node, Opcodes.IREM
+		
+	def emitArithmeticExpression(node as BinaryExpression, opcode as int):
 		emit node.Left
 		emit node.Right
-		ISUB
+		emitInstruction opcode
 				
 	def emitAssignment(node as BinaryExpression):
-		match node.Left:
+		if shouldLeaveValueOnStack(node):
+			emitAssignmentExpression node
+		else:
+			emitAssignmentStatement node
+			
+	def emitAssignmentExpression(node as BinaryExpression):
+		rvalue as InternalLocal
+		emitAssignment node.Left:
+			rvalue = ensureLocal(node.Right)
+			emitLoad rvalue
+		emitLoad rvalue
+			
+	def emitAssignmentStatement(node as BinaryExpression):
+		emitAssignment node.Left:
+			emit node.Right
+			
+	def emitAssignment(lvalue as Expression, emitRValue as callable()):
+		
+		match lvalue:
 			case memberRef = MemberReferenceExpression():
 				match bindingFor(memberRef):
                     case field = IField(IsStatic: false):
                     	emit memberRef.Target
-                    	emit node.Right
+                    	emitRValue()
                     	PUTFIELD field
 			case reference = ReferenceExpression():
-				emit node.Right
+				emitRValue()
 				match bindingFor(reference):
 					case local = ILocalEntity():
-						if not local.Type.IsValueType:
-							ASTORE index(local)
-						else:
-							ISTORE index(local)
-						
+						emitStore local
+			
+	def shouldLeaveValueOnStack(node as BinaryExpression):
+		return node.ParentNode.NodeType != NodeType.ExpressionStatement
 	
 	override def OnMemberReferenceExpression(node as MemberReferenceExpression):
 		match bindingFor(node):
@@ -880,7 +929,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			+ typeDescriptor(method.ReturnType))
 			
 	def javaSignatureFromMethodOfGenericType(method as IMethod) as string:
-		return javaSignature(GenericMethodDefinitionFinder(method).find())	
+		return javaSignature(definitionFor(method))	
 		
 	def javaSignature(node as Method):
 		return javaSignature(bindingFor(node) as IMethod)
@@ -1095,10 +1144,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	def typeDescriptor(type as IType) as string:
 		if type in _primitiveMappings: return _primitiveMappings[type]
-		if type.IsArray: return "[" + typeDescriptor(type.GetElementType())
+		if type.IsArray: return arrayDescriptor(type)
 		return "L" + javaType(erasureFor(type)) + ";"
+		
+	def arrayDescriptor(type as IType):
+		return "[" + typeDescriptor(type.GetElementType())
 	
 	def javaType(type as IType) as string:
+		if type.IsArray: return arrayDescriptor(type)
 		if type in _typeMappings: return _typeMappings[type]
 		if type.ConstructedInfo is not null: return javaType(type.ConstructedInfo.GenericDefinition)
 		if type.DeclaringEntity is not null: return innerClassName(type)

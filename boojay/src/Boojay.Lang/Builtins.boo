@@ -3,6 +3,22 @@ namespace Boojay.Lang
 import java.io
 import java.lang from IKVM.OpenJdk.ClassLibrary
 
+def range(begin as int, end as int):
+	if begin < end:
+		i = begin
+		while i < end:
+			yield i
+			++i
+	else:
+		i = begin
+		while i > end:
+			yield i
+			--i
+
+def range(max as int):
+	assert max >= 0
+	return range(0, max)
+
 def join(items):
 	return join(items, ' ')
 
