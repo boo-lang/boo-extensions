@@ -75,12 +75,20 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			_classWriter.visitInnerClass(javaType(bindingFor(node)), javaType(bindingFor(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
 		
 		preservingClassWriter:
+			emitSourceInformationFor node
 			emitFieldsFrom node
 			emitNonFieldsFrom node
 		
 		_classWriter.visitEnd()
 		
 		writeClassFile node
+		
+	def emitSourceInformationFor(node as Node):
+		sourceFile = node.LexicalInfo.FileName
+		if string.IsNullOrEmpty(sourceFile):
+			return
+			
+		_classWriter.visitSource(sourceFile, null)
 		
 	def emitFieldsFrom(node as TypeDefinition):
 		for member in node.Members:
@@ -130,12 +138,20 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return Parameters.OutputAssembly
 		
 	override def OnLabelStatement(node as LabelStatement):
+		
+		emitDebuggingInfoFor node
+		
 		mark labelFor(node)
 		
 	override def OnGotoStatement(node as GotoStatement):
+		
+		emitDebuggingInfoFor node
+		
 		GOTO labelFor(node.Label)
 		
 	override def OnIfStatement(node as IfStatement):
+		
+		emitDebuggingInfoFor node
 		
 		elseLabel = Label()
 		afterElseLabel = Label()
@@ -179,6 +195,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emit node.Members
 	
 	override def OnWhileStatement(node as WhileStatement):
+		
+		emitDebuggingInfoFor node
 		
 		testLabel = Label()
 		bodyLabel = Label()
@@ -296,8 +314,20 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def index(bindingFor as InternalLocal) as int:
 		return bindingFor.Local["index"]
 		
+	override def EnterExpressionStatement(node as ExpressionStatement):
+		emitDebuggingInfoFor node
+		return true
+		
 	override def LeaveExpressionStatement(node as ExpressionStatement):
 		discardValueOnStack node.Expression
+		
+	def emitDebuggingInfoFor(node as Node):
+		if not node.LexicalInfo.IsValid:
+			return
+			
+		label = Label()
+		mark label
+		_code.visitLineNumber(node.LexicalInfo.Line, label)
 		
 	def discardValueOnStack(node as Expression):
 		mie = node as MethodInvocationExpression
