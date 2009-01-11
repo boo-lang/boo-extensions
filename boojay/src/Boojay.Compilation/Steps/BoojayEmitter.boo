@@ -75,11 +75,20 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			_classWriter.visitInnerClass(javaType(bindingFor(node)), javaType(bindingFor(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
 		
 		preservingClassWriter:
-			emit node.Members
+			emitFieldsFrom node
+			emitNonFieldsFrom node
 		
 		_classWriter.visitEnd()
 		
 		writeClassFile node
+		
+	def emitFieldsFrom(node as TypeDefinition):
+		for member in node.Members:
+			emit member if member.NodeType == NodeType.Field
+			
+	def emitNonFieldsFrom(node as TypeDefinition):
+		for member in node.Members:
+			emit member if member.NodeType != NodeType.Field
 		
 	def preservingClassWriter(code as callable()):
 		previousClassWriter = _classWriter
@@ -217,6 +226,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		if not node.IsAbstract:
 			_currentMethod = node
 			emitMethodBody node
+			
 		_code.visitEnd()
 		
 	def emitMethodBody(node as Method):
