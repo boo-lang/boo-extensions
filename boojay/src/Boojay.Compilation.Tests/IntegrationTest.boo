@@ -1,6 +1,9 @@
 namespace Boojay.Compilation.Tests
 
+import System.IO
+
 import NUnit.Framework
+
 import Boo.Lang.Parser
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.IO
@@ -10,13 +13,19 @@ import Boojay.Compilation
 [TestFixture]
 partial class IntegrationTest:
 	
-	def runTestCase(fname as string):
-		unit = parse(fname)	
+	def runTestCase(testFile as string):
+		unit = parse(fullpathFor(testFile))	
 		main = unit.Modules[0]
 		compile(unit)
 		output = runJavaClass(moduleClassFor(main))
-		Assert.IsNotNull(main.Documentation, "Expecting documentation for '${fname}'")
+		Assert.IsNotNull(main.Documentation, "Expecting documentation for '${testFile}'")
 		Assert.AreEqual(normalizeWhiteSpace(main.Documentation), normalizeWhiteSpace(output))
+		
+	def fullpathFor(testFile as string):
+		eclipseBuildPath = Path.Combine("../boojay", testFile)
+		return eclipseBuildPath if File.Exists(eclipseBuildPath)
+		
+		return Path.Combine("..", testFile)
 		
 	def normalizeWhiteSpace(s as string):
 		return s.Trim().Replace("\r\n", "\n")

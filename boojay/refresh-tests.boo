@@ -21,7 +21,7 @@ def writeTestCase(writer as TextWriter, fname as string):
 	writer.Write("""
 	[Test]
 	def ${testCaseName(fname)}():
-		runTestCase("../boojay/${fname.Replace('\\', '/')}")
+		runTestCase("${fname.Replace('\\', '/')}")
 		""")
 		
 using writer = StreamWriter("src/Boojay.Compilation.Tests/IntegrationTest.Generated.boo"):

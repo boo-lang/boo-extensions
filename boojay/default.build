@@ -2,14 +2,93 @@
 <project name="boojay" default="test">
 
 	<!--
+	Define the right values for the your system a build.properties file.
 	-->
-	
+
 	<property name="ikvmc.exe" value="/Users/rodrigob/mono/ikvm-0.36.0.11/bin/ikvmc.exe" />
 	<property name="asm.lib.dir" value="/Users/rodrigob/java/asm-3.1/lib" />
-	<property name="build.dir" value="../bin" />
+	<property name="build.dir" value="build" />
 	<property name="boo.dir" value="../../boo/build" />
 	
-	<target name="asm.dll" depends="init">
+	<include buildfile="build.properties" if="${file::exists('build.properties')}" />
+	
+	<target name="test" depends="Boojay.Compilation.Tests">
+		<nunit2>
+			<formatter type="Plain" />
+			<test>
+				<assemblies basedir="${build.dir}">
+					<include name="Boojay.Compilation.Tests.dll" />
+				</assemblies>
+			</test>
+		</nunit2>
+	</target>
+	
+	<target name="Boojay.Compilation.Tests" depends="build">
+		
+		<boo src="refresh-tests.boo" />
+		
+		<booc target="library" output="${build.dir}/Boojay.Compilation.Tests.dll">
+			<sources basedir="src/Boojay.Compilation.Tests">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="Boojay.Compilation.dll" />
+			</references>
+		</booc>
+	</target>
+	
+	<target name="build" depends="copy-libs">
+	
+		<booc target="library" output="${build.dir}/Boojay.Macros.dll">
+			<sources basedir="src/Boojay.Macros">
+				<include name="*.boo" />
+			</sources>
+		</booc>
+		
+		<booc target="library" output="${build.dir}/Boojay.Lang.dll">
+			<sources basedir="src/Boojay.Lang">
+				<include name="*.boo" />
+			</sources>
+		</booc>
+	
+		<booc target="library" output="${build.dir}/Boojay.Compilation.dll">
+			<sources basedir="src/Boojay.Compilation">
+				<include name="**/*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="asm.dll" />
+				<include name="Boojay.Macros.dll" />
+				<include name="Boojay.Lang.dll" />
+			</references>
+		</booc>
+		
+		<booc target="exe" output="${build.dir}/boojay.exe">
+			<sources basedir="src/boojay">
+				<include name="*.boo" />
+			</sources>
+			<references basedir="${build.dir}">
+				<include name="*.dll" />
+			</references>
+		</booc>
+		
+		<exec program="${build.dir}/boojay.exe" workingdir="${build.dir}" useruntimeengine="true">
+			<arg value="-srcdir:${path::get-full-path('src/Boojay.Lang')}" />
+			<arg value="-output:${path::get-full-path(build.dir)}" />
+			<arg value="-verbose" />
+		</exec>
+		
+	</target>
+	
+	<target name="copy-libs" depends="init">
+		<copy todir="${build.dir}" file="lib/asm.dll" />
+		<copy todir="${build.dir}" if="${string::starts-with(framework::get-target-framework(), 'net-')}">
+			<fileset basedir="${boo.dir}">
+				<include name="Boo.Lang*.dll" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="update-asm.dll" depends="init">
 		<fileset id="asm.jars" basedir="${asm.lib.dir}">
 			<include name="asm-3.1.jar" />
 			<include name="asm-commons-3.1.jar" />
@@ -25,65 +104,6 @@
 		<exec program="${ikvmc.exe}" useruntimeengine="true" workingdir="lib">
 			<arg line="-out:asm.dll ${asm.jars.list}" />
 		</exec>
-	</target>
-	
-	<target name="test" depends="build">
-		<nunit2>
-			<formatter type="Plain" />
-			<test>
-				<assemblies basedir="${build.dir}">
-					<include name="Boojay.Compilation.Tests.dll" />
-				</assemblies>
-			</test>
-		</nunit2>
-	</target>
-	
-	<target name="build" depends="copy-libs">
-	
-		<booc target="library" output="${build.dir}/Boojay.Macros.dll">
-			<sources basedir="src/Boojay.Macros">
-				<include name="*.boo" />
-			</sources>
-		</booc>
-	
-		<booc target="library" output="${build.dir}/Boojay.Compilation.dll">
-			<sources basedir="src/Boojay.Compilation">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="asm.dll" />
-				<include name="Boo.PatternMatching.dll" />
-				<include name="Boojay.Macros.dll" />
-			</references>
-		</booc>
-		
-		<booc target="exe" output="${build.dir}/boojay.exe">
-			<sources basedir="src/boojay">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="*.dll" />
-			</references>
-		</booc>
-		
-		<booc target="library" output="${build.dir}/Boojay.Compilation.Tests.dll">
-			<sources basedir="src/Boojay.Compilation.Tests">
-				<include name="*.boo" />
-			</sources>
-			<references basedir="${build.dir}">
-				<include name="Boojay.Compilation.dll" />
-			</references>
-		</booc>
-		
-		<exec program="boojay.exe" workingdir="${build.dir}" useruntimeengine="true">
-			<arg value="../boojay/src/boojay.runtime/Callable.boo" />
-		</exec>
-		
-	</target>
-	
-	<target name="copy-libs" depends="init">
-		<copy todir="${build.dir}" file="lib/asm.dll" />
-		<copy todir="${build.dir}" file="../bin/Boo.PatternMatching.dll" />
 	</target>
 	
 	<target name="init">
