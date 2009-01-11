@@ -14,6 +14,11 @@ def resolveMethod(type as IType, name as string):
 def bindingFor(node as Node):
 	return typeSystem().GetEntity(node)
 	
+def erasureFor(type as IType):
+	if type isa IGenericParameter:
+		return typeSystem().ObjectType
+	return type
+
 def typeOf(e as Expression):
 	match e:
 		case [| null |]:

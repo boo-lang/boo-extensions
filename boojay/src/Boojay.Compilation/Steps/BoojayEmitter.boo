@@ -830,11 +830,17 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	typeSystem as JavaTypeSystem:
 		get: return self.TypeSystemServices
 		
-	def javaSignature(method as IMethod):
+	def javaSignature(method as IMethod) as string:
+		genericTypeInfo = method.DeclaringType.ConstructedInfo
+		if genericTypeInfo is not null:
+			return javaSignatureFromMethodOfGenericType(method)
 		return ("("
 			+ join(typeDescriptor(p.Type) for p in method.GetParameters(), "")
 			+ ")"
 			+ typeDescriptor(method.ReturnType))
+			
+	def javaSignatureFromMethodOfGenericType(method as IMethod) as string:
+		return javaSignature(GenericMethodDefinitionFinder(method).find())	
 		
 	def javaSignature(node as Method):
 		return javaSignature(bindingFor(node) as IMethod)
@@ -1050,8 +1056,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def typeDescriptor(type as IType) as string:
 		if type in _primitiveMappings: return _primitiveMappings[type]
 		if type.IsArray: return "[" + typeDescriptor(type.GetElementType())
-		return "L" + javaType(type) + ";"
-		
+		return "L" + javaType(erasureFor(type)) + ";"
+	
 	def javaType(type as IType) as string:
 		if type in _typeMappings: return _typeMappings[type]
 		if type.ConstructedInfo is not null: return javaType(type.ConstructedInfo.GenericDefinition)

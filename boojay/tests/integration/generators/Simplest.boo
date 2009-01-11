@@ -3,7 +3,7 @@ before
 in between
 after
 """
-namespace generator
+namespace generators
 
 def simplest():
 	print "before"

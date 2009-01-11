@@ -47,9 +47,16 @@ class InjectCasts(AbstractVisitorCompilerStep):
 		m = optionalBindingFor(node.Target) as IMethodBase
 		if m is null: return
 		
-		parameters = m.GetParameters()
-		for i in range(len(parameters)):
-			node.Arguments[i] = checkCast(parameters[i].Type, node.Arguments[i])
+		parameterTypes = erasedParameterTypesFor(m)
+		for i in range(len(parameterTypes)):
+			node.Arguments[i] = checkCast(parameterTypes[i], node.Arguments[i])
+			
+	def erasedParameterTypesFor(m as IMethodBase):
+		if m.DeclaringType.ConstructedInfo is null:
+			return array(p.Type for p in m.GetParameters())
+			
+		definition = GenericMethodDefinitionFinder(m).find()
+		return array(erasureFor(p.Type) for p in definition.GetParameters())
 			
 	override def LeaveReturnStatement(node as ReturnStatement):
 		if node.Expression is null: return
