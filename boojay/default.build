@@ -23,7 +23,7 @@
 		</nunit2>
 	</target>
 	
-	<target name="Boojay.Compilation.Tests" depends="build">
+	<target name="Boojay.Compilation.Tests" depends="boojay">
 		
 		<boo src="refresh-tests.boo" />
 		
@@ -37,7 +37,7 @@
 		</booc>
 	</target>
 	
-	<target name="build" depends="copy-libs">
+	<target name="boojay" depends="copy-libs">
 	
 		<booc target="library" output="${build.dir}/Boojay.Macros.dll">
 			<sources basedir="src/Boojay.Macros">
