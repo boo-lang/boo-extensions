@@ -1,7 +1,5 @@
 Getting ometa.calculator to run
 ===============================
-* monolipse integration
-** debugger spike
 * refactor all primitive dependent information into a PrimitiveInfo() tuple with things like
 	* array store opcode
 	* array load opcode
