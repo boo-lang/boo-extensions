@@ -73,7 +73,7 @@
 		
 		<exec program="${build.dir}/boojay.exe" workingdir="${build.dir}" useruntimeengine="true">
 			<arg value="-srcdir:${path::get-full-path('src/Boojay.Lang')}" />
-			<arg value="-output:${path::get-full-path(build.dir)}" />
+			<arg value="-out:${path::get-full-path(build.dir)}" />
 			<arg value="-verbose" />
 		</exec>
 		

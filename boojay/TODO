@@ -1,13 +1,12 @@
 Getting ometa.calculator to run
 ===============================
-* generators
+* monolipse integration
+** debugger spike
 * refactor all primitive dependent information into a PrimitiveInfo() tuple with things like
 	* array store opcode
 	* array load opcode
 	* type descriptor
 * list generators
-* monolipse integration
-** debugger spike
 * hash literals
 * GetHashCode
 * events

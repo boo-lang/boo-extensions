@@ -131,9 +131,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return attrs
 		
 	def writeClassFile(node as TypeDefinition):
-		fname = classFullFileName(node)
+		fname = Path.Combine(outputDirectory(), classFullFileName(node))
 		ensurePath(fname)
-		File.WriteAllBytes(Path.Combine(outputDirectory(), fname), _classWriter.toByteArray())
+		File.WriteAllBytes(fname, _classWriter.toByteArray())
 		
 	def outputDirectory():
 		return Parameters.OutputAssembly

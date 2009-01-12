@@ -13,7 +13,7 @@
 				<arg value="--debug" />
 				<arg file="${dir.bin}/boojay.exe" />
 				<arg value="-srcdir:@{srcdir}" />
-				<arg value="-output:@{destdir}" />
+				<arg value="-out:@{destdir}" />
 				<arg value="-verbose" />
 				<arg value="-r:IKVM.OpenJDK.ClassLibrary" />
 				<args />

@@ -27,7 +27,7 @@ class CommandLine(AbstractCommandLine):
 	IsValid:
 		get: return len(self._sourceFiles) > 0 or len(self._srcDirs) > 0
 		
-	[Option("Output directory", ShortForm: "o", LongForm: "output")]
+	[Option("Output directory", ShortForm: "o", LongForm: "out")]
 	public OutputDirectory = "."
 		
 	[Option("Prints the resulting bytecode to stdout.", ShortForm: 'p', LongForm: "print")]
