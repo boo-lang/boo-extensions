@@ -1,13 +1,33 @@
-Getting ometa.calculator to run
-===============================
+Debugging ometa.calculator Release
+==================================
+
+* debugging experience
+** breakpoints
+
+* external callables
+** automatically insert default parameterless ctor
+
+* move boojay to separate google project (http://code.google.com/p/boojay/)
+
+** resident test runner
+
+* monolipse integration
+** wizard: new boojay project
+** wizard: new boojay source folder
+** resident incremental compiler
+*** builder just sends delta information to the compiler
+	which maintains the dependency tree and it's able to recompile
+	required files on demand
+	** deferred namespace implementation on top of a directory or jar file
+** meta-programming by invoking the boojay compiler on temporary files generated from code literals
+
+* ant tasks
+
 * refactor all primitive dependent information into a PrimitiveInfo() tuple with things like
 	* array store opcode
 	* array load opcode
 	* type descriptor
-* list generators
-* hash literals
+		
 * GetHashCode
 * events
-* autoboxing
-* xor
 * properties

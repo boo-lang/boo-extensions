@@ -8,9 +8,31 @@
 	<property name="ikvmc.exe" value="/Users/rodrigob/mono/ikvm-0.36.0.11/bin/ikvmc.exe" />
 	<property name="asm.lib.dir" value="/Users/rodrigob/java/asm-3.1/lib" />
 	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
 	<property name="boo.dir" value="../../boo/build" />
 	
 	<include buildfile="build.properties" if="${file::exists('build.properties')}" />
+	
+	<target name="all" depends="test, dist">
+	</target>
+	
+	<target name="dist" depends="boojay">
+		<mkdir dir="${dist.dir}" />
+		
+		<copy todir="${dist.dir}">
+			<fileset basedir="${build.dir}">
+				<include name="*.exe" />
+				<include name="*.dll" />
+				<exclude name="*.Tests.dll" />
+			</fileset>
+		</copy>
+		
+		<zip zipfile="${dist.dir}/boojay.lang.jar">
+			<fileset basedir="${build.dir}">
+				<include name="Boojay/Lang/**/*.class" />
+			</fileset>
+		</zip>
+	</target>
 	
 	<target name="test" depends="Boojay.Compilation.Tests">
 		<nunit2>
