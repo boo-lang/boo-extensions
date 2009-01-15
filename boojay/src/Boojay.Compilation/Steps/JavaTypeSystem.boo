@@ -8,8 +8,10 @@ class JavaTypeSystem(TypeSystemServices):
 	def constructor(context as CompilerContext):
 		super(context)
 		self.StringType = ReplaceMapping(System.String, JavaLangString)
-		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Lang.MulticastDelegate)
 		self.AddPrimitiveType("string", self.StringType)
+		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Lang.MulticastDelegate)
+		self.ListType = ReplaceMapping(Boo.Lang.List, Boojay.Lang.List)
+		self.HashType = ReplaceMapping(Boo.Lang.Hash, Boojay.Lang.Hash)
 		
 	override ExceptionType:
 		get: return Map(java.lang.Exception)

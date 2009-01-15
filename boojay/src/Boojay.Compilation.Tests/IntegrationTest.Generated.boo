@@ -94,6 +94,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/callables/InstanceMethodReference-1.boo")
 		
 	[Test]
+	def PascalCaseAndCamelCase():
+		runTestCase("tests/integration/crossplatformability/PascalCaseAndCamelCase.boo")
+		
+	[Test]
 	def And_1():
 		runTestCase("tests/integration/expressions/And-1.boo")
 		
@@ -108,6 +112,10 @@ partial class IntegrationTest:
 	[Test]
 	def Cast_1():
 		runTestCase("tests/integration/expressions/Cast-1.boo")
+		
+	[Test]
+	def HashLiterals():
+		runTestCase("tests/integration/expressions/HashLiterals.boo")
 		
 	[Test]
 	def Isa_1():
@@ -146,12 +154,20 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/generators/GeneratorExpressionAsClosure.boo")
 		
 	[Test]
+	def GeneratorWithExceptionHandler():
+		runTestCase("tests/integration/generators/GeneratorWithExceptionHandler.boo")
+		
+	[Test]
 	def IntGenerator():
 		runTestCase("tests/integration/generators/IntGenerator.boo")
 		
 	[Test]
 	def IntGeneratorExpression():
 		runTestCase("tests/integration/generators/IntGeneratorExpression.boo")
+		
+	[Test]
+	def ListGenerator():
+		runTestCase("tests/integration/generators/ListGenerator.boo")
 		
 	[Test]
 	def MultiGeneratorExpression():

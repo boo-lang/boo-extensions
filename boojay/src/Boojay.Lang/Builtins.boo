@@ -36,5 +36,3 @@ def join(items, separator):
 def prompt(msg as string):
 	System.out.print(msg)
 	return BufferedReader(InputStreamReader(System.get_in())).readLine()
-
-	

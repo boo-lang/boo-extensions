@@ -15,9 +15,21 @@ class NormalizeLiterals(AbstractTransformerCompilerStep):
 			code = [| $code.append($e) |]
 		ReplaceCurrentNode([| $code.toString() |])
 		
+	override def LeaveHashLiteralExpression(node as HashLiteralExpression):
+		resultingHash = uniqueReference()
+		code = [| __eval__($resultingHash = Boojay.Lang.Hash($(len(node.Items)))) |]
+		for pair in node.Items:
+			code.Arguments.Add([| $resultingHash.put($(pair.First), $(pair.Second)) |])
+		code.Arguments.Add(resultingHash)
+		ReplaceCurrentNode code
+		
 	override def LeaveListLiteralExpression(node as ListLiteralExpression):
+		
+		if AstUtil.IsListGenerator(node):
+			return
+			
 		temp = uniqueReference()
-		code = [| __eval__($temp = java.util.ArrayList($(len(node.Items)))) |]
+		code = [| __eval__($temp = Boojay.Lang.List($(len(node.Items)))) |]
 		for item in node.Items:
 			code.Arguments.Add([| $temp.add($item) |])
 		code.Arguments.Add(temp)
