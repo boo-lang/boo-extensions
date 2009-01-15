@@ -6,6 +6,7 @@ import Boo.Lang.Compiler.Steps
 class BoojayCompilation(Boo.Lang.Compiler.Pipelines.Compile):
 	
 	def constructor():
+		Insert(0, InitializeEntityNameMatcher())
 		InsertAfter(NormalizeTypeAndMemberDefinitions, NormalizeLiterals())
 		Replace(IntroduceGlobalNamespaces, IntroduceBoojayNamespaces())
 		Replace(InitializeTypeSystemServices, InitializeJavaTypeSystem())
