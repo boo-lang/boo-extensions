@@ -261,22 +261,42 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 		_code.visitCode()
 		
+		beginLabel = Label()
+		mark beginLabel
+		
 		emit node.Body
 		if node.Body.Statements.Count == 0 or not node.Body.Statements[-1] isa ReturnStatement:
 			emitEmptyReturn
 		RETURN
-	
+		
+		endLabel = Label()
+		mark endLabel
+
+		emitDebuggingInfoForLocalVariablesOf node, beginLabel, endLabel
 		_code.visitMaxs(0, 0)
+		
+	def emitDebuggingInfoForLocalVariablesOf(node as Method, beginLabel as Label, endLabel as Label):
+		emitDebuggingInfoForImplicitSelfVariable node, beginLabel, endLabel
+		for param in node.Parameters:
+			paramBinding as InternalParameter = bindingFor(param)
+			_code.visitLocalVariable(paramBinding.Name, typeDescriptor(paramBinding.Type), null, beginLabel, endLabel, paramBinding.Index)
+		for local in node.Locals:
+			binding as ILocalEntity = bindingFor(local)
+			_code.visitLocalVariable(binding.Name, typeDescriptor(binding.Type), null, beginLabel, endLabel, index(binding))
+		
+	def emitDebuggingInfoForImplicitSelfVariable(node as Method, beginLabel, endLabel):
+		if node.IsStatic: return
+		_code.visitLocalVariable("self", typeDescriptor(bindingFor(node.DeclaringType)), null, beginLabel, endLabel, 0)
 		
 	def currentReturnType() as IType:
 		returnType = _currentMethod.ReturnType
-		if returnType is null: return null
+		if returnType is null: return typeSystem().VoidType
 		return bindingFor(returnType)
 		
 	def emitEmptyReturn():
 		returnType = currentReturnType()
-		if returnType is null: return
-		if returnType is typeSystem().VoidType: return
+		if returnType is typeSystem().VoidType:
+			return
 		
 		if returnType.IsValueType:
 			ICONST_0
@@ -308,9 +328,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return param.Index
 		
 	def newTemp(type as IType):
-		i = nextLocalIndex()
+		localIndex = nextLocalIndex()
 		local = CodeBuilder.DeclareTempLocal(self._currentMethod, type)
-		index local.Local, i
+		index local.Local, localIndex
 		return local
 		
 	def nextLocalIndex():
@@ -429,6 +449,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		for e in node.Arguments.ToArray()[:-1]:
 			match e:
 				case [| $l = $r |]:
+					assert l is not null and r is not null
 					emitAssignmentStatement e
 				otherwise:
 					emit e
