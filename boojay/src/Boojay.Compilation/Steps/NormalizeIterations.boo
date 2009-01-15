@@ -32,9 +32,11 @@ class NormalizeIterations(AbstractVisitorCompilerStep):
 	RuntimeServices_GetEnumerable:
 		get:
 			if _RuntimeServices_GetEnumerable is null:
-				_RuntimeServices_GetEnumerable = typeSystem().Map(typeof(Boo.Lang.Runtime.RuntimeServices).GetMethod("GetEnumerable"))
+				_RuntimeServices_GetEnumerable = resolveMethod(Boojay.Lang.RuntimeServices, "GetEnumerable")
 			return _RuntimeServices_GetEnumerable
-		
+			
+	def resolveMethod(type as System.Type, methodName as string):
+		return NameResolutionService.ResolveMethod(typeSystem().Map(type), methodName)
 		
 	def expressionType(e as Expression):
 		return typeSystem().GetExpressionType(e)
