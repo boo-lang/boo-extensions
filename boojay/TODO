@@ -1,9 +1,6 @@
 Debugging ometa.calculator Release
 ==================================
 
-* debugging experience
-** breakpoints
-
 * external callables
 ** automatically insert default parameterless ctor
 
