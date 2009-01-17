@@ -4,7 +4,7 @@ import NUnit.Framework
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.TypeSystem
-import Boojay.Compilation.Steps
+import Boojay.Compilation.TypeSystem
 
 class GenericFoo[of T]:
 	def Bar(value as T):

@@ -5,6 +5,8 @@ import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.TypeSystem
 import Boo.Lang.Compiler.Steps
 
+import Boojay.Compilation.TypeSystem
+
 class NormalizeIterations(AbstractVisitorCompilerStep):
 	
 	_RuntimeServices_GetEnumerable as IMethod

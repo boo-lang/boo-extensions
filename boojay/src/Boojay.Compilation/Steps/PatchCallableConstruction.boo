@@ -1,6 +1,5 @@
 namespace Boojay.Compilation.Steps
 
-
 import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.Compiler.TypeSystem

@@ -190,6 +190,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/macros/Assert-1.boo")
 		
 	[Test]
+	def BeanProperties():
+		runTestCase("tests/integration/properties/BeanProperties.boo")
+		
+	[Test]
 	def ForItemInArray():
 		runTestCase("tests/integration/statements/ForItemInArray.boo")
 		

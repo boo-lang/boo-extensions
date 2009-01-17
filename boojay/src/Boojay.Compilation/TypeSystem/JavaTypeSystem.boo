@@ -1,9 +1,12 @@
-namespace Boojay.Compilation.Steps
+namespace Boojay.Compilation.TypeSystem
 
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.TypeSystem
 
 class JavaTypeSystem(TypeSystemServices):
+	
+	def constructor():
+		self(CompilerContext())
 	
 	def constructor(context as CompilerContext):
 		super(context)
@@ -12,6 +15,9 @@ class JavaTypeSystem(TypeSystemServices):
 		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Lang.MulticastDelegate)
 		self.ListType = ReplaceMapping(Boo.Lang.List, Boojay.Lang.List)
 		self.HashType = ReplaceMapping(Boo.Lang.Hash, Boojay.Lang.Hash)
+		
+	override def CreateEntityForRegularType(type as System.Type):
+		return BeanAwareType(self, type)
 		
 	override ExceptionType:
 		get: return Map(java.lang.Exception)

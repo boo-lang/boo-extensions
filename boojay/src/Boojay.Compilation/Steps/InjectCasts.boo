@@ -5,6 +5,8 @@ import Boo.Lang.Compiler.TypeSystem
 import Boo.Lang.Compiler.Steps
 import Boo.Lang.PatternMatching
 
+import Boojay.Compilation.TypeSystem
+
 class InjectCasts(AbstractTransformerCompilerStep):
 	
 	_currentReturnType as IType

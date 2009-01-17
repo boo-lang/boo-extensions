@@ -30,7 +30,7 @@ def isJavaLangObject(type as IType):
 def definitionFor(m as IMethodBase):
 	if m.DeclaringType.ConstructedInfo is null:
 		return m
-	return GenericMethodDefinitionFinder(m).find()
+	return Boojay.Compilation.TypeSystem.GenericMethodDefinitionFinder(m).find()
 
 def typeOf(e as Expression) as IType:
 	match e:

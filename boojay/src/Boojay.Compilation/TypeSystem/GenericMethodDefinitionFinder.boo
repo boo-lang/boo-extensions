@@ -1,4 +1,4 @@
-namespace Boojay.Compilation.Steps
+namespace Boojay.Compilation.TypeSystem
 
 import Boo.Lang.Compiler.TypeSystem
 

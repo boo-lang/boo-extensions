@@ -12,6 +12,8 @@ import Boo.Lang.PatternMatching
 import org.objectweb.asm
 import org.objectweb.asm.Type
 
+import Boojay.Compilation.TypeSystem
+
 class BoojayEmitter(AbstractVisitorCompilerStep):
 		
 	_classWriter as ClassWriter
@@ -481,7 +483,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def emitRegularMethodInvocation(method as IMethod, node as MethodInvocationExpression):
 		emit node.Target
 		emit node.Arguments
+		emitInvokeMethodInstructionFor method
 		
+	def emitInvokeMethodInstructionFor(method as IMethod):
 		if method.IsStatic:
 			INVOKESTATIC method
 		elif method.DeclaringType.IsInterface:
@@ -759,6 +763,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
                     	emit memberRef.Target
                     	emitRValue()
                     	PUTFIELD field
+                    case p = IProperty(IsStatic: false):
+                    	emit memberRef.Target
+                    	emitRValue()
+                    	emitInvokeMethodInstructionFor p.GetSetMethod()
+                    	
 			case reference = ReferenceExpression():
 				emitRValue()
 				match bindingFor(reference):
