@@ -1,12 +1,19 @@
 ROADMAP
 =======
 
+* deprecate MacroStatement.Block => MacroStatement.Body
+* macro case: automatic pattern matching for macros
+* code literal for expression pairs: [| $first: $second |]
+
 
 ******** Acknowledgement Release **************
 
+* generator filters are being ignored
+* monolipse wizard: new boojay project
+* monolipse: don't color 'event' and other keywords when they appear as member names
+* monolipse: fix regular expression glitch with the division operator
 * bean properties
 ** 'get(arg)' is the indexer (default member)
-* monolipse wizard: new boojay project
 * code completion for java library types
 * monolipse: windows version should not require anything other than update site
 * ensure pattern matching works with bean properties
