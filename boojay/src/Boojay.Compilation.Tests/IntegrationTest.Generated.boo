@@ -182,6 +182,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/generators/MultiGeneratorExpressionWithFilter.boo")
 		
 	[Test]
+	def NestedEnsures():
+		runTestCase("tests/integration/generators/NestedEnsures.boo")
+		
+	[Test]
 	def Simplest():
 		runTestCase("tests/integration/generators/Simplest.boo")
 		
