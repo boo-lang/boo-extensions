@@ -49,7 +49,7 @@ Expands to something that matches:
 	optionalRuleName = ReferenceExpression(Name: "optional_${rule}_list")
 	optionalListRule = [| $optionalRuleName = $listRuleName | ("" ^ []) |]
 	block.Add(optionalListRule)
-
+	
 ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	tokens:

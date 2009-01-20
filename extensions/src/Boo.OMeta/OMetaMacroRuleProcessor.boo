@@ -246,7 +246,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $_() |]:
 				rules = processObjectPatternRules(e)
-				condition = PatternExpander().expand([| smatch.Value |], e)
+				condition = Boo.Lang.PatternMatching.Impl.PatternExpander().expand([| smatch.Value |], e)
 				code = [|
 					block:
 						$lastMatch = any($input)

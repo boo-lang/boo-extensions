@@ -12,7 +12,6 @@ syntax Units:
 	mass = (integer >> value, "kg") ^ [| Mass($(value as Expression), "kg") |]
 	
 syntax Ranges:
-	
 	atom = integer_range | super
 	integer_range = (integer >> begin as Expression, DOT, DOT, integer >> end as Expression) ^ [| range($begin, $end) |]
 

@@ -15,4 +15,4 @@ macro syntax:
 	
 #	module.Imports.Add(Import(LexicalInfo: syntax.LexicalInfo, Namespace: "Boo.Lang.OMeta"))
 	
-	return MacroStatement(Name: "ometa", Arguments: syntax.Arguments, Block: syntax.Block)
+	yield MacroStatement(Name: "ometa", Arguments: syntax.Arguments, Block: syntax.Block)
