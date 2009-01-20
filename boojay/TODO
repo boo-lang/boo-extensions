@@ -5,10 +5,8 @@ ROADMAP
 * macro case: automatic pattern matching for macros
 * code literal for expression pairs: [| $first: $second |]
 
-
 ******** Acknowledgement Release **************
 
-* generator filters are being ignored
 * monolipse wizard: new boojay project
 * monolipse: don't color 'event' and other keywords when they appear as member names
 * monolipse: fix regular expression glitch with the division operator
@@ -23,7 +21,6 @@ ROADMAP
 	* type descriptor
 * move boojay to separate google project (http://code.google.com/p/boojay/)
 * update monolipse site
-
 
 ********* Resolution Release ***************
 

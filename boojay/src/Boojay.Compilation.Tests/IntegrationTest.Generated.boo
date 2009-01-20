@@ -66,6 +66,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/assorted/ReturnValue-2.boo")
 		
 	[Test]
+	def UninitializedVariable():
+		runTestCase("tests/integration/assorted/UninitializedVariable.boo")
+		
+	[Test]
 	def Join_1():
 		runTestCase("tests/integration/builtins/Join-1.boo")
 		
@@ -188,6 +192,10 @@ partial class IntegrationTest:
 	[Test]
 	def Assert_1():
 		runTestCase("tests/integration/macros/Assert-1.boo")
+		
+	[Test]
+	def Match_1():
+		runTestCase("tests/integration/macros/Match-1.boo")
 		
 	[Test]
 	def BeanProperties():

@@ -266,6 +266,8 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		beginLabel = Label()
 		mark beginLabel
 		
+		emitLocalVariableInitializationFor node
+		
 		emit node.Body
 		if node.Body.Statements.Count == 0 or not node.Body.Statements[-1] isa ReturnStatement:
 			emitEmptyReturn
@@ -276,6 +278,16 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 
 		emitDebuggingInfoForLocalVariablesOf node, beginLabel, endLabel
 		_code.visitMaxs(0, 0)
+		
+	def emitLocalVariableInitializationFor(node as Method):
+		// TODO: Optimize using flow analysis
+		for local in node.Locals:
+			binding as ILocalEntity = bindingFor(local)
+			if binding.Type.IsValueType:
+				ICONST_0
+			else:
+				ACONST_NULL
+			emitStore binding
 		
 	def emitDebuggingInfoForLocalVariablesOf(node as Method, beginLabel as Label, endLabel as Label):
 		emitDebuggingInfoForImplicitSelfVariable node, beginLabel, endLabel
@@ -802,9 +814,11 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 				LDC type
 				
 	def emitLoad(local as ILocalEntity):
+#		print "emitLoad", local, index(local)
 		emitLoad local.Type, index(local)
 		
 	def emitStore(local as ILocalEntity):
+#		print "emitStore", local, index(local)
 		emitStore local.Type, index(local)
 		
 	def emitStore(type as IType, index as int):
