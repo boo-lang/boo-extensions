@@ -15,6 +15,7 @@ class JavaTypeSystem(TypeSystemServices):
 		self.MulticastDelegateType = ReplaceMapping(System.MulticastDelegate, Boojay.Lang.MulticastDelegate)
 		self.ListType = ReplaceMapping(Boo.Lang.List, Boojay.Lang.List)
 		self.HashType = ReplaceMapping(Boo.Lang.Hash, Boojay.Lang.Hash)
+		ReplaceMapping(System.NotImplementedException, Boojay.Lang.NotImplementedException)
 		
 	override def CreateEntityForRegularType(type as System.Type):
 		return BeanAwareType(self, type)

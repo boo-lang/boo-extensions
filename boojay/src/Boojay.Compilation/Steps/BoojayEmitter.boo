@@ -46,7 +46,6 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			typeSystem.Map(typeof(Boo.Lang.GenericGeneratorEnumerator[of*])): "Boojay/Lang/GeneratorEnumerator",
 			typeSystem.RuntimeServicesType: "Boojay/Lang/RuntimeServices",
 			typeSystem.Map(System.Exception): "java/lang/Exception",
-			typeSystem.Map(System.NotImplementedException): "Boojay/Lang/NotImplementedException",
 			typeSystem.Map(System.IDisposable): "Boojay/Lang/Disposable",
 			typeSystem.Map(System.ICloneable): "java/lang/Cloneable",
 		}
