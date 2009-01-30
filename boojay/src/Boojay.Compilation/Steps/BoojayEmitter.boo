@@ -16,7 +16,7 @@ import Boojay.Compilation.TypeSystem
 
 class BoojayEmitter(AbstractVisitorCompilerStep):
 		
-	_classWriter as ClassWriter
+	_classVisitor as ClassVisitor
 	_code as MethodVisitor
 	_currentMethod as Method
 	_typeMappings as Hash
@@ -64,8 +64,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitTypeDefinition node
 		
 	def emitTypeDefinition(node as TypeDefinition):
-		_classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
-		_classWriter.visit(
+		classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
+		_classVisitor = classWriter
+		_classVisitor.visit(
 			Opcodes.V1_5,
 			typeAttributes(node),
 			javaType(bindingFor(node)), 
@@ -74,23 +75,23 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			implementedInterfaces(node))
 			
 		if node.ParentNode isa ClassDefinition:
-			_classWriter.visitInnerClass(javaType(bindingFor(node)), javaType(bindingFor(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
+			_classVisitor.visitInnerClass(javaType(bindingFor(node)), javaType(bindingFor(node.ParentNode)), node.Name, Opcodes.ACC_STATIC)
 		
 		preservingClassWriter:
 			emitSourceInformationFor node
 			emitFieldsFrom node
 			emitNonFieldsFrom node
 		
-		_classWriter.visitEnd()
+		_classVisitor.visitEnd()
 		
-		writeClassFile node
+		writeClassFileFor node, classWriter.toByteArray()
 		
 	def emitSourceInformationFor(node as Node):
 		sourceFile = node.LexicalInfo.FileName
 		if string.IsNullOrEmpty(sourceFile):
 			return
 			
-		_classWriter.visitSource(sourceFile, null)
+		_classVisitor.visitSource(sourceFile, null)
 		
 	def emitFieldsFrom(node as TypeDefinition):
 		for member in node.Members:
@@ -101,9 +102,9 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			emit member if member.NodeType != NodeType.Field
 		
 	def preservingClassWriter(code as callable()):
-		previousClassWriter = _classWriter
+		previousClassWriter = _classVisitor
 		code()
-		_classWriter = previousClassWriter
+		_classVisitor = previousClassWriter
 		
 	def implementedInterfaces(node as TypeDefinition):
 		interfaces = array(
@@ -131,10 +132,14 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			attrs += Opcodes.ACC_PUBLIC
 		return attrs
 		
-	def writeClassFile(node as TypeDefinition):
+	def writeClassFileFor(node as TypeDefinition, bytecode as (byte)):
 		fname = Path.Combine(outputDirectory(), classFullFileName(node))
 		ensurePath(fname)
-		File.WriteAllBytes(fname, _classWriter.toByteArray())
+		File.WriteAllBytes(fname, bytecode)
+#		verify bytecode
+		
+	def verify(bytecode as (byte)):
+		org.objectweb.asm.util.CheckClassAdapter.verify(ClassReader(bytecode), false, java.io.PrintWriter(java.lang.System.err))
 		
 	def outputDirectory():
 		return Parameters.OutputAssembly
@@ -209,7 +214,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		emitBranchTrue node.Condition, bodyLabel
 		
 	override def OnField(node as Field):
-		field = _classWriter.visitField(
+		field = _classVisitor.visitField(
 					memberAttributes(node),
 					node.Name,
 					typeDescriptor(bindingFor(node.Type)),
@@ -244,7 +249,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return _methodMappings[name] or name
 		
 	def emitMethod(methodName as string, node as Method):
-		_code = _classWriter.visitMethod(
+		_code = _classVisitor.visitMethod(
 					memberAttributes(node),
 					methodName,
 					javaSignature(node),
@@ -277,7 +282,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 
 		emitDebuggingInfoForLocalVariablesOf node, beginLabel, endLabel
 		_code.visitMaxs(0, 0)
-		
+	
 	def emitLocalVariableInitializationFor(node as Method):
 		// TODO: Optimize using flow analysis
 		for local in node.Locals:
