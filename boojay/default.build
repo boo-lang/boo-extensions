@@ -116,6 +116,7 @@
 			<include name="asm-commons-3.1.jar" />
 			<include name="asm-util-3.1.jar" />
 			<include name="asm-tree-3.1.jar" />
+			<include name="asm-analysis-3.1.jar" />
 		</fileset>
 		
 		<boo>
