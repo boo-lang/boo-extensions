@@ -101,6 +101,12 @@
 		</exec>
 		
 	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
 	
 	<target name="copy-libs" depends="init">
 		<copy todir="${build.dir}" file="lib/asm.dll" />
