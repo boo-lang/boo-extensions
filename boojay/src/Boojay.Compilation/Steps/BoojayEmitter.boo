@@ -309,6 +309,7 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 	def emitEmptyReturn():
 		returnType = currentReturnType()
 		if returnType is typeSystem().VoidType:
+			RETURN
 			return
 		
 		if returnType.IsValueType:
