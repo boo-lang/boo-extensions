@@ -16,7 +16,8 @@ class JavaTypeSystemTest:
 	
 	typeSystem = JavaTypeSystem()
 	
-	[Test] def BeanProperties():
+	[Test]
+	def BeanProperties():
 		
 		members = typeSystem.Map(Bean).GetMembers()
 		System.Array.Sort(members, { l as IEntity, r as IEntity | l.Name.CompareTo(r.Name) })

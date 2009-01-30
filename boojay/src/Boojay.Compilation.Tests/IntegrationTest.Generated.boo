@@ -70,6 +70,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/assorted/UninitializedVariable.boo")
 		
 	[Test]
+	def AutomaticDowncastingOnInvocation():
+		runTestCase("tests/integration/autocasting/AutomaticDowncastingOnInvocation.boo")
+		
+	[Test]
 	def Join_1():
 		runTestCase("tests/integration/builtins/Join-1.boo")
 		
@@ -154,12 +158,24 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/expressions/TryCast-1.boo")
 		
 	[Test]
+	def GeneratorAsArgumentToMethod():
+		runTestCase("tests/integration/generators/GeneratorAsArgumentToMethod.boo")
+		
+	[Test]
+	def GeneratorEnumerator():
+		runTestCase("tests/integration/generators/GeneratorEnumerator.boo")
+		
+	[Test]
 	def GeneratorExpressionAsClosure():
 		runTestCase("tests/integration/generators/GeneratorExpressionAsClosure.boo")
 		
 	[Test]
 	def GeneratorWithExceptionHandler():
 		runTestCase("tests/integration/generators/GeneratorWithExceptionHandler.boo")
+		
+	[Test]
+	def GeneratorWithTryEnsure():
+		runTestCase("tests/integration/generators/GeneratorWithTryEnsure.boo")
 		
 	[Test]
 	def IntGenerator():
@@ -230,6 +246,10 @@ partial class IntegrationTest:
 		runTestCase("tests/integration/statements/If-Not-Bool-1.boo")
 		
 	[Test]
+	def ReturnFromVoid():
+		runTestCase("tests/integration/statements/ReturnFromVoid.boo")
+		
+	[Test]
 	def Try_1():
 		runTestCase("tests/integration/statements/Try-1.boo")
 		
@@ -244,6 +264,10 @@ partial class IntegrationTest:
 	[Test]
 	def TryExceptReraise():
 		runTestCase("tests/integration/statements/TryExceptReraise.boo")
+		
+	[Test]
+	def TryFailure():
+		runTestCase("tests/integration/statements/TryFailure.boo")
 		
 	[Test]
 	def While_Bool_1():
@@ -276,6 +300,10 @@ partial class IntegrationTest:
 	[Test]
 	def Interfaces_1():
 		runTestCase("tests/integration/types/Interfaces-1.boo")
+		
+	[Test]
+	def NotImplemented_1():
+		runTestCase("tests/integration/types/NotImplemented-1.boo")
 		
 	[Test]
 	def Objects_1():

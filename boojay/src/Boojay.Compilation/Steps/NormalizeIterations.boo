@@ -16,7 +16,7 @@ class NormalizeIterations(AbstractVisitorCompilerStep):
 		
 	override def LeaveForStatement(node as ForStatement):
 		
-		if expressionType(node.Iterator).IsArray: return
+		if typeOf(node.Iterator).IsArray: return
 		if isGetEnumerableInvocation(node.Iterator): return
 		
 		// For now always use RuntimeService.GetEnumerable to adapt
@@ -40,7 +40,7 @@ class NormalizeIterations(AbstractVisitorCompilerStep):
 	def resolveMethod(type as System.Type, methodName as string):
 		return NameResolutionService.ResolveMethod(typeSystem().Map(type), methodName)
 		
-	def expressionType(e as Expression):
+	def typeOf(e as Expression):
 		return typeSystem().GetExpressionType(e)
 		
 	def typeSystem() as JavaTypeSystem:

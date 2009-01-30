@@ -28,16 +28,19 @@ class JavaTypeSystem(TypeSystemServices):
 		Cache(existing, mapping)
 		return mapping
 		
-class JavaLangString(System.Collections.IEnumerable):
+class JavaLangString(java.lang.Character*):
 
 	self[index as int] as char:
-		get: return char.MinValue
+		get: assert false
 	
-	Length:
-		get: return 0
-	
+	Length as int:
+		get: assert false
+		
 	def GetEnumerator():
-		return null
+		pass
+		
+	def System.Collections.IEnumerable.GetEnumerator():
+		pass
 		
 	def toUpperCase():
 		return self
