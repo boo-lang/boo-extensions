@@ -5,7 +5,7 @@ ltuae
 namespace callables
 
 class Item:
-	public value
+	public value = null
 	def getValue():
 		return value
 		
