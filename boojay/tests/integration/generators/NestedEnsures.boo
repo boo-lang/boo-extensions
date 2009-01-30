@@ -55,8 +55,8 @@ def nestedEnsures() as string*:
         print "outer ensure"
         raise "Exception from outer ensure"
 
-def consume(generator as string*, count as int):
-    enumerator = generator.getEnumerator()
+def consume(strings as string*, count as int):
+    enumerator = strings.getEnumerator()
     try:
         for i in range(count):
             enumerator.moveNext()

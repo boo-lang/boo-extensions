@@ -559,9 +559,46 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 		return node.GetAncestor(NodeType.ExceptionHandler)
 			
 	override def OnTryStatement(node as TryStatement):
+		if node.FailureBlock is not null:
+			emitTryFailure node
+		else:
+			emitTryExceptEnsure node
+			
+	def emitTryFailure(node as TryStatement):
+		assert node.EnsureBlock is null
+		assert len(node.ExceptionHandlers) == 0
+		
+		tryBegin = Label()
+		tryEnd = Label()
+		exceptEnd = Label()
+		
+		mark tryBegin
+		emit node.ProtectedBlock
+		GOTO exceptEnd
+		mark tryEnd
+		
+		exceptBegin = Label()
+		mark exceptBegin
+		
+		exceptionType = bindingFor(java.lang.Throwable)
+		TRYCATCHBLOCK tryBegin, tryEnd, exceptBegin, javaType(exceptionType)
+		exceptionVariable = newTemp(exceptionType)
+		emitStore exceptionVariable
+		emit node.FailureBlock
+		emitLoad exceptionVariable
+		ATHROW
+		
+		mark exceptEnd
+		
+	def bindingFor(type as System.Type):
+		return typeSystem().Map(type)
+		
+	def emitTryExceptEnsure(node as TryStatement):
+	
 		L1 = Label()
 		L2 = Label()
 		L3 = Label()
+		
 		mark L1
 		emit node.ProtectedBlock
 		GOTO L3
@@ -572,14 +609,15 @@ class BoojayEmitter(AbstractVisitorCompilerStep):
 			mark L4
 			decl = handler.Declaration
 			TRYCATCHBLOCK L1, L2, L4, javaType(decl.Type)
-			ASTORE index(bindingFor(decl))
+			if decl.Name is null:
+				POP
+			else:
+				ASTORE index(bindingFor(decl))
 			emit handler.Block
 			GOTO L3
 			
 		if node.EnsureBlock is null:
-			
 			mark L3
-		
 		else:
 			
 			L4 = Label()
