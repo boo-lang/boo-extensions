@@ -6,6 +6,7 @@ import Boo.Lang.Compiler.Steps
 import Boo.Lang.PatternMatching
 
 import Boojay.Compilation.TypeSystem
+import Boojay.Compilation.Steps.Macros
 
 class InjectCasts(AbstractTransformerCompilerStep):
 	
@@ -34,7 +35,7 @@ class InjectCasts(AbstractTransformerCompilerStep):
 				node.Right = mapBoxedType(node.Right)
 				
 			otherwise:
-				return
+				pass
 				
 	def checkOperands(node as BinaryExpression):
 		node.Right = checkCast(typeOf(node), node.Right)
@@ -47,21 +48,26 @@ class InjectCasts(AbstractTransformerCompilerStep):
 		
 	override def LeaveMethodInvocationExpression(node as MethodInvocationExpression):
 		m = optionalBindingFor(node.Target) as IMethodBase
-		if m is null: return
+		if m is null:
+			return
 		
 		definition = definitionFor(m)
-		parameterTypes = erasedParameterTypesFor(definition)
+		parameterTypes = parameterTypesFor(definition)
 		for i in range(len(parameterTypes)):
 			node.Arguments[i] = checkCast(parameterTypes[i], node.Arguments[i])
 		
-		returnType = m.CallableType.GetSignature().ReturnType
+		returnType = returnTypeOf(m)
 		if returnType is null:
 			return
 			
-		ReplaceCurrentNode(checkCast(returnType, definition.CallableType.GetSignature().ReturnType, node))
-			
-	def erasedParameterTypesFor(m as IMethodBase):
-		return array(erasureFor(p.Type) for p in m.GetParameters())
+		resultingNode = checkCast(returnType, returnTypeOf(definition), node)
+		ReplaceCurrentNode(resultingNode)
+		
+	def returnTypeOf(m as IMethodBase):
+		return m.CallableType.GetSignature().ReturnType
+		
+	def parameterTypesFor(m as IMethodBase):
+		return array(p.Type for p in m.GetParameters())
 			
 	override def LeaveReturnStatement(node as ReturnStatement):
 		if node.Expression is null:
@@ -76,23 +82,33 @@ class InjectCasts(AbstractTransformerCompilerStep):
 		return checkCast(expected, actual, e)
 		
 	def checkCast(expected as IType, actual as IType, e as Expression):
+		return checkCastAfterErasure(erasureFor(expected), erasureFor(actual), e)
+		
+	def checkCastAfterErasure(expected as IType, actual as IType, e as Expression):
 		
 		if expected is actual:
 			return e
-		
+
 		if isUnbox(expected, actual):
 			return unbox(expected, e)
 			
 		if isBox(expected, actual):
 			return box(actual, e)
 		
+		# TODO: must take generic erasure in consideration for all the subclasses
+		# and implemented interfaces
 		if actual.IsSubclassOf(expected):
 			return e
 			
 		if isJavaLangObject(expected):
 			return e
 			
-		return CodeBuilder.CreateCast(expected, e)
+#		watch e, e.GetType(), expected, actual
+		resultingCast = CastExpression(
+							Type: CodeBuilder.CreateTypeReference(expected),
+							Target: e)
+		BindExpressionType(resultingCast, expected)
+		return resultingCast
 		
 	def isBox(expected as IType, actual as IType):
 		return actual.IsValueType and not expected.IsValueType
@@ -133,3 +149,5 @@ class InjectCasts(AbstractTransformerCompilerStep):
 				
 	def typeSystem() as JavaTypeSystem:
 		return self.TypeSystemServices
+
+		

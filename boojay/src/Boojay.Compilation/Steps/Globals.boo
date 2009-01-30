@@ -20,6 +20,11 @@ def bindingFor(node as Method) as IMethod:
 def erasureFor(type as IType):
 	if type isa IGenericParameter:
 		return typeSystem().ObjectType
+	
+#	genericInstance = type.ConstructedInfo
+#	if genericInstance is not null:
+#		return genericInstance.GenericDefinition
+		
 	return type
 		
 def isJavaLangObject(type as IType):
