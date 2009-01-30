@@ -23,7 +23,8 @@
 			<fileset basedir="${build.dir}">
 				<include name="*.exe" />
 				<include name="*.dll" />
-				<exclude name="*.Tests.dll" />
+				<include name="*.mdb" />
+				<exclude name="*.Tests.*" />
 			</fileset>
 		</copy>
 		
