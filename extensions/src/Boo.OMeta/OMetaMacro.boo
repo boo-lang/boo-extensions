@@ -27,7 +27,7 @@ A few options can be used to customize the generated code:
 macro option:
 	
 	assert 1 == len(option.Arguments)
-	assert 0 == len(option.Block.Statements)
+	assert 0 == len(option.Body.Statements)
 	
 	match option.Arguments[0]:
 		case ReferenceExpression(Name: value):

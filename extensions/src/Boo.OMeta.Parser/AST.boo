@@ -7,7 +7,7 @@ import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
 def newMacro(name, args, body, m):
-	node = MacroStatement(Name: tokenValue(name), Block: body, Modifier: m)
+	node = MacroStatement(Name: tokenValue(name), Body: body, Modifier: m)
 	for arg in args: node.Arguments.Add(arg)
 	return node
 

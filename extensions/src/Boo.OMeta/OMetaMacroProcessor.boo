@@ -28,7 +28,7 @@ class OMetaMacroProcessor:
 		return block
 		
 	def introduceRuleMethods(type as TypeDefinition):
-		for stmt in ometa.Block.Statements:
+		for stmt in ometa.Body.Statements:
 			match stmt:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
 					m0 = [|
@@ -120,7 +120,7 @@ class OMetaMacroProcessor:
 		type.Members.Add(Field(Name: name.Name, Type: fieldType, Initializer: initializer))
 			
 	def expressions():
-		for stmt in ometa.Block.Statements:
+		for stmt in ometa.Body.Statements:
 			match stmt:
 				case ExpressionStatement(Expression: e):
 					yield e

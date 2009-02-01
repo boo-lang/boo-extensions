@@ -80,7 +80,7 @@ internal class DelegatingInput(OMetaInput):
 internal class OMetaInputWithMemo(DelegatingInput):
 	
 	final _key as string
-	final _value
+	final _value as object
 	_tail as OMetaInput
 	
 	def constructor(key as string, value, input as OMetaInput):
@@ -117,7 +117,7 @@ internal class OMetaInputMemoTail(DelegatingInput):
 		return _parent.GetMemo(key)
 		
 internal class OMetaInputCons(OMetaInput):
-	[getter(Head)] _argument
+	[getter(Head)] _argument as object
 	[getter(Tail)] _tail as OMetaInput
 	
 	def constructor(argument, tail as OMetaInput):
@@ -131,7 +131,7 @@ internal class EnumeratorInput(OMetaInput):
 	
 	final _position as int
 	final _input as IEnumerator
-	final _head
+	final _head as object
 	_tail as OMetaInput
 	
 	internal def constructor(input as IEnumerator, position as int):

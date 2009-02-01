@@ -26,7 +26,7 @@ class OMetaMacroRuleProcessor:
 					if smatch is null: return lastMatch
 					$input = smatch.Input
 					$arg = smatch.Value
-			|].Block
+			|].Body
 			block.Add(code)
 		
 		expand block, e, input, [| lastMatch |]
@@ -90,7 +90,7 @@ class OMetaMacroRuleProcessor:
 
 				$lastMatch = SuccessfulMatch($tempInput, $result)
 		|]
-		return code.Block
+		return code.Body
 		
 	def collectChoices(choices as List, e as Expression):
 		match e:
@@ -191,7 +191,7 @@ class OMetaMacroRuleProcessor:
 							smatch = $lastMatch as SuccessfulMatch
 							if smatch is not null:
 								$lastMatch = SuccessfulMatch(smatch.Input, $(processVariables(value, input)))
-					|].Block
+					|].Body
 					block.Add(code)
 				
 			case [| $pattern >> $variable |]:
@@ -204,14 +204,14 @@ class OMetaMacroRuleProcessor:
 									smatch = $lastMatch as SuccessfulMatch
 									if smatch is not null:
 										$name = cast($typeref, smatch.Value)
-							|].Block
+							|].Body
 						otherwise:
 							code = [|
 								block:
 									smatch = $lastMatch as SuccessfulMatch
 									if smatch is not null:
 										$variable = smatch.Value
-							|].Block
+							|].Body
 					block.Add(code)
 				
 			case [| $_ | $_ |]:
@@ -246,7 +246,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $_() |]:
 				rules = processObjectPatternRules(e)
-				condition = Boo.Lang.PatternMatching.Impl.PatternExpander().expand([| smatch.Value |], e)
+				condition = Boo.Lang.PatternMatching.Impl.PatternExpander().Expand([| smatch.Value |], e)
 				code = [|
 					block:
 						$lastMatch = any($input)
@@ -256,7 +256,7 @@ class OMetaMacroRuleProcessor:
 								$(expandObjectPatternRules(rules, lastMatch))
 							else:
 								$lastMatch = FailedMatch($input, ObjectPatternFailure($(e.ToCodeString())))
-				|].Block
+				|].Body
 				block.Add(code) 
 				
 			case ArrayLiteralExpression(Items: items):

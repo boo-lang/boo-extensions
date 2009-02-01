@@ -26,7 +26,7 @@ it generates:
 	block as Block = tokens.ParentNode
 
 	rules = []
-	for stmt in tokens.Block.Statements:
+	for stmt in tokens.Body.Statements:
 		match stmt:
 			case ExpressionStatement(Expression: [| $name = $pattern |]):
 				e = [| $name = $pattern >> value ^ makeToken($(name.ToString()), value) |]
