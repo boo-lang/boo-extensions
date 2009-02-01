@@ -6,7 +6,6 @@ import Boo.Lang.Compiler.Steps
 import Boo.Lang.PatternMatching
 
 import Boojay.Compilation.TypeSystem
-import Boojay.Compilation.Steps.Macros
 
 class InjectCasts(AbstractTransformerCompilerStep):
 	
