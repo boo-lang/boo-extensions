@@ -3,24 +3,19 @@ ROADMAP
 
 ******** Acknowledgement Release **************
 
-* CTRL+ALT+SHIFT+EM (expand macros)
-* CTRL+ALT+SHIFT+ET (expand types)
-* "New Boo Source Folder" must work on package explorer
 * code completion for java library types
-* monolipse: don't color 'event' and other keywords when they appear as member names
-* monolipse: fix regular expression glitch with the division operator
 * move boojay to separate google project (http://code.google.com/p/boojay/)
 * update monolipse site
 
 ********* Resolution Release ***************
 
+* ant tasks
 * refactor all primitive dependent information into a PrimitiveInfo() tuple with things like
 	* array store opcode
 	* array load opcode
 	* type descriptor
 * bean properties
 ** 'get(arg)' is the indexer (default member)
-* monolipse: windows version should not require anything other than update site
 ** resident test runner
 ** internal macros work again
 ** different color for macro application (known macros are displayed with different colors than unknown ones)
@@ -36,15 +31,14 @@ ROADMAP
 
 ********** Pursuance Release ***************
 
+* monolipse: drop mono and boo dependencies for windows version - it should not require anything other than update site
 * monolipse integration
-** wizard: new boojay source folder
 ** resident incremental compiler
 *** builder just sends delta information to the compiler
 	which maintains the dependency tree and it's able to recompile
 	required files on demand
 	** deferred namespace implementation on top of a directory or jar file
 ** meta-programming by invoking the boojay compiler on temporary files generated from code literals
-* ant tasks
 * GetHashCode
 * duck typing
 
