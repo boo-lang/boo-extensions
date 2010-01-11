@@ -38,13 +38,13 @@
 	
 	<target name="Boo.Pegs" depends="init">
 	
-		<booc target="library" output="${build.dir}/Boo.Pegs.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.dll">
 			<sources basedir="src/Boo.Pegs">
 				<include name="*.boo" />
 			</sources>
 		</booc>
 		
-		<booc target="library" output="${build.dir}/Boo.Pegs.Tests.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.Tests.dll">
 			<sources basedir="src/Boo.Pegs.Tests">
 				<include name="*.boo" />
 			</sources>
@@ -57,13 +57,13 @@
 	</target>
 	
 	<target name="Boo.Adt" depends="init">
-		<booc target="library" output="${build.dir}/Boo.Adt.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Adt.dll">
 			<sources basedir="src/Boo.Adt">
 				<include name="*.boo" />
 			</sources>
 		</booc>
 		
-		<booc target="library" output="${build.dir}/Boo.Adt.Tests.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Adt.Tests.dll">
 			<sources basedir="src/Boo.Adt.Tests">
 				<include name="*.boo" />
 			</sources>
@@ -75,7 +75,7 @@
 	</target>
 	
 	<target name="Boo.OMeta" depends="Boo.Adt">
-		<booc target="library" output="${build.dir}/Boo.OMeta.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.dll">
 			<sources basedir="src/Boo.OMeta">
 				<include name="*.boo" />
 			</sources>
@@ -84,7 +84,7 @@
 			</references>
 		</booc>
 		
-		<booc target="library" output="${build.dir}/Boo.OMeta.Tests.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.Tests.dll">
 			<sources basedir="src/Boo.OMeta.Tests">
 				<include name="*.boo" />
 			</sources>
@@ -97,7 +97,7 @@
 	</target>
 	
 	<target name="Boo.OMeta.Parser" depends="Boo.Adt, Boo.OMeta">
-		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
 			<sources basedir="src/Boo.OMeta.Parser">
 				<include name="*.boo" />
 			</sources>
@@ -107,7 +107,7 @@
 			</references>
 		</booc>
 		
-		<booc target="library" output="${build.dir}/Boo.OMeta.Parser.Tests.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.Parser.Tests.dll">
 			<sources basedir="src/Boo.OMeta.Parser.Tests">
 				<include name="*.boo" />
 			</sources>
@@ -123,7 +123,7 @@
 	<target name="md" description="MonoDevelop addin" depends="init, Boo.Adt">
 	
 		<echo>${dir.md.bin}</echo>
-		<booc
+		<booc failonerror="true"
 			output="${build.dir}/Boo.MonoDevelop.dll"
 			target="library"
 			debug="true"
