@@ -14,6 +14,21 @@
     <monolipse.core.internal.LocalAssemblyReference-Remembrance>
       <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Projects.Gui.dll</path>
     </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Components.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/Mono.TextEditor.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/NRefactory.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.AssemblySourceReference-Remembrance>
+      <path>/boo-extensions/extensions/src/Boo.Adt</path>
+    </monolipse.core.internal.AssemblySourceReference-Remembrance>
   </references>
   <outputFolder>/boo-extensions/bin</outputFolder>
   <additionalOptions></additionalOptions>

@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.MonoDevelop", "Boo.MonoDevelop.booproj", "{A154F6EB-6808-4816-B9C1-C5412663E0F1}"
+EndProject
+Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Adt", "..\Boo.Adt\Boo.Adt.booproj", "{7948F789-92B6-42C8-B5E6-0119B842C2A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Boo.MonoDevelop.booproj
+	EndGlobalSection
+EndGlobal

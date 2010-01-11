@@ -116,7 +116,9 @@
 		</booc>
 	</target>
 	
-	<target name="md" description="MonoDevelop addin" depends="init">
+	<target name="md" description="MonoDevelop addin" depends="init, Boo.Adt">
+	
+		<echo>${dir.md.bin}</echo>
 		<booc
 			output="${build.dir}/Boo.MonoDevelop.dll"
 			target="library"
@@ -127,6 +129,9 @@
 			</sources>
 			<references>
 				<include name="${dir.md.bin}/MonoDevelop.*.dll" />
+				<include name="${dir.md.bin}/NRefactory.dll" />
+				<include name="${dir.md.bin}/../AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll" />
+				<include name="${build.dir}/Boo.Adt.dll" />
 			</references>
 			
 			<embed basedir="src/Boo.MonoDevelop">

@@ -19,6 +19,7 @@
 		<Addin id="Projects" version="2.2" />
 		<Addin id="Projects.Gui" version="2.2" />
 		<Addin id="SourceEditor2" version="2.2" />
+		<Addin id="Refactoring" version="2.2" />
 	</Dependencies>
 	
 	<Extension path = "/MonoDevelop/Ide/FileTemplates">
@@ -27,6 +28,7 @@
 
 	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
 		<ProjectTemplate id = "BooConsoleProject" resource = "ConsoleProject.xpt.xml"/>
+		<ProjectTemplate id = "BooLibraryProject" resource = "LibraryProject.xpt.xml"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/FileFilters">
@@ -65,12 +67,20 @@
 				class = "Boo.MonoDevelop.ProjectModel.BooLanguageBinding" />
 	</Extension> 
 	
+	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
+		<SyntaxMode mimeTypes="text/x-boo" class="Boo.MonoDevelop.Highlighting.BooSyntaxMode"/>
+	</Extension>
+	
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<Class class = "Boo.MonoDevelop.Completion.BooEditorCompletion" />
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
 		<Class class = "Boo.MonoDevelop.ProjectModel.BooParser" />
+	</Extension>
+	
+	<Extension path = "/MonoDevelop/Refactoring/ASTProvider">
+		<Class class = "Boo.MonoDevelop.Refactoring.BooASTProvider" />
 	</Extension>
 	
 </Addin>

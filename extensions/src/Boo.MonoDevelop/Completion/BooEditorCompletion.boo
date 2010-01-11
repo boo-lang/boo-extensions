@@ -16,7 +16,7 @@ class BooEditorCompletion(CompletionTextEditorExtension):
 		_dom = ProjectDomService.GetProjectDom(Document.Project) or ProjectDomService.GetFileDom(Document.FileName)
 		
 	override def HandleCodeCompletion(context as CodeCompletionContext, completionChar as char):
-		print "HandleCodeCompletion(${context.ToString()}, ${completionChar.ToString()})"
+#		print "HandleCodeCompletion(${context.ToString()}, ${completionChar.ToString()})"
 		
 		match completionChar.ToString():
 			case ' ':
@@ -38,7 +38,7 @@ class BooEditorCompletion(CompletionTextEditorExtension):
 				return null
 				
 	def ImportCompletionDataFor(nameSpace as string):
-		print "ImportCompletionDataFor(${nameSpace})"
+#		print "ImportCompletionDataFor(${nameSpace})"
 		
 		result = CompletionDataList()
 		for member in _dom.GetNamespaceContents(nameSpace, true, true):

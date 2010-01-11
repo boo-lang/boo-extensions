@@ -10,7 +10,7 @@ import Boo.Lang.Compiler as BLC
 class BooParser(AbstractParser):
 	
 	def constructor():
-		super("Boo", "text/x-boo")
+		super("Boo", BooMimeType)
 		
 	override def CanParse(fileName as string):
 		return Path.GetExtension(fileName).ToLower() == ".boo"
@@ -24,6 +24,11 @@ class BooParser(AbstractParser):
 		result.CompileUnit.Accept(DomConversionVisitor(document.CompilationUnit))
 		
 		return document
+		
+	override def CreateResolver(dom as ProjectDom, editor, fileName as string):
+		print "CreateResolver(", dom, editor, fileName, ")"
+		doc = cast(MonoDevelop.Ide.Gui.Document, editor)
+		return BooResolver(dom, doc.CompilationUnit, doc.TextEditor, fileName)
 		
 def ParseBooText(fileName as string, text as string):
 	

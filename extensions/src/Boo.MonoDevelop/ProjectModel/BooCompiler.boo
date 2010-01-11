@@ -57,7 +57,7 @@ class BooCompiler:
 				case BuildAction.Compile:
 					options.WriteLine("\"${file.Name}\"")
 				case BuildAction.EmbeddedResource:
-					options.WriteLine("-resource:${file.FilePath}[${file.ResourceId}]")
+					options.WriteLine("-embedres:${file.FilePath},${file.ResourceId}")
 				otherwise:
 					print "Unrecognized build action for file", file, "-", file.BuildAction
 				
