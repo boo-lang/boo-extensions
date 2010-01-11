@@ -147,8 +147,6 @@
 			</embed>
 		</booc>
 		
-		<property name="dir.md.addins" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
-		
 		<copy todir="${dir.md.addins}">
 			<fileset basedir="${build.dir}">
 				<include name="Boo.MonoDevelop.*" />
