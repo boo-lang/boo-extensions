@@ -1,0 +1,20 @@
+<settings>
+  <language>boo</language>
+  <outputType>library</outputType>
+  <references>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Core.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Ide.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Projects.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+    <monolipse.core.internal.LocalAssemblyReference-Remembrance>
+      <path>/unity/lib/MonoDevelop/bin/MonoDevelop.Projects.Gui.dll</path>
+    </monolipse.core.internal.LocalAssemblyReference-Remembrance>
+  </references>
+  <outputFolder>/boo-extensions/bin</outputFolder>
+  <additionalOptions></additionalOptions>
+</settings>

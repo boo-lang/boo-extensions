@@ -1,10 +1,11 @@
-#Tue Feb 03 15:41:13 BRST 2009
+#Mon Oct 12 23:06:46 BRT 2009
 eclipse.preferences.version=1
 encoding//examples/expressions/.monolipse=utf-8
 encoding//extensions/examples/ometa/calculator/.monolipse=utf-8
 encoding//extensions/examples/ometa/metaboo/.monolipse=utf-8
 encoding//extensions/examples/ometa/speed/.monolipse=utf-8
 encoding//extensions/examples/pegs/miniboo/.monolipse=utf-8
+encoding//extensions/src/Boo.MonoDevelop/.monolipse=utf-8
 encoding//extensions/src/Boo.OMeta.Parser.Tests/.monolipse=utf-8
 encoding//extensions/src/Boo.OMeta.Parser/.monolipse=utf-8
 encoding//extensions/src/Boo.OMeta.Tests/.monolipse=utf-8

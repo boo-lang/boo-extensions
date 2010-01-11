@@ -116,6 +116,38 @@
 		</booc>
 	</target>
 	
+	<target name="md" description="MonoDevelop addin" depends="init">
+		<booc
+			output="${build.dir}/Boo.MonoDevelop.dll"
+			target="library"
+			debug="true"
+			rebuild="true">
+			<sources basedir="src/Boo.MonoDevelop">
+				<include name="**/*.boo" />
+			</sources>
+			<references>
+				<include name="${dir.md.bin}/MonoDevelop.*.dll" />
+			</references>
+			
+			<embed basedir="src/Boo.MonoDevelop">
+				<include name="Boo.MonoDevelop.addin.xml" />
+				<include name="Templates/*.xft.xml" />
+				<include name="Templates/*.xpt.xml" />
+				<include name="Icons/*.png" />
+				<include name="Icons/*.Base" />
+			</embed>
+		</booc>
+		
+		<property name="dir.md.addins" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
+		
+		<copy todir="${dir.md.addins}">
+			<fileset basedir="${build.dir}">
+				<include name="Boo.MonoDevelop.*" />
+			</fileset>
+		</copy>
+		
+	</target>
+	
 	<target name="init">
 		<mkdir dir="${build.dir}" />	
 		<copy file="${nunit.framework.dll}" todir="${build.dir}" />
