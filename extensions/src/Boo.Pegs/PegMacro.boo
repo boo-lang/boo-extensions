@@ -135,7 +135,7 @@ Example:
 """*/
 	
 	rules = []
-	for node in peg.Block.Statements:
+	for node in peg.Body.Statements:
 		match node:
 			case ExpressionStatement(
 					Expression: BinaryExpression(

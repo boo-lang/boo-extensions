@@ -144,4 +144,4 @@ def grammarName(e as Expression) as string:
 			return grammarName(l)
 
 def uniqueName():
-	return ReferenceExpression(Name: "temp${CompilerContext.Current.AllocIndex()}")
+	return ReferenceExpression(Name: my(CompilerContext).GetUniqueName("temp"))
