@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A154F6EB-6808-4816-B9C1-C5412663E0F1}</ProjectGuid>
+    <ProjectGuid>{DA18FECD-4F5B-4A02-B36B-876838F6B7A3}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Boo.MonoDevelop</RootNamespace>
+    <RootNamespace>Boo.MonoDevelop.Tests</RootNamespace>
     <UsePartialTypes>false</UsePartialTypes>
-    <AssemblyName>Boo.MonoDevelop</AssemblyName>
+    <AssemblyName>Boo.MonoDevelop.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,9 +31,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="nunit.core, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
     <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\Mono.TextEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Components, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Components.dll</HintPath>
     </Reference>
     <Reference Include="MonoDevelop.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
@@ -59,64 +65,37 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
     </Reference>
+    <Reference Include="UnitTests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\UnitTests.dll</HintPath>
+    </Reference>
     <Reference Include="MonoDevelop.Refactoring, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.Refactoring\MonoDevelop.Refactoring.dll</HintPath>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Refactoring.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.CSharpBinding, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\BackendBindings\MonoDevelop.CSharpBinding.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.XmlEditor, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.XmlEditor\MonoDevelop.XmlEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.DesignerSupport, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.DesignerSupport\MonoDevelop.DesignerSupport.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ProjectModel\BooCodeDomProvider.boo" />
-    <Compile Include="ProjectModel\BooCodeGenerator.boo" />
-    <Compile Include="ProjectModel\BooCompilationParameters.boo" />
-    <Compile Include="ProjectModel\BooCompiler.boo" />
-    <Compile Include="ProjectModel\BooLanguageBinding.boo" />
-    <Compile Include="ProjectModel\BooParser.boo" />
-    <Compile Include="ProjectModel\BooProjectParameters.boo" />
-    <Compile Include="ProjectModel\DomConversionVisitor.boo" />
-    <Compile Include="Completion\BooEditorCompletion.boo" />
-    <Compile Include="Highlighting\BooSyntaxMode.boo" />
-    <Compile Include="ProjectModel\BooResolver.boo" />
-    <Compile Include="ProjectModel\Consts.boo" />
-    <Compile Include="Refactoring\BooASTProvider.boo" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Boo.MonoDevelop.addin.xml">
-      <LogicalName>Boo.MonoDevelop.addin.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Templates\ConsoleProject.xpt.xml">
-      <LogicalName>ConsoleProject.xpt.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Templates\EmptyBooFile.xft.xml">
-      <LogicalName>EmptyBooFile.xft.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Templates\LibraryProject.xpt.xml">
-      <LogicalName>LibraryProject.xpt.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\Boo.File.EmptyFile">
-      <LogicalName>Boo.File.EmptyFile</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\Boo.File.Form">
-      <LogicalName>Boo.File.Form</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\BooBinding.Base">
-      <LogicalName>BooBinding.Base</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\BooFile.png">
-      <LogicalName>BooFile.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\BooProjectDecoration.png">
-      <LogicalName>BooProjectDecoration.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icons\BooProjectStockIcon.png">
-      <LogicalName>BooProjectStockIcon.png</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
-      <Project>{7948F789-92B6-42C8-B5E6-0119B842C2A7}</Project>
-      <Name>Boo.Adt</Name>
+    <ProjectReference Include="..\Boo.MonoDevelop\Boo.MonoDevelop.booproj">
+      <Project>{A154F6EB-6808-4816-B9C1-C5412663E0F1}</Project>
+      <Name>Boo.MonoDevelop</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BooParserTest.boo" />
+    <Compile Include="BooASTProviderTest.boo" />
+    <Compile Include="Util.boo" />
+    <Compile Include="BooResolverTest.boo" />
   </ItemGroup>
 </Project>

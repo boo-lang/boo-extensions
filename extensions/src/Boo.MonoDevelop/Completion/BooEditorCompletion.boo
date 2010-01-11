@@ -43,7 +43,11 @@ class BooEditorCompletion(CompletionTextEditorExtension):
 #		print "ImportCompletionDataFor(${nameSpace})"
 		
 		result = CompletionDataList()
+		
+		seen = {}
 		for member in _dom.GetNamespaceContents(nameSpace, true, true):
+			if member.Name in seen: continue
+			seen.Add(member.Name, member)
 			result.Add(member.Name, member.StockIcon)
 		return result
 				

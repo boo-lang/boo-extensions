@@ -1,1 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?><Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  <PropertyGroup>    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>    <ProductVersion>9.0.21022</ProductVersion>    <SchemaVersion>2.0</SchemaVersion>    <ProjectGuid>{7948F789-92B6-42C8-B5E6-0119B842C2A7}</ProjectGuid>    <OutputType>Library</OutputType>    <RootNamespace>Boo.Adt</RootNamespace>    <UsePartialTypes>false</UsePartialTypes>    <AssemblyName>Boo.Adt</AssemblyName>    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>  </PropertyGroup>  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">    <DebugSymbols>true</DebugSymbols>    <DebugType>full</DebugType>    <OutputPath>bin\Debug</OutputPath>    <ErrorReport>prompt</ErrorReport>    <ducky>false</ducky>    <culture />    <genwarnings>false</genwarnings>  </PropertyGroup>  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">    <DebugType>none</DebugType>    <OutputPath>bin\Release</OutputPath>    <ErrorReport>prompt</ErrorReport>    <ducky>false</ducky>    <culture />    <genwarnings>false</genwarnings>  </PropertyGroup>  <ItemGroup>    <Reference Include="System" />  </ItemGroup>  <ItemGroup>    <Compile Include="DataMacro.boo" />    <Compile Include="LetMacro.boo" />  </ItemGroup></Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7948F789-92B6-42C8-B5E6-0119B842C2A7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.Adt</RootNamespace>
+    <UsePartialTypes>false</UsePartialTypes>
+    <AssemblyName>Boo.Adt</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <ducky>false</ducky>
+    <culture />
+    <genwarnings>false</genwarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <ducky>false</ducky>
+    <culture />
+    <genwarnings>false</genwarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataMacro.boo" />
+    <Compile Include="LetMacro.boo" />
+  </ItemGroup>
+</Project>
