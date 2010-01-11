@@ -32,6 +32,7 @@ class BooCompiler:
 		try:
 			WriteOptionsToResponseFile(responseFileName)
 			compiler = FindTool("booc")
+			print "booc found at '${compiler}'"
 			compilerOutput = ExecuteProcess(compiler, "@${responseFileName}")
 			return ParseBuildResult(compilerOutput)
 		ensure:

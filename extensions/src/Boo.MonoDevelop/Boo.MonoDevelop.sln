@@ -7,8 +7,6 @@ Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Adt", "..\Boo.Adt\Boo.A
 EndProject
 Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.MonoDevelop.Tests", "..\Boo.MonoDevelop.Tests\Boo.MonoDevelop.Tests.booproj", "{DA18FECD-4F5B-4A02-B36B-876838F6B7A3}"
 EndProject
-Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Unity.MonoDevelop.Tools", "..\..\..\..\unity-addins\Unity.MonoDevelop.Tools\Unity.MonoDevelop.Tools.booproj", "{5A93BB14-0621-4742-B745-455695FF6AD5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityExecutionHandler", "..\..\..\..\unity-addins\UnityExecutionHandler\UnityExecutionHandler.csproj", "{AFBCE3E8-B980-44D7-802A-97BBD7AB6520}"
 EndProject
 Global
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5A93BB14-0621-4742-B745-455695FF6AD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A93BB14-0621-4742-B745-455695FF6AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A93BB14-0621-4742-B745-455695FF6AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A93BB14-0621-4742-B745-455695FF6AD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
