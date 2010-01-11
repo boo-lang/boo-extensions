@@ -8,9 +8,28 @@ class DomConversionVisitor(DepthFirstVisitor):
 	
 	_result as MD.CompilationUnit
 	_currentType as MD.DomType
+	_namespace as string
 	
 	def constructor(result as MD.CompilationUnit):
 		_result = result
+		
+	override def OnModule(node as Module):
+		_namespace = null
+		Visit(node.Namespace)
+		Visit(node.Members)
+		
+	override def OnNamespaceDeclaration(node as NamespaceDeclaration):
+		_namespace = node.Name
+		region = BodyRegionOf(node.ParentNode)
+		domUsing = MD.DomUsing(IsFromNamespace: true, Region: region, ValidRegion: region)
+		domUsing.Add(_namespace)
+		_result.Add(domUsing)
+		
+	override def OnImport(node as Import):
+		region = BodyRegionOf(node)
+		domUsing = MD.DomUsing(Region: region, ValidRegion: region)
+		domUsing.Add(node.Namespace)
+		_result.Add(domUsing)
 		
 	override def OnClassDefinition(node as ClassDefinition):
 		OnTypeDefinition(node, MD.ClassType.Class)
@@ -139,7 +158,8 @@ class DomConversionVisitor(DepthFirstVisitor):
 					Location: LocationOf(parameter))
 					
 	virtual def MethodReturnTypeFrom(method as Method):
-		if method.ReturnType is not null: return ReturnTypeFrom(method.ReturnType)
+		if method.ReturnType is not null:
+			return ReturnTypeFrom(method.ReturnType)
 		
 		match ReturnTypeDetector().Detect(method):
 			case ReturnTypeDetector.Result.Yields:
@@ -193,6 +213,7 @@ class DomConversionVisitor(DepthFirstVisitor):
 		if _currentType is not null:
 			_currentType.Add(type)
 		else:
+			type.Namespace = _namespace
 			_result.Add(type)
 		
 	def WithCurrentType(type as MD.DomType, block as callable()):
