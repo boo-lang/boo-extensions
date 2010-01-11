@@ -4,7 +4,6 @@ import MonoDevelop.Projects.Dom
 import MonoDevelop.Projects.Dom.Parser 
 import MonoDevelop.Ide.Gui.Content
 import MonoDevelop.Projects.Gui.Completion
-
 import Boo.Lang.PatternMatching
 
 class BooEditorCompletion(CompletionTextEditorExtension):
@@ -14,6 +13,9 @@ class BooEditorCompletion(CompletionTextEditorExtension):
 	override def Initialize():
 		super()
 		_dom = ProjectDomService.GetProjectDom(Document.Project) or ProjectDomService.GetFileDom(Document.FileName)
+		
+	override def ExtendsEditor(doc as MonoDevelop.Ide.Gui.Document, editor as IEditableTextBuffer):
+		return System.IO.Path.GetExtension(doc.Name) == ".boo"
 		
 	override def HandleCodeCompletion(context as CodeCompletionContext, completionChar as char):
 #		print "HandleCodeCompletion(${context.ToString()}, ${completionChar.ToString()})"

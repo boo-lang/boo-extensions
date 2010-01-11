@@ -3,7 +3,11 @@
 
 	<property name="build.dir" value="build" />
 	<property name="boo.dir" value="../../boo/bin" />
-
+	<property name="dir.md.bin" value="${environment::get-folder-path('Personal')}/projects/mono/monodevelop/main/build/bin" />
+	<property name="dir.md.addins" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
+	
+	<include buildfile="build.properties" if="${file::exists('build.properties')}" />
+	
 	<include buildfile="nunit.inc" />
 
 	<target name="test" depends="build">

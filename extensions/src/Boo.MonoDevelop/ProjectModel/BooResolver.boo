@@ -7,9 +7,26 @@ import MonoDevelop.Ide.Gui
 
 import Boo.Lang.Compiler as BLC
 
+import Boo.Lang.PatternMatching
+
 class BooResolver(IResolver):
-	def constructor(dom as ProjectDom, compilationUnit as ICompilationUnit, textEditor as TextEditor, fileName as string):
-		pass
+	_dom as ProjectDom
+	_compilationUnit as ICompilationUnit
+
+	def constructor(dom as ProjectDom, compilationUnit as ICompilationUnit, fileName as string):
+		_dom = dom
+		_compilationUnit = compilationUnit
 		
 	def Resolve(result as ExpressionResult, location as DomLocation):
-		print "BooResolver.Resolve(", result, ",", location, ")"
+		type = TypeAt(location)
+		if type is not null:
+			return MemberResolveResult(type)
+		return null
+		
+	private def TypeAt(location as DomLocation):
+		if _compilationUnit is null:
+			return null
+			
+		for type in _compilationUnit.Types:
+			if type.BodyRegion.Contains(location):
+				return type

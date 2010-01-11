@@ -24,8 +24,13 @@ class BooParserStep(AbstractCompilerStep):
 				
 	def extendGrammar(grammar as OMetaGrammar):
 		for r in Parameters.References:
-			for attribute as SyntaxExtensionAttribute in r.GetCustomAttributes(SyntaxExtensionAttribute, true):
+			assemblyRef = r as Boo.Lang.Compiler.TypeSystem.Reflection.IAssemblyReference
+			continue if assemblyRef is null
+			
+			assembly = assemblyRef.Assembly
+			for attribute as SyntaxExtensionAttribute in assembly.GetCustomAttributes(SyntaxExtensionAttribute, true):
 				grammar = attribute.Type(grammar)
+				
 		return grammar
 		
 		

@@ -47,8 +47,9 @@ class BooLanguageBinding(IDotNetLanguageBinding):
 		
 	def Compile(items as ProjectItemCollection,
 				config as DotNetProjectConfiguration,
+				selector as ConfigurationSelector,
 				progressMonitor as IProgressMonitor):
-		return BooCompiler(config, items, progressMonitor).Run()
+		return BooCompiler(config, selector, items, progressMonitor).Run()
 
 		
 	

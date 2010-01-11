@@ -26,9 +26,8 @@ class BooParser(AbstractParser):
 		return document
 		
 	override def CreateResolver(dom as ProjectDom, editor, fileName as string):
-		print "CreateResolver(", dom, editor, fileName, ")"
 		doc = cast(MonoDevelop.Ide.Gui.Document, editor)
-		return BooResolver(dom, doc.CompilationUnit, doc.TextEditor, fileName)
+		return BooResolver(dom, doc.CompilationUnit, fileName)
 		
 def ParseBooText(fileName as string, text as string):
 	

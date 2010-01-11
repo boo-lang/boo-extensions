@@ -10,16 +10,19 @@ import Boo.Lang.PatternMatching
 class BooCompiler:
 	
 	_config as DotNetProjectConfiguration
+	_configSelector as ConfigurationSelector
 	_projectItems as ProjectItemCollection
 	_compilationParameters as BooCompilationParameters
 	_projectParameters as BooProjectParameters
 	
 	def constructor(
 		config as DotNetProjectConfiguration,
+		configSelector as ConfigurationSelector,
 		projectItems as ProjectItemCollection,
 		progressMonitor as IProgressMonitor):
 		
 		_config = config
+		_configSelector = configSelector
 		_projectItems = projectItems
 		_compilationParameters = config.CompilationParameters or BooCompilationParameters()
 		_projectParameters = config.ProjectParameters or BooProjectParameters()
@@ -63,7 +66,7 @@ class BooCompiler:
 				
 		references = item as ProjectReference for item in _projectItems if item isa ProjectReference	
 		for reference in references:
-			for fileName in reference.GetReferencedFileNames(_config.Id):
+			for fileName in reference.GetReferencedFileNames(_configSelector):
 				options.WriteLine("-reference:${fileName}")
 		
 		optionsString = options.ToString()
