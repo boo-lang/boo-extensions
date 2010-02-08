@@ -1,0 +1,64 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.OMeta.Parser.Tests</RootNamespace>
+    <AssemblyName>Boo.OMeta.Parser.Tests</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Boo.Lang.Useful" />
+    <Reference Include="nunit.framework" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.boo" />
+    <Compile Include="BooParserTest.boo" />
+    <Compile Include="BooParserTestFixture.boo" />
+    <Compile Include="BooParserTestFixture.Generated.boo" />
+    <Compile Include="SyntaxMacroTest.boo" />
+    <Compile Include="WhitespaceSensitiveTokenizerTest.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
+      <Project>{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}</Project>
+      <Name>Boo.Adt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Boo.OMeta.Parser\Boo.OMeta.Parser.booproj">
+      <Project>{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}</Project>
+      <Name>Boo.OMeta.Parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Boo.OMeta\Boo.OMeta.booproj">
+      <Project>{EED6C932-8AEE-42CB-8837-C323DC74980B}</Project>
+      <Name>Boo.OMeta</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
+</Project>
