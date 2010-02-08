@@ -89,11 +89,25 @@ def setUpMember(member as TypeMember, attributes, modifiers):
 def setUpParameters(node as INodeWithParameters, parameters):
 	for p in flatten(parameters): node.Parameters.Add(p)
 	
-def newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType as TypeReference, body as Block):
+def newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType as TypeReference, body as Block) as Method:
 	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
 	setUpParameters node, parameters
 	for a in flatten(returnTypeAttributes): node.ReturnTypeAttributes.Add(a)
 	return setUpMember(node, attributes, modifiers)
+	
+def newGenericMethod(attributes, modifiers, name, genericParameters, parameters, returnTypeAttributes, returnType as TypeReference, body as Block):
+	node = newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType, body)
+	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
+	return node
+
+def newGenericTypeReference(qname, args):
+	node = GenericTypeReference(Name: qname)
+	for arg in flatten(args): node.GenericArguments.Add(arg)
+	return node
+	
+def newGenericParameterDeclaration(name):
+	node = GenericParameterDeclaration(Name: tokenValue(name))
+	return node
 	
 def newParameterDeclaration(attributes, name, type):
 	node = ParameterDeclaration(Name: tokenValue(name), Type: type)

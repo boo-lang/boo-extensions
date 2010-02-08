@@ -224,12 +224,23 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	method = (
 		attributes >> attrs,
-		member_modifiers >> mod, DEF, ID >> name, method_parameters >> parameters,
-			attributes >> returnTypeAttributes, optional_type >> type,
-			block >> body
-	) ^ newMethod(attrs, mod, name, parameters, returnTypeAttributes, type, body)
+		member_modifiers >> mod,
+		DEF, ID >> name,
+		optional_generic_parameters >> genericParameters,
+		method_parameters >> parameters,
+		attributes >> returnTypeAttributes, optional_type >> type,
+		block >> body
+	) ^ newGenericMethod(attrs, mod, name, genericParameters, parameters, returnTypeAttributes, type, body)
 	
 	method_parameters = (LPAREN, optional_parameter_list >> parameters, RPAREN) ^ parameters
+	
+	optional_generic_parameters = generic_parameters | ""
+	
+	generic_parameters = (LBRACK, OF, generic_parameter_list >> parameters, RBRACK) ^ parameters
+	
+	generic_parameter = (ID >> name) ^ newGenericParameterDeclaration(name)
+	
+	list_of generic_parameter
 	
 	list_of parameter
 	
@@ -418,7 +429,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_simple | type_reference_array | type_reference_callable
+	type_reference = type_reference_simple \
+		| type_reference_array \
+		| type_reference_callable \
+		| type_reference_generic
+		
+	type_reference_generic = (qualified_name >> qname, generic_arguments >> args) ^ newGenericTypeReference(qname, args)
+	
+	generic_arguments = (LBRACK, OF, type_reference_list >> args, RBRACK) ^ args \
+		| (OF, type_reference_list >> args) ^ args
 	
 	type_reference_callable = (
 		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type
