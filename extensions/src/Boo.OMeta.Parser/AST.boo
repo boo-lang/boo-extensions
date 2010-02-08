@@ -281,10 +281,14 @@ def binaryOperatorFor(op):
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
 	
-def newBlock(stmts):
+def newBlock(contents):
 	b = Block()
-	for item in stmts:
-		b.Statements.Add(item)
+	match contents:
+		case Statement():
+			b.Statements.Add(contents)
+		otherwise:
+			for item in contents:
+				b.Statements.Add(item)
 	return b
 	
 def prepend(first, tail as List):

@@ -160,10 +160,6 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	super_types = ((LPAREN, optional_type_reference_list >> types, RPAREN) ^ types) | ""
 	
-	begin_block = COLON, INDENT
-	
-	end_block = DEDENT
-	
 	class_body = no_member | (++class_member >> members ^ members)
 	
 	interface_body = no_member
@@ -251,14 +247,20 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	list_of attribute
 	
 	parameter = (attributes >> attrs, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, name, type)
-	
+
 	optional_type = (AS, type_reference) | ""
 	
-	block = empty_block | non_empty_block
+	block = empty_block | multi_line_block | single_line_block
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	non_empty_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
+	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
+	
+	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line)
+	
+	begin_block = COLON, INDENT
+	
+	end_block = DEDENT
 	
 	stmt = stmt_block | stmt_line
 	
