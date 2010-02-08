@@ -1,0 +1,74 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{EED6C932-8AEE-42CB-8837-C323DC74980B}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.OMeta</RootNamespace>
+    <AssemblyName>Boo.OMeta</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <SourceAnalysisOverrideSettingsFile>C:\Documents and Settings\rodrigob\Application Data\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
+    <NoStdLib>False</NoStdLib>
+    <Ducky>False</Ducky>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <Strict>False</Strict>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Boo.Lang.Useful" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.boo" />
+    <Compile Include="KeywordsMacro.boo" />
+    <Compile Include="MemoKey.boo" />
+    <Compile Include="OMeta.boo" />
+    <Compile Include="OMetaDelegatingGrammar.boo" />
+    <Compile Include="OMetaEvaluationContext.boo" />
+    <Compile Include="OMetaEvaluationContextLR.boo" />
+    <Compile Include="OMetaFailure.boo" />
+    <Compile Include="OMetaGrammar.boo" />
+    <Compile Include="OMetaGrammarBase.boo" />
+    <Compile Include="OMetaGrammarPrototype.boo" />
+    <Compile Include="OMetaInput.boo" />
+    <Compile Include="OMetaMacro.boo" />
+    <Compile Include="OMetaMacroProcessor.boo" />
+    <Compile Include="OMetaMacroRuleProcessor.boo" />
+    <Compile Include="Set.boo" />
+    <Compile Include="TokensMacro.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
+      <Project>{7948F789-92B6-42C8-B5E6-0119B842C2A7}</Project>
+      <Name>Boo.Adt</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
+</Project>

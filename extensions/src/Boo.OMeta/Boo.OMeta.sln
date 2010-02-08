@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+# SharpDevelop 3.2.0.5403
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta", "Boo.OMeta.booproj", "{EED6C932-8AEE-42CB-8837-C323DC74980B}"
+EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Tests", "..\Boo.OMeta.Tests\Boo.OMeta.Tests.booproj", "{39203C2D-10BB-4FD5-8B84-241908614FFA}"
+EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Adt", "..\Boo.Adt\Boo.Adt.booproj", "{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EED6C932-8AEE-42CB-8837-C323DC74980B}.Debug|x86.Build.0 = Debug|x86
+		{EED6C932-8AEE-42CB-8837-C323DC74980B}.Debug|x86.ActiveCfg = Debug|x86
+		{EED6C932-8AEE-42CB-8837-C323DC74980B}.Release|x86.Build.0 = Release|x86
+		{EED6C932-8AEE-42CB-8837-C323DC74980B}.Release|x86.ActiveCfg = Release|x86
+		{39203C2D-10BB-4FD5-8B84-241908614FFA}.Debug|x86.Build.0 = Debug|x86
+		{39203C2D-10BB-4FD5-8B84-241908614FFA}.Debug|x86.ActiveCfg = Debug|x86
+		{39203C2D-10BB-4FD5-8B84-241908614FFA}.Release|x86.Build.0 = Release|x86
+		{39203C2D-10BB-4FD5-8B84-241908614FFA}.Release|x86.ActiveCfg = Release|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|x86.Build.0 = Debug|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|x86.ActiveCfg = Debug|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|x86.Build.0 = Release|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+EndGlobal

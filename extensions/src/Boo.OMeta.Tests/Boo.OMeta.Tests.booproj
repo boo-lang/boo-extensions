@@ -1,11 +1,11 @@
 ﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}</ProjectGuid>
+    <ProjectGuid>{39203C2D-10BB-4FD5-8B84-241908614FFA}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
-    <RootNamespace>Boo.Adt</RootNamespace>
-    <AssemblyName>Boo.Adt</AssemblyName>
+    <RootNamespace>Boo.OMeta.Tests</RootNamespace>
+    <AssemblyName>Boo.OMeta.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
@@ -27,6 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Boo.Lang.Useful" />
+    <Reference Include="nunit.framework" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -39,8 +40,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.boo" />
-    <Compile Include="DataMacro.boo" />
-    <Compile Include="LetMacro.boo" />
+    <Compile Include="ErrorReportingTest.boo" />
+    <Compile Include="LeftRecursionTest.boo" />
+    <Compile Include="ObjectMatchingTest.boo" />
+    <Compile Include="OMetaInputTest.boo" />
+    <Compile Include="OMetaMacroTest.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
+      <Project>{7948F789-92B6-42C8-B5E6-0119B842C2A7}</Project>
+      <Name>Boo.Adt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Boo.OMeta\Boo.OMeta.booproj">
+      <Project>{EED6C932-8AEE-42CB-8837-C323DC74980B}</Project>
+      <Name>Boo.OMeta</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
 </Project>
