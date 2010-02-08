@@ -111,7 +111,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise", "else"
+		"transient", "raise", "else", "typeof"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -430,7 +430,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	atom = integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
-		| self_literal | super_literal | quasi_quote | closure | hash_literal
+		| self_literal | super_literal | quasi_quote | closure | hash_literal \
+		| type_literal
+		
+	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
 	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body))
 	

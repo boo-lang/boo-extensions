@@ -225,6 +225,9 @@ def newBlockExpression(parameters, body):
 	for p in parameters: node.Parameters.Add(p)
 	return node
 	
+def newTypeofExpression(type):
+	return TypeofExpression(type)
+	
 def newInvocationWithBlock(invocation as MethodInvocationExpression, block as BlockExpression):
 	node = invocation.CloneNode()
 	node.Arguments.Add(block)
