@@ -12,6 +12,8 @@ Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Parser", "..\Boo.
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Parser.Tests", "..\Boo.OMeta.Parser.Tests\Boo.OMeta.Parser.Tests.booproj", "{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}"
 EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "OMetaParserConsole", "..\OMetaParserConsole\OMetaParserConsole.booproj", "{49F3D03F-83E3-449C-99F5-209D5C25714D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -38,5 +40,9 @@ Global
 		{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}.Debug|x86.ActiveCfg = Debug|x86
 		{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}.Release|x86.Build.0 = Release|x86
 		{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}.Release|x86.ActiveCfg = Release|x86
+		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Debug|x86.Build.0 = Debug|x86
+		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Debug|x86.ActiveCfg = Debug|x86
+		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Release|x86.Build.0 = Release|x86
+		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 EndGlobal
