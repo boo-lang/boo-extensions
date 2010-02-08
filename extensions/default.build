@@ -159,6 +159,15 @@
 		<mkdir dir="${build.dir}" />	
 		<copy file="${nunit.framework.dll}" todir="${build.dir}" />
 		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
+		<copy todir="${build.dir}">
+			<fileset basedir="${boo.dir}">
+				<include name="Boo.Lang.dll"  />
+				<include name="Boo.Lang.PatternMatching.dll" />
+				<include name="Boo.Lang.Useful.dll" />
+				<include name="Boo.Lang.Compiler.dll"  />
+				<include name="Boo.Lang.Parser.dll" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="clean">
