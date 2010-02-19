@@ -25,7 +25,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.boo" />
     <Compile Include="PegContext.boo" />
-    <Compile Include="PegContextWithPayload.boo" />
     <Compile Include="PegExpression.boo" />
     <Compile Include="PegMacro.boo" />
     <Compile Include="PegRule.boo" />
