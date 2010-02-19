@@ -133,6 +133,7 @@
 			</sources>
 			<references>
 				<include name="${dir.md.bin}/MonoDevelop.*.dll" />
+				<include name="${dir.md.bin}/Mono.TextEditor.dll" />
 				<include name="${dir.md.bin}/NRefactory.dll" />
 				<include name="${dir.md.bin}/../AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll" />
 				<include name="${build.dir}/Boo.Adt.dll" />
