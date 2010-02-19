@@ -145,6 +145,7 @@
 				<include name="Templates/*.xpt.xml" />
 				<include name="Icons/*.png" />
 				<include name="Icons/*.Base" />
+				<include name="Highlighting/BooSyntaxMode.xml" />
 			</embed>
 		</booc>
 		

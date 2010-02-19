@@ -113,6 +113,9 @@
     <EmbeddedResource Include="Icons\BooProjectStockIcon.png">
       <LogicalName>BooProjectStockIcon.png</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Highlighting\BooSyntaxMode.xml">
+      <LogicalName>BooSyntaxMode.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
