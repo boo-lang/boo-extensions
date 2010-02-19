@@ -1,14 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-# SharpDevelop 3.0.0.3038
-Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.PatternMatching", "src\Boo.PatternMatching\Boo.PatternMatching.booproj", "{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}"
-EndProject
+# SharpDevelop 3.2.0.5403
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Pegs", "src\Boo.Pegs\Boo.Pegs.booproj", "{89A65375-A2D9-40CD-84DA-BA7EC539E483}"
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Pegs.Tests", "src\Boo.Pegs.Tests\Boo.Pegs.Tests.booproj", "{C1A0CCD0-676F-4BF8-8018-9B960E614B74}"
-EndProject
-Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "PegCalculator", "examples\pegs\PegCalculator.booproj", "{FE903698-F7E8-4AFA-98E5-54AFE1B4310A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,10 +12,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B9E8B32-CDBC-4E01-B330-1CA26697CAD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -28,9 +20,5 @@ Global
 		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE903698-F7E8-4AFA-98E5-54AFE1B4310A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE903698-F7E8-4AFA-98E5-54AFE1B4310A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE903698-F7E8-4AFA-98E5-54AFE1B4310A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE903698-F7E8-4AFA-98E5-54AFE1B4310A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
