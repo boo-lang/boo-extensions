@@ -80,6 +80,7 @@
     <Compile Include="ProjectModel\BooResolver.boo" />
     <Compile Include="ProjectModel\Consts.boo" />
     <Compile Include="Refactoring\BooASTProvider.boo" />
+    <Compile Include="IO.boo" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Boo.MonoDevelop.addin.xml">

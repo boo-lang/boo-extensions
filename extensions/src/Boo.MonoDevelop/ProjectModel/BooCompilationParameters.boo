@@ -4,6 +4,7 @@ import MonoDevelop.Projects
 import MonoDevelop.Core.Serialization
 
 class BooCompilationParameters(ConfigurationParameters):
+
 	[ItemProperty("genwarnings")]
 	[property(GenWarnings)] _genWarnings = false
 	

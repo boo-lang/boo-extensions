@@ -31,17 +31,16 @@ class BooCompiler:
 		responseFileName = Path.GetTempFileName()
 		try:
 			WriteOptionsToResponseFile(responseFileName)
-			compiler = FindTool("booc")
-			print "booc found at '${compiler}'"
-			compilerOutput = ExecuteProcess(compiler, "@${responseFileName}")
+			compilerOutput = ExecuteProcess(BoocPath(), "@${responseFileName}")
 			return ParseBuildResult(compilerOutput)
 		ensure:
 			FileService.DeleteFile(responseFileName)
 			
-	private def FindTool(toolName as string):
-		dotnetProject = _config.ParentItem as DotNetProject
-		runtime = (dotnetProject.TargetRuntime if dotnetProject is not null else MonoDevelop.Core.Runtime.SystemAssemblyService.DefaultRuntime)
-		return runtime.GetToolPath(_config.TargetFramework, toolName)
+	private def BoocPath():
+		return PathCombine(AssemblyPath(), "boo", "booc.exe")
+		
+	private def AssemblyPath():
+		return Path.GetDirectoryName(GetType().Assembly.ManifestModule.FullyQualifiedName)
 			
 	private def WriteOptionsToResponseFile(responseFileName as string):
 		options = StringWriter()
@@ -95,7 +94,7 @@ class BooCompiler:
 		
 		for line in StringReader(stdout):
 			match line:
-				case /^(?<fileName>.+)\((?<lineNumber>\d+),(?<column>\d+)\):\s+(?<code>.+?):\s+(?<message>.+)$/:
+				case @/^(?<fileName>.+)\((?<lineNumber>\d+),(?<column>\d+)\):\s+(?<code>.+?):\s+(?<message>.+)$/:
 					result.Append(BuildError(
 								FileName: fileName[0].Value,
 								Line: int.Parse(lineNumber[0].Value),
@@ -104,7 +103,7 @@ class BooCompiler:
 								ErrorNumber: code[0].Value,
 								ErrorText: message[0].Value))
 					
-				case /^(?<code>.+):\s+(?<message>.+)$/:
+				case @/^(?<code>.+):\s+(?<message>.+)$/:
 					result.Append(
 						BuildError(
 								ErrorNumber: code[0].Value,
