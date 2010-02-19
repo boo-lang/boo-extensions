@@ -61,21 +61,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Projects.Gui.dll</HintPath>
     </Reference>
-    <Reference Include="NRefactory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
-    </Reference>
     <Reference Include="UnitTests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\UnitTests.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoDevelop.Refactoring, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Refactoring.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoDevelop.CSharpBinding, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\BackendBindings\MonoDevelop.CSharpBinding.dll</HintPath>
     </Reference>
     <Reference Include="MonoDevelop.XmlEditor, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
@@ -84,6 +72,22 @@
     <Reference Include="MonoDevelop.DesignerSupport, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.DesignerSupport\MonoDevelop.DesignerSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="NRefactory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=efe927acf176eea2">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.CSharpBinding, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\BackendBindings\MonoDevelop.CSharpBinding.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.AspNet, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.AspNet\MonoDevelop.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Deployment, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.Deployment\MonoDevelop.Deployment.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

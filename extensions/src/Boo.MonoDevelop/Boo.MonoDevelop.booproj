@@ -55,13 +55,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Projects.Gui.dll</HintPath>
     </Reference>
-    <Reference Include="NRefactory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
-    </Reference>
     <Reference Include="MonoDevelop.Refactoring, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\AddIns\MonoDevelop.Refactoring\MonoDevelop.Refactoring.dll</HintPath>
+    </Reference>
+    <Reference Include="NRefactory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=efe927acf176eea2">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
