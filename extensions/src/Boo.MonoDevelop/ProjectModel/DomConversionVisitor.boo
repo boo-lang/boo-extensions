@@ -21,13 +21,13 @@ class DomConversionVisitor(DepthFirstVisitor):
 	override def OnNamespaceDeclaration(node as NamespaceDeclaration):
 		_namespace = node.Name
 		region = BodyRegionOf(node.ParentNode)
-		domUsing = MD.DomUsing(IsFromNamespace: true, Region: region, ValidRegion: region)
+		domUsing = MD.DomUsing(IsFromNamespace: true, Region: region)
 		domUsing.Add(_namespace)
 		_result.Add(domUsing)
 		
 	override def OnImport(node as Import):
 		region = BodyRegionOf(node)
-		domUsing = MD.DomUsing(Region: region, ValidRegion: region)
+		domUsing = MD.DomUsing(Region: region)
 		domUsing.Add(node.Namespace)
 		_result.Add(domUsing)
 		
@@ -58,7 +58,7 @@ class DomConversionVisitor(DepthFirstVisitor):
 		AddType(converted)
 		
 	override def OnCallableDefinition(node as CallableDefinition):
-		parameters = List[of MD.IParameter](ParameterFrom(null, p) for p in node.Parameters)
+		parameters = System.Collections.Generic.List[of MD.IParameter](ParameterFrom(null, p) for p in node.Parameters)
 		converted = MD.DomType.CreateDelegate(_result, node.Name, LocationOf(node), ReturnTypeFrom(node.ReturnType), parameters)
 		converted.Modifiers = ModifiersFrom(node)
 		converted.DeclaringType = _currentType
