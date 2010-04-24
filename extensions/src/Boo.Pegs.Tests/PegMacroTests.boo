@@ -1,6 +1,6 @@
 namespace Boo.Pegs.Tests
 
-import NUnit.Framework
+import NUnit.Framework from nunit.framework
 import Boo.Pegs
 
 [TestFixture]

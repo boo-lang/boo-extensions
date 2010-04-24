@@ -4,7 +4,7 @@ namespace Boo.OMeta.Tests
 import Boo.OMeta
 import Boo.Lang.PatternMatching
 
-import NUnit.Framework
+import NUnit.Framework from nunit.framework
 
 [TestFixture]
 class LeftRecursionTest:

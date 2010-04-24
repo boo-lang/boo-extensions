@@ -5,7 +5,7 @@ import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.OMeta.Parser
-import NUnit.Framework
+import NUnit.Framework from nunit.framework
 
 syntax Units:
 	atom = mass | super
