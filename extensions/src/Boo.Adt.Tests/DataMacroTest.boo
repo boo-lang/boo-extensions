@@ -19,7 +19,6 @@ class DataMacroTest:
 	
 	[Test]
 	def TestMutableField():
-		
 		data Mutable(@m as int, i as int)
 		
 		assert not typeof(Mutable).GetField("m").IsInitOnly

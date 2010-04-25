@@ -12,7 +12,7 @@ Usage:
 
 	let answer = 42
 """
-	case [| let $(ReferenceExpression(Name: name)) = $r |]:
+	case [| let $name = $r |]:
 		yield [|
 			public static final $name = $r
 		|]
