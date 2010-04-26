@@ -58,11 +58,16 @@ class DomConversionVisitor(DepthFirstVisitor):
 		AddType(converted)
 		
 	override def OnCallableDefinition(node as CallableDefinition):
-		parameters = System.Collections.Generic.List[of MD.IParameter](ParameterFrom(null, p) for p in node.Parameters)
+		parameters = System.Collections.Generic.List[of MD.IParameter]()
+		for p in node.Parameters: parameters.Add(ParameterFrom(null, p))
+		
 		converted = MD.DomType.CreateDelegate(_result, node.Name, LocationOf(node), ReturnTypeFrom(node.ReturnType), parameters)
 		converted.Modifiers = ModifiersFrom(node)
 		converted.DeclaringType = _currentType
+		converted.BodyRegion = BodyRegionOf(node)
+		
 		for p in parameters: p.DeclaringMember = converted
+		
 		AddType(converted)
 		
 	override def OnField(node as Field):
