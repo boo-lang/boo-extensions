@@ -12,10 +12,12 @@
 		<Import assembly="Boo.MonoDevelop.dll" />
 		<Import assembly="boo/Boo.Lang.dll" />
 		<Import assembly="boo/Boo.Lang.Extensions.dll" />
+		<Import assembly="boo/Boo.Lang.Useful.dll" />
 		<Import assembly="boo/Boo.Lang.Compiler.dll" />
 		<Import assembly="boo/Boo.Lang.Parser.dll" />
-		<Import assembly="boo/Boo.Lang.Useful.dll" />
+		<Import assembly="boo/Boo.Lang.PatternMatching.dll" />
 		<Import assembly="boo/Boo.Lang.CodeDom.dll" />
+		<Import assembly="boo/Boo.Lang.Interpreter.dll" />
 		<Import file="boo/booc.exe" />
 	</Runtime>
 
@@ -30,8 +32,8 @@
 	</Dependencies>
 	
 	<Extension path="/MonoDevelop/Core/SupportPackages">
-		<Condition id="PackageNotInstalled" name="mono-boo" version="0.9.3">
-			<Package name="boo" version="0.9.3" clrVersion="Default">
+		<Condition id="PackageNotInstalled" name="mono-boo" version="0.9.4">
+			<Package name="boo" version="0.9.4" clrVersion="Default">
 				<Assembly file="boo/Boo.Lang.dll" />
 				<Assembly file="boo/Boo.Lang.Extensions.dll" />
 				<Assembly file="boo/Boo.Lang.Useful.dll" />
@@ -39,7 +41,7 @@
 				<Assembly file="boo/Boo.Lang.Parser.dll" />
 				<Assembly file="boo/Boo.Lang.PatternMatching.dll" />
 				<Assembly file="boo/Boo.Lang.CodeDom.dll" />
-				<Assembly file="boo/Boo.Lang.InteractiveInterpreter.dll" />
+				<Assembly file="boo/Boo.Lang.Interpreter.dll" />
 			</Package>
 		</Condition>
 	</Extension>
