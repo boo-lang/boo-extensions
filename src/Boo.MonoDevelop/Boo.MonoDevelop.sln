@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.MonoDevelop", "Boo.MonoDevelop.booproj", "{A154F6EB-6808-4816-B9C1-C5412663E0F1}"
 EndProject
-Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Adt", "..\Boo.Adt\Boo.Adt.booproj", "{7948F789-92B6-42C8-B5E6-0119B842C2A7}"
+Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Adt", "..\Boo.Adt\Boo.Adt.booproj", "{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}"
 EndProject
 Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.MonoDevelop.Tests", "..\Boo.MonoDevelop.Tests\Boo.MonoDevelop.Tests.booproj", "{DA18FECD-4F5B-4A02-B36B-876838F6B7A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonoDevelop", "MonoDevelop", "{FC6CF039-0094-488B-8144-022E80F103D6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpBinding", "..\..\..\..\mono\monodevelop\main\src\addins\CSharpBinding\CSharpBinding.csproj", "{07CC7654-27D6-421D-A64C-0FFA40456FA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,14 +15,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{07CC7654-27D6-421D-A64C-0FFA40456FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07CC7654-27D6-421D-A64C-0FFA40456FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07CC7654-27D6-421D-A64C-0FFA40456FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07CC7654-27D6-421D-A64C-0FFA40456FA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7948F789-92B6-42C8-B5E6-0119B842C2A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A154F6EB-6808-4816-B9C1-C5412663E0F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -35,7 +29,6 @@ Global
 		{DA18FECD-4F5B-4A02-B36B-876838F6B7A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{07CC7654-27D6-421D-A64C-0FFA40456FA2} = {FC6CF039-0094-488B-8144-022E80F103D6}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Boo.MonoDevelop.booproj
