@@ -152,11 +152,14 @@
 		<copy todir="${dir.md.addins}">
 			<fileset basedir="${build.dir}">
 				<include name="Boo.MonoDevelop.*" />
-				<include name="boo/*.dll" />
-				<include name="boo/*.exe" />
 			</fileset>
 		</copy>
-		
+		<copy todir="${dir.md.addins}/boo">
+			<fileset basedir="${boo.dir}">
+				<include name="Boo.Lang*.dll" />
+				<include name="booc.*" />
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="init">
@@ -164,10 +167,9 @@
 		<copy file="${nunit.framework.dll}" todir="${build.dir}" />
 		<loadtasks assembly="${boo.dir}/Boo.NAnt.Tasks.dll" />
 
-		<copy todir="${build.dir}/boo">
+		<copy todir="${build.dir}">
 			<fileset basedir="${boo.dir}">
 				<include name="Boo.Lang*.dll" />
-				<include name="booc.*" />
 			</fileset>
 		</copy>
 	</target>
