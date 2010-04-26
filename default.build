@@ -157,6 +157,7 @@
 		<copy todir="${dir.md.addins}/boo">
 			<fileset basedir="${boo.dir}">
 				<include name="Boo.Lang*.dll" />
+				<include name="Boo.Lang*.mdb" />
 				<include name="booc.*" />
 			</fileset>
 		</copy>
