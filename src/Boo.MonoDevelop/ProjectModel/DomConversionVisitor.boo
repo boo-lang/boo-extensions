@@ -72,6 +72,7 @@ class DomConversionVisitor(DepthFirstVisitor):
 							Name: node.Name,
 							ReturnType: ParameterTypeFrom(node.Type),
 							Location: LocationOf(node),
+							BodyRegion: BodyRegionOf(node),
 							DeclaringType: _currentType,
 							Modifiers: ModifiersFrom(node)))
 							
