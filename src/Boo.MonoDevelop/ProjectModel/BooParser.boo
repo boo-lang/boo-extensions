@@ -1,5 +1,6 @@
 namespace Boo.MonoDevelop.ProjectModel
 
+import System
 import System.IO
 
 import MonoDevelop.Projects.Dom
@@ -16,12 +17,16 @@ class BooParser(AbstractParser):
 		return Path.GetExtension(fileName).ToLower() == ".boo"
 		
 	override def Parse(dom as ProjectDom, fileName as string, content as string):
-		result = ParseBooText(fileName, content)
 		
 		document = ParsedDocument(fileName)
 		document.CompilationUnit = CompilationUnit(fileName)
 		
-		result.CompileUnit.Accept(DomConversionVisitor(document.CompilationUnit))
+		try:
+			result = ParseBooText(fileName, content)
+			result.CompileUnit.Accept(DomConversionVisitor(document.CompilationUnit))
+			if len(result.Errors): Console.Error.WriteLine(result.Errors.ToString(true))
+		except e:
+			Console.Error.WriteLine(e)
 		
 		return document
 		
