@@ -171,7 +171,7 @@ class DomConversionVisitor(DepthFirstVisitor):
 			case ReturnTypeDetector.Result.Yields:
 				return MD.DomReturnType("System.Collections.IEnumerator")
 			case ReturnTypeDetector.Result.Returns:
-				return MD.DomReturnType("object")
+				return DefaultReturnType()
 			otherwise:
 				return MD.DomReturnType("void")
 		
@@ -200,7 +200,7 @@ class DomConversionVisitor(DepthFirstVisitor):
 			Cancel()
 	
 	virtual def ParameterTypeFrom(typeRef as TypeReference):
-		if typeRef is null: return MD.DomReturnType("object")
+		if typeRef is null: return DefaultReturnType()
 		return ReturnTypeFrom(typeRef)
 		
 	virtual def ReturnTypeFrom(typeRef as TypeReference) as MD.DomReturnType:
@@ -239,3 +239,6 @@ class DomConversionVisitor(DepthFirstVisitor):
 		
 	def DomLocationFrom(location as SourceLocation):
 		return MD.DomLocation(location.Line, location.Column)
+		
+	def DefaultReturnType():
+		return MD.DomReturnType("object")
