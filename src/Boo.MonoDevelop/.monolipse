@@ -3,7 +3,7 @@
   <outputType>library</outputType>
   <references>
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
-      <path>/boo-extensions/extensions/src/Boo.Adt</path>
+      <path>/boo-extensions/src/Boo.Adt</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
     <monolipse.core.internal.LocalAssemblyReference-Remembrance>
       <path>/MonoDevelop/bin/MonoDevelop.Core.dll</path>
