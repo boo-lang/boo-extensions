@@ -81,12 +81,10 @@ class BooCompiler:
 						UseShellExecute: false,
 						RedirectStandardOutput: true,
 						RedirectStandardError: true)
-			
-		stdout = StringWriter()
-		stderr = StringWriter()
-		using processWrapper = Runtime.ProcessService.StartProcess(startInfo, stdout, stderr, null):
-			processWrapper.WaitForOutput()
-			return stdout.ToString() + System.Environment.NewLine + stderr.ToString()
+		
+		using process = Runtime.SystemAssemblyService.CurrentRuntime.ExecuteAssembly(startInfo, _config.TargetFramework):
+			process.WaitForExit()
+			return process.StandardOutput.ReadToEnd() + System.Environment.NewLine + process.StandardError.ReadToEnd()
 			
 	private def ParseBuildResult(stdout as string):
 		
