@@ -1,6 +1,5 @@
 namespace Boo.MonoDevelop.Completion
 
-import MonoDevelop.Projects.Dom
 import MonoDevelop.Projects.Dom.Parser 
 import MonoDevelop.Ide.Gui.Content
 import MonoDevelop.Ide.CodeCompletion

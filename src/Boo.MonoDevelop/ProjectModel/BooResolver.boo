@@ -3,12 +3,6 @@ namespace Boo.MonoDevelop.ProjectModel
 import MonoDevelop.Projects.Dom
 import MonoDevelop.Projects.Dom.Parser
 
-import MonoDevelop.Ide.Gui
-
-import Boo.Lang.Compiler as BLC
-
-import Boo.Lang.PatternMatching
-
 class BooResolver(IResolver):
 	_dom as ProjectDom
 	_compilationUnit as ICompilationUnit

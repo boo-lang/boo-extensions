@@ -1,6 +1,5 @@
 namespace Boo.MonoDevelop.ProjectModel
 
-import System.CodeDom
 import System.CodeDom.Compiler
 
 class BooCodeGenerator(CodeGenerator):
