@@ -3,7 +3,7 @@ namespace Boo.MonoDevelop.Completion
 import MonoDevelop.Projects.Dom
 import MonoDevelop.Projects.Dom.Parser 
 import MonoDevelop.Ide.Gui.Content
-import MonoDevelop.Projects.Gui.Completion
+import MonoDevelop.Ide.CodeCompletion
 import Boo.Lang.PatternMatching
 
 class BooEditorCompletion(CompletionTextEditorExtension):
