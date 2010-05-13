@@ -38,39 +38,15 @@
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\Mono.TextEditor.dll</HintPath>
       <Package>monodevelop</Package>
     </Reference>
-    <Reference Include="MonoDevelop.Components, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Components.dll</HintPath>
-      <Package>monodevelop</Package>
-    </Reference>
     <Reference Include="MonoDevelop.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Core.dll</HintPath>
-      <Package>monodevelop</Package>
-    </Reference>
-    <Reference Include="MonoDevelop.Core.Gui, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Core.Gui.dll</HintPath>
       <Package>monodevelop</Package>
     </Reference>
     <Reference Include="MonoDevelop.Ide, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Ide.dll</HintPath>
       <Package>monodevelop</Package>
-    </Reference>
-    <Reference Include="MonoDevelop.Projects, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Projects.dll</HintPath>
-      <Package>monodevelop</Package>
-    </Reference>
-    <Reference Include="MonoDevelop.Projects.Gui, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\MonoDevelop.Projects.Gui.dll</HintPath>
-      <Package>monodevelop</Package>
-    </Reference>
-    <Reference Include="UnitTests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\UnitTests.dll</HintPath>
     </Reference>
     <Reference Include="MonoDevelop.XmlEditor, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
@@ -85,6 +61,7 @@
     <Reference Include="NRefactory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=efe927acf176eea2">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mono\monodevelop\main\build\bin\NRefactory.dll</HintPath>
+      <Package>monodevelop</Package>
     </Reference>
     <Reference Include="MonoDevelop.CSharpBinding, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
