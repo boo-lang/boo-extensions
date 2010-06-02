@@ -3,8 +3,8 @@
 
 	<property name="build.dir" value="build" />
 	<property name="boo.dir" value="../boo/build" />
-	<property name="dir.md.bin" value="/usr/lib/monodevelop/bin" />
-	<property name="dir.md.addins" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
+	<property name="md.bin.dir" value="../tmp/monodevelop/bin" />
+	<property name="md.addins.dir" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
 
 	<include buildfile="nunit.inc" />
 	
@@ -122,7 +122,7 @@
 	
 	<target name="md" description="MonoDevelop addin" depends="init, Boo.Adt">
 	
-		<echo>${dir.md.bin}</echo>
+		<echo>${md.bin.dir}</echo>
 		<booc failonerror="true"
 			output="${build.dir}/Boo.MonoDevelop.dll"
 			target="library"
@@ -132,10 +132,10 @@
 				<include name="**/*.boo" />
 			</sources>
 			<references>
-				<include name="${dir.md.bin}/MonoDevelop.*.dll" />
-				<include name="${dir.md.bin}/Mono.TextEditor.dll" />
-				<include name="${dir.md.bin}/NRefactory.dll" />
-				<include name="${dir.md.bin}/../AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll" />
+				<include name="${md.bin.dir}/MonoDevelop.*.dll" />
+				<include name="${md.bin.dir}/Mono.TextEditor.dll" />
+				<include name="${md.bin.dir}/NRefactory.dll" />
+				<include name="${md.bin.dir}/../AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll" />
 				<include name="${build.dir}/Boo.Adt.dll" />
 			</references>
 			
@@ -149,12 +149,12 @@
 			</embed>
 		</booc>
 		
-		<copy todir="${dir.md.addins}">
+		<copy todir="${md.addins.dir}">
 			<fileset basedir="${build.dir}">
 				<include name="Boo.MonoDevelop.*" />
 			</fileset>
 		</copy>
-		<copy todir="${dir.md.addins}/boo">
+		<copy todir="${md.addins.dir}/boo">
 			<fileset basedir="${boo.dir}">
 				<include name="Boo.Lang*.dll" />
 				<include name="Boo.Lang*.mdb" />
