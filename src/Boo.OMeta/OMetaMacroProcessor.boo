@@ -3,6 +3,7 @@ namespace Boo.OMeta
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.PatternMatching
+import Boo.Lang.Environments
 
 class OMetaMacroProcessor:
 	
