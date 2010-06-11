@@ -1,6 +1,0 @@
-<WorkspaceItem name="Boo.MonoDevelop" ctype="Workspace">
-  <Items>
-    <Item>Boo.MonoDevelop.sln</Item>
-    <Item>../../../../mono/monodevelop/main/Main.sln</Item>
-  </Items>
-</WorkspaceItem>

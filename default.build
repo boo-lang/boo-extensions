@@ -3,8 +3,6 @@
 
 	<property name="build.dir" value="build" />
 	<property name="boo.dir" value="../boo/build" />
-	<property name="md.bin.dir" value="../tmp/monodevelop/bin" />
-	<property name="md.addins.dir" value="${environment::get-folder-path('Personal')}/.config/MonoDevelop/addins/Boo" />
 
 	<include buildfile="nunit.inc" />
 	
@@ -118,49 +116,6 @@
 				<include name="Boo.OMeta.Parser.dll" />
 			</references>
 		</booc>
-	</target>
-	
-	<target name="md" description="MonoDevelop addin" depends="init, Boo.Adt">
-	
-		<echo>${md.bin.dir}</echo>
-		<booc failonerror="true"
-			output="${build.dir}/Boo.MonoDevelop.dll"
-			target="library"
-			debug="true"
-			rebuild="true">
-			<sources basedir="src/Boo.MonoDevelop">
-				<include name="**/*.boo" />
-			</sources>
-			<references>
-				<include name="${md.bin.dir}/MonoDevelop.*.dll" />
-				<include name="${md.bin.dir}/Mono.TextEditor.dll" />
-				<include name="${md.bin.dir}/NRefactory.dll" />
-				<include name="${md.bin.dir}/../AddIns/MonoDevelop.Refactoring/MonoDevelop.Refactoring.dll" />
-				<include name="${build.dir}/Boo.Adt.dll" />
-			</references>
-			
-			<embed basedir="src/Boo.MonoDevelop">
-				<include name="Boo.MonoDevelop.addin.xml" />
-				<include name="Templates/*.xft.xml" />
-				<include name="Templates/*.xpt.xml" />
-				<include name="Icons/*.png" />
-				<include name="Icons/*.Base" />
-				<include name="Highlighting/BooSyntaxMode.xml" />
-			</embed>
-		</booc>
-		
-		<copy todir="${md.addins.dir}">
-			<fileset basedir="${build.dir}">
-				<include name="Boo.MonoDevelop.*" />
-			</fileset>
-		</copy>
-		<copy todir="${md.addins.dir}/boo">
-			<fileset basedir="${boo.dir}">
-				<include name="Boo.Lang*.dll" />
-				<include name="Boo.Lang*.mdb" />
-				<include name="booc.*" />
-			</fileset>
-		</copy>
 	</target>
 	
 	<target name="init">
