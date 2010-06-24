@@ -6,7 +6,7 @@ import Boo.Lang.PatternMatching
 
 macro let:
 """
-Declares a public static final field in the current module.
+Declares a public static final field in the current scope.
 
 Usage:
 
