@@ -1,28 +1,28 @@
-import Boo.Lang.PatternMatching
 import Boo.Adt
+import Boo.Lang.PatternMatching
 
-data Expression = Const(value as int) | Add(left as Expression, right as Expression)
+data Expression = Const(value as int) \
+	| Sum(left as Expression, right as Expression)
 
 def eval(e as Expression) as int:
    match e:
       case Const(value):
       	return value
-      case Add(left, right):
+      case Sum(left, right):
       	return eval(left) + eval(right)
       
 def simplify(e as Expression) as Expression:
 	match e:
-		case Add(left: Const(value: 0), right):
+		case Sum(left: Const(value: 0), right):
 			return simplify(right)
-		case Add(left, right: Const(value: 0)):
+		case Sum(left, right: Const(value: 0)):
 			return simplify(left)
-		case Add(left, right):
-			return Add(simplify(left), simplify(right))
+		case Sum(left, right):
+			return Sum(simplify(left), simplify(right))
 		otherwise:
 			return e
-      
 
-e = Add(Add(Const(19), Const(0)), Add(Const(0), Const(23)))
+e = Sum(Sum(Const(19), Const(0)), Sum(Const(0), Const(23)))
 
 print simplify(e)
 print eval(e) 
