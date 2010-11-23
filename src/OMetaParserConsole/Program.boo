@@ -23,6 +23,9 @@ macro WithColor:
 			Console.ForegroundColor = $color
 			$(WithColor.Body)
 		|]
+		
+def PrintInput(input as OMetaInput):
+	print "{0}(IsEmpty: {1}, Position: {2})" % (input.GetType(), input.IsEmpty, input.Position)
 	
 promptColor = ConsoleColor.DarkBlue
 inputColor = ConsoleColor.Blue
@@ -52,7 +55,8 @@ while true:
 						print "ExpressionStatement(${e.GetType()})"
 					otherwise:
 						print Value.GetType()
-				print "{0}(IsEmpty: {1}, Position: {2})" % (Input.GetType(), Input.IsEmpty, Input.Position)
-		case FailedMatch(Failure):
+				PrintInput Input
+		case FailedMatch(Input, Failure):
 			WithColor failureColor:
 				print Failure
+				PrintInput Input
