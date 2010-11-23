@@ -26,7 +26,7 @@ it generates:
 	for keyword in keywords.Arguments:
 		match keyword:
 			case StringLiteralExpression(Value: name):
-				keywordRule = ReferenceExpression(Name: "${name.ToUpper()}")
+				keywordRule = ReferenceExpression(Name: name.ToUpper())
 				block.Add([| $keywordRule = keyword[$keyword] |])
 				rules.Add(keyword)
 		
