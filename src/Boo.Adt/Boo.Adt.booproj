@@ -35,12 +35,14 @@
     <ducky>false</ducky>
     <culture />
     <genwarnings>false</genwarnings>
+    <nostdlib>false</nostdlib>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <ducky>false</ducky>
     <culture />
     <genwarnings>false</genwarnings>
+    <nostdlib>false</nostdlib>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Core">
