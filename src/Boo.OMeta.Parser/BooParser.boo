@@ -441,7 +441,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	type_reference_callable = (
 		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type
-	) ^ newCallableTypeReference(params, type)
+	) ^ newCallableTypeReference(params, type) | ((CALLABLE)^ SimpleTypeReference("callable"))
 	
 	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	
