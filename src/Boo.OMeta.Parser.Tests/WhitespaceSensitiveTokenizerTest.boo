@@ -38,7 +38,7 @@ level11
 		]
 		
 		tokenizer = ParensForGrouping()
-		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', code)])
+		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', normalize(code))])
 	
 	[Test] def IndentDedent():
 		code = """
@@ -84,4 +84,6 @@ level 1.3:
 		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', code)])
 #		for t as Token in scan(tokenizer, 'scanner', code):
 #			print "Token('${t.kind}', '${t.value}'), "
-		
+
+	def normalize(s as string):
+		return s.Replace("\r\n", "\n")
