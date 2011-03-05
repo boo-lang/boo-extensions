@@ -64,7 +64,11 @@ def newImport(qname as string):
 def newInteger(t, style as NumberStyles):
 	value = int.Parse(tokenValue(t), style)
 	return IntegerLiteralExpression(Value: value)
-	
+
+def newFloat(t):
+	value = double.Parse(t)
+	return DoubleLiteralExpression(Value: value)
+
 def newEvent(attributes, modifiers, name, type):
 	return setUpMember(Event(Name: tokenValue(name), Type: type), attributes, modifiers)
 	

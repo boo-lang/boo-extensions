@@ -447,7 +447,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
-	atom = integer | boolean | reference | array_literal | list_literal \
+	atom = float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
 		| type_literal
@@ -535,6 +535,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	integer = (NUM >> n ^ newInteger(n, NumberStyles.None)) \
 		| (HEXNUM >> n ^ newInteger(n, NumberStyles.HexNumber))
+	
+	float = ( (fractional_constant >> n, (exponent_part | "") >> e , floating_suffix ) ^ newFloat(makeString(n,e))) | ((NUM >> n, exponent_part >> e, floating_suffix)  ^ newFloat(makeString(tokenValue(n),e)))
+
+	fractional_constant = ((NUM >> a , DOT , NUM >> b) ^ makeString(tokenValue(a),".",tokenValue(b))) | ( (DOT , NUM >> b) ^ makeString(".",tokenValue(b)) ) | ( (NUM >> a , DOT) ^ makeString(tokenValue(a), ".") )
+    
+	exponent_part = ( ("e" | "E") , exposignopt >> e , NUM >> d ) ^ makeString("e", e, tokenValue(d))
+
+	exposignopt = ( (PLUS | MINUS) >> e ^ makeString(tokenValue(e)) ) | ""
+	
+	floating_suffix = "f" | "l" | "F" | "L" | ""
 	
 	boolean = true_literal | false_literal
 	
