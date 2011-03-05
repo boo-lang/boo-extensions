@@ -460,7 +460,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	list_of closure_stmt, SEMICOLON
 	
-	closure_stmt = closure_stmt_expression | closure_stmt_macro | closure_stmt_return | closure_stmt_raise
+	closure_stmt = closure_stmt_expression | closure_stmt_macro | closure_stmt_return | closure_stmt_raise | closure_stmt_unpack
 	
 	closure_stmt_macro = (ID >> name, assignment_list >> args, closure_stmt_modifier >> m) ^ newMacro(name, args, null, m)
 	
@@ -471,6 +471,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	closure_stmt_raise = (RAISE, expression >> e, closure_stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 	
 	closure_stmt_expression = (assignment >> e, closure_stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
+	
+	closure_stmt_unpack = (declaration_list >> declarations, ASSIGN, rvalue >> e, closure_stmt_modifier >> m) ^ newUnpackStatement(declarations, e, m)		
 	
 	optional_stmt_modifier_node = stmt_modifier_node | ""
 		
