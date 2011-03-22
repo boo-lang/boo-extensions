@@ -322,16 +322,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_expression_block = (expression >> l, (ASSIGN | ASSIGN_INPLACE) >> op, block_expression >> r) ^ ExpressionStatement(newInfixExpression(op, l, r))
 	
-	block_expression = invocation_with_block | closure_block
+	block_expression = invocation_with_block | closure_block | dsl_friendly_invocation
 	
-	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), closure_block >> c) ^ newInvocationWithBlock(e, c)
+	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), (closure_block) >> c) ^ newInvocationWithBlock(e, c)
+	
+	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), (block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)])
 	
 	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
 	optional_parameters = method_parameters | ("" ^ [])
 
 	stmt_expression = stmt_expression_block \
-		| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
+		| ((dsl_friendly_invocation >> e) ^ ExpressionStatement(Expression: e)) | (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	
