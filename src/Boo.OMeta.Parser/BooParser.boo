@@ -111,7 +111,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise", "else", "typeof"
+		"transient", "raise", "else", "elif", "typeof"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -312,7 +312,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_for = (FOR, declaration_list >> dl, IN, rvalue >> e, block >> body) ^ newForStatement(dl, e, body)
 	
-	stmt_if = (IF, assignment >> e, block >> trueBlock) ^ newIfStatement(e, trueBlock)
+	stmt_if = (IF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newIfStatement(e, trueBlock, falseBlock)
+	
+	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock))) | \
+		((ELSE, block >> falseBlock) ^ falseBlock) | ( "" ^ null)
 	
 	stmt_return = (
 		RETURN, ((optional_assignment >> e, stmt_modifier >> m) | (block_expression >> e))

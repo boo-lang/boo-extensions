@@ -39,8 +39,8 @@ def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
 	for d in declarations: stmt.Declarations.Add(d)
 	return stmt
 
-def newIfStatement(condition as Expression, trueBlock as Block):
-	return IfStatement(Condition: condition, TrueBlock: trueBlock)
+def newIfStatement(condition as Expression, trueBlock as Block, falseBlock as Block):
+	return IfStatement(Condition: condition, TrueBlock: trueBlock, FalseBlock: falseBlock)
 	
 def newCallable(name, parameters, type):
 	node = CallableDefinition(Name: tokenValue(name), ReturnType: type)
