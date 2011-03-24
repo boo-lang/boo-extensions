@@ -42,9 +42,13 @@ def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
 def newIfStatement(condition as Expression, trueBlock as Block, falseBlock as Block):
 	return IfStatement(Condition: condition, TrueBlock: trueBlock, FalseBlock: falseBlock)
 	
-def newCallable(name, parameters, type):
+def newCallable(name, parameters as List, type):
 	node = CallableDefinition(Name: tokenValue(name), ReturnType: type)
-	setUpParameters node, parameters
+	if parameters[1] != null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
 	return node
 	
 def newModule(doc, imports, members, stmts):
@@ -93,13 +97,19 @@ def setUpMember(member as TypeMember, attributes, modifiers):
 def setUpParameters(node as INodeWithParameters, parameters):
 	for p in flatten(parameters): node.Parameters.Add(p)
 	
-def newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType as TypeReference, body as Block) as Method:
+def newMethod(attributes, modifiers, name, parameters as List, returnTypeAttributes, returnType as TypeReference, body as Block) as Method:
 	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
-	setUpParameters node, parameters
+
+	if parameters[1] != null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
+
 	for a in flatten(returnTypeAttributes): node.ReturnTypeAttributes.Add(a)
 	return setUpMember(node, attributes, modifiers)
 	
-def newGenericMethod(attributes, modifiers, name, genericParameters, parameters, returnTypeAttributes, returnType as TypeReference, body as Block):
+def newGenericMethod(attributes, modifiers, name, genericParameters, parameters as List, returnTypeAttributes, returnType as TypeReference, body as Block):
 	node = newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType, body)
 	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
 	return node
@@ -238,9 +248,10 @@ def newStringInterpolation(items as List):
 def newConditionalExpression(condition, trueValue, falseValue):
 	return ConditionalExpression(Condition: condition, TrueValue: trueValue, FalseValue: falseValue)
 	
-def newBlockExpression(parameters, body):
+def newBlockExpression(parameters as List, body):
 	node = BlockExpression(Body: body)
-	for p in parameters: node.Parameters.Add(p)
+	for p in parameters[0]:
+		node.Parameters.Add(p)
 	return node
 	
 def newTypeofExpression(type):
@@ -264,6 +275,7 @@ def unaryOperatorFor(op):
 		case "~": return UnaryOperatorType.OnesComplement
 		case "++": return UnaryOperatorType.Increment
 		case "--": return UnaryOperatorType.Decrement
+		case "*": return UnaryOperatorType.Explode
 	
 def binaryOperatorFor(op):
 	match tokenValue(op):

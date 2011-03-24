@@ -199,7 +199,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		member_modifiers >> mod, 
 		(ID >> name and (tokenValue(name) == key)),
 		block >> body
-	) ^ newMethod(attrs, mod, name, null, null, null, body)
+	) ^ newMethod(attrs, mod, name, [[],null], null, null, body)
 	
 	field = (
 		attributes >> attrs,
@@ -232,7 +232,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		block >> body
 	) ^ newGenericMethod(attrs, mod, name, genericParameters, parameters, returnTypeAttributes, type, body)
 	
-	method_parameters = (LPAREN, optional_parameter_list >> parameters, RPAREN) ^ parameters
+	method_parameters = (LPAREN, optional_parameter_list >> parameters, param_array >> paramArray, RPAREN) ^ [parameters, paramArray]
+	
+	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type)) | ("" ^ null)
+	
+	optional_array_type = (AS, type_reference_array) | ""
 	
 	optional_generic_parameters = generic_parameters | ""
 	
@@ -333,7 +337,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
-	optional_parameters = method_parameters | ("" ^ [])
+	optional_parameters = method_parameters | ("" ^ [[], null])
 
 	stmt_expression = stmt_expression_block \
 		| ((dsl_friendly_invocation >> e) ^ ExpressionStatement(Expression: e)) | (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
@@ -365,7 +369,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix and_expression, AND, not_expression
 	
-	prefix not_expression, NOT, membership_expression
+	prefix not_expression, NOT, explode_operator
+	
+	prefix explode_operator, STAR , membership_expression
 	
 	infix membership_expression, (IN | ((NOT, IN) ^ makeToken("not in"))), identity_test_expression
 	
@@ -461,7 +467,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body))
 	
-	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ parameters) | ("" ^ [])
+	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ [parameters, null]) | ("" ^ [[],null])
 	
 	list_of closure_stmt, SEMICOLON
 	
