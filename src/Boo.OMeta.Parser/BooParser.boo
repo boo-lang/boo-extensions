@@ -58,7 +58,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		equality = "=="
 		inequality = "!="
 		assign = "="
-		assign_inplace = "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|="
+		assign_inplace = "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<=" | ">>="
 		xor = "^"
 		increment = "++"
 		decrement = "--"
@@ -383,14 +383,14 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix bitwise_xor_expression, XOR, bitwise_and_expression
 	
-	infix bitwise_and_expression, BITWISE_AND, bitwise_shift_expression
-	
-	infix bitwise_shift_expression, (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT), term
+	infix bitwise_and_expression, BITWISE_AND, term
 	
 	infix term, (PLUS | MINUS), factor
 
-	infix factor, (STAR | DIVISION | MODULUS), signalled_expression
-	
+	infix factor, (STAR | DIVISION | MODULUS), bitwise_shift_expression
+
+	infix bitwise_shift_expression, (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT), signalled_expression
+
 	prefix signalled_expression, (MINUS | INCREMENT | DECREMENT), ones_complement_expression
 	
 	prefix ones_complement_expression, ONES_COMPLEMENT, exponentiation_expression

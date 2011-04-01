@@ -310,6 +310,8 @@ def binaryOperatorFor(op):
 		case "<=": return BinaryOperatorType.LessThanOrEqual
 		case ">": return BinaryOperatorType.GreaterThan
 		case ">=": return BinaryOperatorType.GreaterThanOrEqual
+		case ">>=": return BinaryOperatorType.InPlaceShiftRight
+		case "<<=": return BinaryOperatorType.InPlaceShiftLeft
 	
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
