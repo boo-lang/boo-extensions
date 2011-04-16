@@ -41,7 +41,7 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 		) >> value
 	) ^ value
 	
-	indentation = empty_lines, spaces
+	indentation = ((empty_lines, spaces, ~_) ^ []) | (empty_lines, spaces) 
 	empty_lines = ~~empty_line, ++empty_line
 	empty_line = spaces, newline
 	spaces = --space >> value ^ value
