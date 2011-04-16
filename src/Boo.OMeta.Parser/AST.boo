@@ -23,8 +23,8 @@ def newRValue(items as List):
 	if len(items) > 1: return newArrayLiteral(items)
 	return items[0]
 
-def newForStatement(declarations, e as Expression, body as Block):
-	node = ForStatement(Iterator: e, Block: body)
+def newForStatement(declarations, e as Expression, body as Block, orBlock as Block, thenBlock as Block):
+	node = ForStatement(Iterator: e, Block: body, OrBlock: orBlock, ThenBlock: thenBlock)
 	for d in declarations: node.Declarations.Add(d)
 	return node
 
