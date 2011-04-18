@@ -462,15 +462,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_simple \
+	type_reference = type_reference_generic \
+		| type_reference_simple \
 		| type_reference_array \
-		| type_reference_callable \
-		| type_reference_generic
+		| type_reference_callable
 		
 	type_reference_generic = (qualified_name >> qname, generic_arguments >> args) ^ newGenericTypeReference(qname, args)
 	
 	generic_arguments = (LBRACK, OF, type_reference_list >> args, RBRACK) ^ args \
-		| (OF, type_reference_list >> args) ^ args
+		| (OF, type_reference >> args) ^ args
 	
 	type_reference_callable = (
 		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type

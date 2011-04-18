@@ -283,7 +283,7 @@ def newBlockExpression(parameters as List, body):
 	return node
 	
 def newTypeofExpression(type):
-	return TypeofExpression(type)
+	return TypeofExpression(Type: type)
 	
 def newInvocationWithBlock(invocation as MethodInvocationExpression, block as BlockExpression):
 	node = invocation.CloneNode()
