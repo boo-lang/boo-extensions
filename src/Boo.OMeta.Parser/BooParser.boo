@@ -250,7 +250,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	optional_generic_parameters = generic_parameters | ""
 	
-	generic_parameters = (LBRACK, OF, generic_parameter_list >> parameters, RBRACK) ^ parameters
+	generic_parameters = (LBRACK, (OF | ""), generic_parameter_list >> parameters, RBRACK) ^ parameters
 	
 	generic_parameter = (ID >> name, optional_generic_parameter_constraints >> genericParameterConstraints) ^ newGenericParameterDeclaration(name, genericParameterConstraints)
 	
@@ -476,7 +476,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	type_reference_generic = (qualified_name >> qname, generic_arguments >> args) ^ newGenericTypeReference(qname, args)
 	
-	generic_arguments = ((LBRACK, OF, type_reference_list >> args, RBRACK) ^ args) \
+	generic_arguments = ((LBRACK, (OF | ""), type_reference_list >> args, RBRACK) ^ args) \
 		| ((OF, type_reference >> arg) ^ [arg])
 		
 	optional_generic_arguments = generic_arguments | ""
