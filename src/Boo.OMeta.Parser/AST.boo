@@ -113,14 +113,39 @@ def newGenericMethod(attributes, modifiers, name, genericParameters, parameters 
 	node = newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType, body)
 	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
 	return node
+	
+	
+def newConstructor(attributes, modifiers, genericParameters, parameters as List, body as Block):
+	node = Constructor(Name: "constructor", Body: body)
+
+	if parameters[1] != null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
+
+	setUpMember(node, attributes, modifiers)
+	
+	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
+	return node	
+	
+	
 
 def newGenericTypeReference(qname, args):
 	node = GenericTypeReference(Name: qname)
 	for arg in flatten(args): node.GenericArguments.Add(arg)
 	return node
 	
-def newGenericParameterDeclaration(name):
+def newGenericParameterDeclaration(name, constraints):
 	node = GenericParameterDeclaration(Name: tokenValue(name))
+
+	if constraints is not null:
+		for constraint in constraints:
+			if constraint isa TypeReference:
+				node.BaseTypes.Add(constraint)
+			else:
+				node.Constraints |= cast(GenericParameterConstraints, constraint)
+	
 	return node
 	
 def newParameterDeclaration(attributes, name, type):
@@ -128,7 +153,7 @@ def newParameterDeclaration(attributes, name, type):
 	return setUpAttributes(node, attributes)
 	
 def newEnum(attributes, modifiers, name, members):
-	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, members)
+	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
 def newCallableTypeReference(params, type):
 	node = CallableTypeReference(ReturnType: type)
@@ -163,14 +188,17 @@ def newEnumField(attributes, name, initializer):
 			pass
 	return setUpMember(EnumMember(Name: tokenValue(name), Initializer: initializer), attributes, null)
 	
-def newClass(attributes, modifiers, name, baseTypes, members):
-	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
+def newClass(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
-def setUpType(type as TypeDefinition, attributes, modifiers, baseTypes, members):
+def setUpType(type as TypeDefinition, attributes, modifiers, genericParameters, baseTypes, members):
 	if members is not null: 
 		for member in members: type.Members.Add(member)
 	if baseTypes is not null:
 		for baseType in baseTypes: type.BaseTypes.Add(baseType)
+	if genericParameters is not null:
+		for genericParameter in genericParameters: type.GenericParameters.Add(genericParameter)
+			
 	return setUpMember(type, attributes, modifiers)
 	
 macro setUpArgs:
@@ -194,7 +222,7 @@ def newNamedArgument(name, value):
 	return ExpressionPair(First: newReference(name), Second: value)
 	
 def newInterface(attributes, modifiers, name, baseTypes, members):
-	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
+	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, null, baseTypes, members)
 	
 def newInvocation(target as Expression, args as List):
 	mie = MethodInvocationExpression(Target: target)
@@ -333,3 +361,8 @@ def prepend(first, tail as List):
 def buildQName(q, rest):
 	return join(tokenValue(t) for t in prepend(q, rest), '.')
 
+def newGenericParameterConstraint(constraint):
+	match tokenValue(constraint):
+		case "class": return GenericParameterConstraints.ReferenceType
+		case "struct": return GenericParameterConstraints.ValueType
+		case "constructor": return GenericParameterConstraints.Constructable

@@ -111,7 +111,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise", "else", "elif", "typeof", "then"
+		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -139,9 +139,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	class_def = (
 		attributes >> attrs,
 		member_modifiers >> mod,
-		CLASS, ID >> className, super_types >> superTypes, begin_block, class_body >> body, end_block
-	) ^ newClass(attrs, mod, className, superTypes, body)
-	
+		CLASS, ID >> className, optional_generic_parameters >> genericParameters, super_types >> superTypes, begin_block, class_body >> body, end_block
+	) ^ newClass(attrs, mod, className, genericParameters, superTypes, body)
+
 	interface_def = (
 		attributes >> attrs,
 		member_modifiers >> mod,
@@ -166,7 +166,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = type_def | property_def | method | field | event_def
+	class_member = type_def | property_def | constructor_method | method | field | event_def
 	
 	event_def = (
 		attributes >> attrs,
@@ -231,7 +231,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		attributes >> returnTypeAttributes, optional_type >> type,
 		block >> body
 	) ^ newGenericMethod(attrs, mod, name, genericParameters, parameters, returnTypeAttributes, type, body)
-	
+
+	constructor_method = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		DEF, CONSTRUCTOR,
+		optional_generic_parameters >> genericParameters,
+		method_parameters >> parameters,
+		block >> body
+	) ^ newConstructor(attrs, mod, genericParameters, parameters, body)
+
+
 	method_parameters = (LPAREN, optional_parameter_list >> parameters, param_array >> paramArray, RPAREN) ^ [parameters, paramArray]
 	
 	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type)) | ("" ^ null)
@@ -242,7 +252,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	generic_parameters = (LBRACK, OF, generic_parameter_list >> parameters, RBRACK) ^ parameters
 	
-	generic_parameter = (ID >> name) ^ newGenericParameterDeclaration(name)
+	generic_parameter = (ID >> name, optional_generic_parameter_constraints >> genericParameterConstraints) ^ newGenericParameterDeclaration(name, genericParameterConstraints)
+	
+	optional_generic_parameter_constraints = generic_parameter_constraints | ""
+	
+	generic_parameter_constraints = (LPAREN, generic_parameter_constraint_list >> constraints, RPAREN) ^ constraints
+	
+	generic_parameter_constraint = ( (CLASS | STRUCT | CONSTRUCTOR) >> constraint ^ newGenericParameterConstraint(constraint) ) | type_reference
+	
+	list_of generic_parameter_constraint
 	
 	list_of generic_parameter
 	
