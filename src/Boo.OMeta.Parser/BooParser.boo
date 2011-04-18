@@ -111,7 +111,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor"
+		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor", \
+		"goto"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -299,6 +300,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_line = (~~(ID, AS), stmt_declaration) \
 		| stmt_expression \
+		| stmt_goto \
 		| stmt_macro \
 		| stmt_return \
 		| stmt_yield \
@@ -314,6 +316,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
 	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | eol
+	
+	stmt_goto = ((GOTO, ID >> label, stmt_modifier >> m) ^ newGotoStatement(label, m)) | ((COLON, ID >> label, eol) ^ LabelStatement(Name: tokenValue(label)))
 	
 	stmt_modifier_node = (
 		stmt_modifier_type >> t,

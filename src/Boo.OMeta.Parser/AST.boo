@@ -375,3 +375,6 @@ def newGenericParameterConstraint(constraint):
 		case "class": return GenericParameterConstraints.ReferenceType
 		case "struct": return GenericParameterConstraints.ValueType
 		case "constructor": return GenericParameterConstraints.Constructable
+		
+def newGotoStatement(label, modifier):
+	return GotoStatement(Label: ReferenceExpression(Name: tokenValue(label)), Modifier: modifier)
