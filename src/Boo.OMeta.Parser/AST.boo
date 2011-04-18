@@ -135,7 +135,11 @@ def newGenericTypeReference(qname, args):
 	node = GenericTypeReference(Name: qname)
 	for arg in flatten(args): node.GenericArguments.Add(arg)
 	return node
-	
+
+def newGenericTypeDefinitionReference(qname, placeholders as List):
+	return GenericTypeDefinitionReference(Name: qname,  GenericPlaceholders: placeholders.Count)
+
+
 def newGenericParameterDeclaration(name, constraints):
 	node = GenericParameterDeclaration(Name: tokenValue(name))
 
