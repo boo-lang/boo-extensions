@@ -355,7 +355,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), (closure_block) >> c) ^ newInvocationWithBlock(e, c)
 	
-	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), (block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)])
+	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), (block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)],null)
 	
 	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
@@ -452,7 +452,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	invocation = invocation_expression | atom
 	
-	invocation_expression = (member_reference >> target, invocation_arguments >> args) ^ newInvocation(target, args)
+	invocation_expression = (member_reference >> target, optional_generic_arguments >> generic_args, invocation_arguments >> args) ^ newInvocation(target, args, generic_args)
 		
 	invocation_arguments = (LPAREN, optional_invocation_argument_list >> args, RPAREN) ^ args
 	
@@ -469,8 +469,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	type_reference_generic = (qualified_name >> qname, generic_arguments >> args) ^ newGenericTypeReference(qname, args)
 	
-	generic_arguments = (LBRACK, OF, type_reference_list >> args, RBRACK) ^ args \
-		| (OF, type_reference >> args) ^ args
+	generic_arguments = ((LBRACK, OF, type_reference_list >> args, RBRACK) ^ args) \
+		| ((OF, type_reference >> arg) ^ [arg])
+		
+	optional_generic_arguments = generic_arguments | ""
 	
 	type_reference_callable = (
 		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type

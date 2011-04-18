@@ -224,9 +224,14 @@ def newNamedArgument(name, value):
 def newInterface(attributes, modifiers, name, baseTypes, members):
 	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, null, baseTypes, members)
 	
-def newInvocation(target as Expression, args as List):
+def newInvocation(target as Expression, args as List, genericArgs as object):
+	if genericArgs is not null:
+		target = GenericReferenceExpression(Target: target)
+		for arg in genericArgs:
+			(target as GenericReferenceExpression).GenericArguments.Add(arg)
+	
 	mie = MethodInvocationExpression(Target: target)
-	setUpArgs mie, args
+	setUpArgs mie, args	
 	return mie
 	
 def newQuasiquoteBlock(m):
