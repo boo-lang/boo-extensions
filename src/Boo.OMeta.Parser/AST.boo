@@ -42,9 +42,17 @@ def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
 def newIfStatement(condition as Expression, trueBlock as Block, falseBlock as Block):
 	return IfStatement(Condition: condition, TrueBlock: trueBlock, FalseBlock: falseBlock)
 	
-def newCallable(name, parameters as List, type):
+def newCallable(modifiers, name, genericParameters as List, parameters as List, type):
 	node = CallableDefinition(Name: tokenValue(name), ReturnType: type)
-	if parameters[1] != null: //Check if ParamArray is present
+	
+	#return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)	
+	setUpMember(node, null, modifiers)
+	
+	if genericParameters is not null:
+		for genericParameter in genericParameters:			
+			node.GenericParameters.Add(genericParameter)
+	
+	if parameters[1] is not null: //Check if ParamArray is present
 		setUpParameters node, parameters
 		node.Parameters.HasParamArray = true
 	else:

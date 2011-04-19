@@ -137,7 +137,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	type_def = class_def | interface_def | enum_def | callable_def
 	
-	callable_def = (CALLABLE, ID >> name, method_parameters >> parameters, optional_type >> type, eol) ^ newCallable(name, parameters, type)
+	callable_def = (member_modifiers >> mod, CALLABLE, ID >> name, optional_generic_parameters >> genericParameters , method_parameters >> parameters, optional_type >> type, eol) ^ newCallable(mod, name, genericParameters, parameters, type)
 	
 	class_def = (
 		attributes >> attrs,
