@@ -105,6 +105,7 @@ def tokenMatches(token as Token, expected):
 	return expected is token.kind
 		
 def tokenValue(token as Token):
+	return null if token is null
 	return token.value
 
 def makeToken(kind):

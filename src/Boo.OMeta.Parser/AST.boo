@@ -62,8 +62,20 @@ def newModule(doc, imports, members, stmts):
 	for stmt as Statement in stmts: m.Globals.Add(stmt)
 	return m
 	
-def newImport(qname as string):
-	return Import(Namespace: qname)
+def newImport(qname as string, assembly, alias):
+	assemblyReference = null
+	if assembly isa Token:
+		assemblyReference = ReferenceExpression(Name: tokenValue(assembly))
+	else:
+		assemblyReference = ReferenceExpression(Name: assembly) if assembly is not null
+		
+	importAlias = null
+	if alias isa Token:
+		importAlias =	ReferenceExpression(Name: tokenValue(alias))
+	else:
+		importAlias =	ReferenceExpression(Name: alias) if alias is not null
+		
+	return Import(Namespace: qname, AssemblyReference: assemblyReference, Alias: importAlias)
 
 def newInteger(t, style as NumberStyles):
 	value = int.Parse(tokenValue(t), style)

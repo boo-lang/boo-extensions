@@ -112,7 +112,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
 		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor", \
-		"goto"
+		"goto", "from"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -127,7 +127,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ, eol) ^ makeString(s)
 	
-	import_declaration = (IMPORT, qualified_name >> qn, eol) ^ newImport(qn)
+	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | SQS | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
+	
+	dqs = (DQ, ++(~DQ, _) >> s, DQ) ^ makeString(s)	
 	
 	qualified_name = (ID >> qualifier, --((DOT, ID >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
