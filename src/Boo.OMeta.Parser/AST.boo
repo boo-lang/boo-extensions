@@ -215,6 +215,10 @@ def newEnumField(attributes, name, initializer):
 def newClass(attributes, modifiers, name, genericParameters, baseTypes, members):
 	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
+def newStruct(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(StructDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
+	
+	
 def setUpType(type as TypeDefinition, attributes, modifiers, genericParameters, baseTypes, members):
 	if members is not null: 
 		for member in members: type.Members.Add(member)
@@ -245,8 +249,8 @@ def newAttribute(name, args):
 def newNamedArgument(name, value):
 	return ExpressionPair(First: newReference(name), Second: value)
 	
-def newInterface(attributes, modifiers, name, baseTypes, members):
-	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, null, baseTypes, members)
+def newInterface(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
 def newInvocation(target as Expression, args as List, genericArgs as object):
 	if genericArgs is not null:

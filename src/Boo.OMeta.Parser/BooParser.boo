@@ -135,7 +135,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	module_member = assembly_attribute | type_def | method
 	
-	type_def = class_def | interface_def | enum_def | callable_def
+	type_def = class_def | struct_def | interface_def | enum_def | callable_def
 	
 	callable_def = (member_modifiers >> mod, CALLABLE, ID >> name, optional_generic_parameters >> genericParameters , method_parameters >> parameters, optional_type >> type, eol) ^ newCallable(mod, name, genericParameters, parameters, type)
 	
@@ -145,11 +145,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		CLASS, ID >> className, optional_generic_parameters >> genericParameters, super_types >> superTypes, begin_block, class_body >> body, end_block
 	) ^ newClass(attrs, mod, className, genericParameters, superTypes, body)
 
+	struct_def = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		STRUCT, ID >> structName, optional_generic_parameters >> genericParameters, super_types >> superTypes, begin_block, struct_body >> body, end_block
+	) ^ newStruct(attrs, mod, structName, genericParameters, superTypes, body)
+
+
 	interface_def = (
 		attributes >> attrs,
 		member_modifiers >> mod,
-		INTERFACE, ID >> name, super_types >> superTypes, begin_block, interface_body >> body, end_block
-	) ^ newInterface(attrs, mod, name, superTypes, body)
+		INTERFACE, ID >> name, optional_generic_parameters >> genericParameters, super_types >> superTypes, begin_block, interface_body >> body, end_block
+	) ^ newInterface(attrs, mod, name, genericParameters, superTypes, body)
 	
 	enum_def = (
 		attributes >> attrs, 
@@ -165,11 +172,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	class_body = no_member | (++class_member >> members ^ members)
 	
+	struct_body = no_member | (++struct_member >> members ^ members)
+	
 	interface_body = no_member
 	
 	no_member = (PASS, eol) ^ null
 	
 	class_member = type_def | property_def | constructor_method | method | field | event_def
+	
+	struct_member = constructor_method | method | field
 	
 	event_def = (
 		attributes >> attrs,
