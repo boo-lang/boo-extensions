@@ -118,14 +118,14 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	module = (
 		--EOL,
-		(docstring >> s | ""),
+		((docstring >> s , EOL) | ""),	
 		--import_declaration >> ids,
 		--module_member >> members,
 		--stmt >> stmts,
 		--EOL
 	) ^ newModule(s, ids, members, stmts)
 	
-	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ, eol) ^ makeString(s)
+	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ) ^ makeString(s)
 	
 	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | SQS | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
@@ -310,15 +310,22 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	optional_type = (AS, type_reference) | ""
 	
-	block = empty_block | multi_line_block | single_line_block
+	block = empty_block | multi_line_block | multi_line_block_with_doc | single_line_block
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
 	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
 	
+	multi_line_block_with_doc = (begin_block_with_doc >> doc, ++stmt >> stmts, end_block)  ^ [doc, newBlock(stmts)]
+	
 	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line)
 	
 	begin_block = COLON, INDENT
+	
+	begin_block_with_doc = (COLON,
+		--EOL,
+		docstring >> s,
+		INDENT) ^ s	
 	
 	end_block = DEDENT
 	
