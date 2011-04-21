@@ -131,7 +131,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	dqs = (DQ, ++(~DQ, _) >> s, DQ) ^ makeString(s)	
 	
-	qualified_name = (ID >> qualifier, --((DOT, ID >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
+	qualified_name = (ID >> qualifier, --((DOT, id >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
 	module_member = assembly_attribute | type_def | method
 	
@@ -174,13 +174,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	struct_body = no_member | (++struct_member >> members ^ members)
 	
-	interface_body = no_member
+	interface_body = no_member | (++interface_member >> members ^ members)
 	
 	no_member = (PASS, eol) ^ null
 	
 	class_member = type_def | property_def | constructor_method | method | field | event_def
 	
 	struct_member = constructor_method | method | field
+	
+	interface_member = property_def | method_signature
 	
 	event_def = (
 		attributes >> attrs,
@@ -201,6 +203,16 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		),
 		end_block
 	) ^ newProperty(attrs, mod, name, parameters, type, pg, ps)
+	
+	method_signature = (
+		attributes >> attrs,
+		member_modifiers >> mod,
+		DEF, ID >> name,
+		optional_generic_parameters >> genericParameters,
+		method_parameters >> parameters,
+		attributes >> returnTypeAttributes, optional_type >> type, eol
+	) ^ newGenericMethod(attrs, mod, name, genericParameters, parameters, returnTypeAttributes, type, null)	
+	
 	
 	property_parameters = ((LBRACK, parameter_list >> parameters, RBRACK) | "") ^ parameters
 	
@@ -245,6 +257,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		attributes >> returnTypeAttributes, optional_type >> type,
 		block >> body
 	) ^ newGenericMethod(attrs, mod, name, genericParameters, parameters, returnTypeAttributes, type, body)
+
 
 	constructor_method = (
 		attributes >> attrs,
