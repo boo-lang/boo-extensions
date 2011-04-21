@@ -341,6 +341,7 @@ def unaryOperatorFor(op):
 def binaryOperatorFor(op):
 	match tokenValue(op):
 		case "is": return BinaryOperatorType.ReferenceEquality
+		case "isa": return BinaryOperatorType.TypeTest
 		case "is not": return BinaryOperatorType.ReferenceInequality
 		case "in": return BinaryOperatorType.Member
 		case "not in": return BinaryOperatorType.NotMember

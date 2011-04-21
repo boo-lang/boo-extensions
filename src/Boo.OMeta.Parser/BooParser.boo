@@ -93,7 +93,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		kw = (keywords >> value, ~(letter | digit | '_')) ^ value
 		tdq = '"""'
 		dq = '"'
-		sqs = ("'", ++(~"'", _) >> s, "'") ^ s
+		sqs = ("'", --(~"'", _) >> s, "'") ^ s
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
 
 	space = line_continuation | multi_line_comment | line_comment | super
@@ -107,7 +107,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
 		
 	keywords "class", "def", "do", "import", "pass", "return", "true", \
-		"false", "and", "or", "as", "not", "if", "is", "null", \
+		"false", "and", "or", "as", "not", "if", "isa", "is", "null", \
 		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
@@ -414,7 +414,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix membership_expression, (IN | ((NOT, IN) ^ makeToken("not in"))), identity_test_expression
 	
-	infix identity_test_expression, (((IS, NOT) ^ makeToken("is not")) | IS), comparison
+	infix identity_test_expression, (((IS, NOT) ^ makeToken("is not")) | IS), isa_expression
+	
+	isa_expression = (comparison >> l, ISA >> op, type_reference >> type) ^ newInfixExpression(op, l, newTypeofExpression(type))  | comparison 
 	
 	infix comparison, (EQUALITY | INEQUALITY | GREATER_THAN | GREATER_THAN_EQ | LESS_THAN | LESS_THAN_EQ), bitwise_or_expression
 	
