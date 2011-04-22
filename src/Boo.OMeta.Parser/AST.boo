@@ -70,6 +70,8 @@ def newModule(doc, imports, members, stmts):
 	for member in flatten(members):
 		if member isa Attribute:
 			m.AssemblyAttributes.Add(member)
+		elif member isa MacroStatement:
+			m.Globals.Add(member as Statement)
 		else:
 			m.Members.Add(member)
 	for stmt as Statement in stmts: m.Globals.Add(stmt)

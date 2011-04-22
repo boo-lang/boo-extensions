@@ -133,7 +133,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	qualified_name = (ID >> qualifier, --((DOT, id >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
-	module_member = assembly_attribute | type_def | method
+	module_member = assembly_attribute | type_def | method | (~(~~(ID, AS), stmt_declaration), ~stmt_expression, ~stmt_goto, stmt_macro)
 	
 	type_def = class_def | struct_def | interface_def | enum_def | callable_def
 	
