@@ -58,7 +58,7 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 	leaveWhitespaceAgnosticRegion = $(leaveWSA(input))
 	
 	INDENT = token["indent"]
-	DEDENT = token["dedent"]
+	DEDENT = token["dedent"] | ~_
 	EOL = token["eol"]
 	
 	def inWSA(input as OMetaInput):
