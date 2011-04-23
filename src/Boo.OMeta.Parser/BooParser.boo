@@ -112,18 +112,22 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"event", "private", "protected", "public", "enum", \
 		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
 		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor", \
-		"goto", "from"
+		"goto", "from", "namespace"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
 	module = (
 		--EOL,
 		((docstring >> s , EOL) | ""),	
+		--EOL,
+		((namespace_declaration >> ns , EOL) | ""),		
 		--import_declaration >> ids,
 		--module_member >> members,
 		--stmt >> stmts,
 		--EOL
-	) ^ newModule(s, ids, members, stmts)
+	) ^ newModule(ns, s, ids, members, stmts)
+	
+	namespace_declaration = (NAMESPACE, qualified_name)
 	
 	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ) ^ makeString(s)
 	

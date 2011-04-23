@@ -64,8 +64,12 @@ def newCallable(modifiers, name, genericParameters as List, parameters as List, 
 		setUpParameters node, parameters[0]
 	return node
 	
-def newModule(doc, imports, members, stmts):
+def newModule(ns as string, doc, imports, members, stmts):
 	m = Module(Documentation: doc)
+	
+	if ns is not null:
+		m.Namespace = NamespaceDeclaration(ns)
+	
 	for item in imports: m.Imports.Add(item)
 	for member in flatten(members):
 		if member isa Attribute:
