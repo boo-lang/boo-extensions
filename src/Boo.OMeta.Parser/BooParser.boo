@@ -98,6 +98,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	space = line_continuation | multi_line_comment | line_comment | super
 	
+	empty_line = ending_spaces, newline	
+	
+	ending_spaces = --end_space >> value ^ value
+	
+	end_space =  semicolon | space
+	
 	line_continuation = "\\", newline
 	
 	multi_line_comment = "/*", --(~"*/", (multi_line_comment | _)), "*/"
@@ -333,7 +339,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	end_block = DEDENT
 	
-	stmt = stmt_block | stmt_line
+	stmt = stmt_block | stmt_line 
 	
 	stmt_line = (~~(ID, AS), stmt_declaration) \
 		| stmt_expression \
@@ -352,7 +358,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
-	stmt_modifier = ((stmt_modifier_node >> value, eol) ^ value) | eol
+	stmt_modifier = (((stmt_modifier_node | "") >> value, (eol|SEMICOLON)) ^ value)
 	
 	stmt_goto = ((GOTO, ID >> label, stmt_modifier >> m) ^ newGotoStatement(label, m)) | ((COLON, ID >> label, eol) ^ LabelStatement(Name: tokenValue(label)))
 	
