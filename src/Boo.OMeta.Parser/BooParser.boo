@@ -128,8 +128,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	) ^ newModule(ns, s, ids, members, stmts)
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
-	
-	docstring = (TDQ, ++(~tdq, string_char) >> s, TDQ) ^ makeString(s)
+
+	docstring = (TDQ, ++(~tdq, ( (('\\', '$') ^ '$')| _)) >> s, TDQ) ^ makeString(s)
 	
 	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | SQS | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
@@ -533,7 +533,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
 	atom = float | integer | boolean | reference | array_literal | list_literal \
-		| string_interpolation | string_literal | null_literal | parenthesized_expression  \
+		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
 		| type_literal
 		
@@ -593,6 +593,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			| ('$', atom)
 			) >> items,
 		DQ) ^ newStringInterpolation(items)
+		
+	reg_exp_string = ( (("/" | "@/"), (--(~"/", _) >> s), "/")  ) ^ RELiteralExpression(makeString("/", s, "/"))		
 		
 	string_char = ('\\', ('\\' | '$')) | (~'\\', _)
 	
