@@ -55,6 +55,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	tokens:
 		qq_begin = "[|"
 		qq_end = "|]"
+		splice_begin = "$"
 		equality = "=="
 		inequality = "!="
 		assign = "="
@@ -511,12 +512,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_generic_definition \
+	type_reference = type_reference_splice \
+		| type_reference_generic_definition \
 		| type_reference_generic \
 		| type_reference_simple \
 		| type_reference_array \
 		| type_reference_callable
 		
+	type_reference_splice = SPLICE_BEGIN, atom >> e ^ SpliceTypeReference(Expression: e)
+	
+	splice_expression = SPLICE_BEGIN, atom >> e ^ SpliceExpression(Expression: e)
+	
 	type_reference_generic_definition = (qualified_name >> qname, generic_placeholders >> placeholders) ^ newGenericTypeDefinitionReference(qname, placeholders)
 
 	generic_placeholders = ((LBRACK, OF, STAR_list >> placeholders, RBRACK) ^ placeholders) | ( (OF, STAR_list >> placeholders) ^ placeholders)
@@ -541,7 +547,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	atom = float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
-		| type_literal
+		| type_literal | splice_expression
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
