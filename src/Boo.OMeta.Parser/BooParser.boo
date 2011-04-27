@@ -557,7 +557,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	type_reference_simple = (qualified_name >> qname) ^ SimpleTypeReference(Name: qname)
 	
-	atom = float | integer | boolean | reference | array_literal | list_literal \
+	atom = time_span | float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
 		| type_literal | splice_expression
@@ -646,6 +646,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	list_of expression_pair
 		
 	reference = ID >> r ^ newReference(r) 
+	
+	time_span = ((integer | float) >> f, ("ms" | 's' | 'm' | 'h' | 'd') >> tu) ^ newTimeSpanLiteral(f, tu)
 	
 	integer = (NUM >> n ^ newInteger(n, NumberStyles.None)) \
 		| (HEXNUM >> n ^ newInteger(n, NumberStyles.HexNumber))

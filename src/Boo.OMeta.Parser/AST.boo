@@ -1,5 +1,6 @@
 namespace Boo.OMeta.Parser
 
+import System
 import System.Globalization
 import Boo.OMeta
 import Boo.Lang.PatternMatching
@@ -72,7 +73,7 @@ def newModule(ns as string, doc, imports, members, stmts):
 	
 	for item in imports: m.Imports.Add(item)
 	for member in flatten(members):
-		if member isa Attribute:
+		if member isa Ast.Attribute:
 			m.AssemblyAttributes.Add(member)
 		elif member isa MacroStatement:
 			m.Globals.Add(member as Statement)
@@ -253,7 +254,7 @@ macro setUpArgs:
 	return code
 	
 def newAttribute(name, args):
-	node = Attribute(Name: tokenValue(name))
+	node = Ast.Attribute(Name: tokenValue(name))
 	setUpArgs node, args
 	return node
 	
@@ -417,3 +418,18 @@ def newGotoStatement(label, modifier):
 	
 def getUnicodeChar(hex):
 	return cast(char, int.Parse(flatString(hex), System.Globalization.NumberStyles.HexNumber))
+	
+def newTimeSpanLiteral(n, tu):
+	value as double = 0
+	if n isa IntegerLiteralExpression:
+		value = (n as IntegerLiteralExpression).Value
+	else:
+		value = (n as DoubleLiteralExpression).Value
+	
+	match tu:
+		case 'ms': return TimeSpanLiteralExpression(Value:TimeSpan.FromMilliseconds(value))
+		case 's': return TimeSpanLiteralExpression(Value:TimeSpan.FromSeconds(value))
+		case 'h': return TimeSpanLiteralExpression(Value:TimeSpan.FromHours(value))
+		case 'm': return TimeSpanLiteralExpression(Value:TimeSpan.FromMinutes(value))
+		case 'd': return TimeSpanLiteralExpression(Value:TimeSpan.FromDays(value))
+	
