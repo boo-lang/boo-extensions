@@ -307,7 +307,7 @@ def newHashLiteral(items):
 	return literal
 	
 def newStringLiteral(s):
-	return StringLiteralExpression(Value: tokenValue(s))
+	return StringLiteralExpression(Value: s)
 	
 def newStringInterpolation(items as List):
 	if len(items) == 0: return StringLiteralExpression("")
@@ -414,3 +414,6 @@ def newGenericParameterConstraint(constraint):
 		
 def newGotoStatement(label, modifier):
 	return GotoStatement(Label: ReferenceExpression(Name: tokenValue(label)), Modifier: modifier)
+	
+def getUnicodeChar(hex):
+	return cast(char, int.Parse(flatString(hex), System.Globalization.NumberStyles.HexNumber))

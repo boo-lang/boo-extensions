@@ -94,10 +94,25 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		kw = (keywords >> value, ~(letter | digit | '_')) ^ value
 		tdq = '"""'
 		dq = '"'
-		sqs = ("'", --(~"'", _) >> s, "'") ^ s
+		sq = "'"
+		
 		id = ((letter | '_') >> p, --(letter | digit | '_') >> s) ^ makeString(p, s)
 
 	space = line_continuation | multi_line_comment | line_comment | super
+	
+	sqs = (SQ, --( sqs_esc | (~('\'' | '\\' | '\r' | '\n'), _)) >> s, SQ) ^ makeString(s)		
+
+	dqs = (DQ, --( dqs_esc | (~('"' | '\\' | '\r' | '\n'), _)) >> s, DQ) ^ makeString(s)		
+
+	tqs = (TDQ, --(~tdq, ( (('\\', '$') ^ '$')| _)) >> s, TDQ) ^ makeString(s)			
+	
+	sqs_esc =  '\\', ( sesc | '\'' )
+
+	dqs_esc = '\\', ( sesc | '"' | '$')
+
+	sesc =  ("r" ^ "\r") | ("n" ^ "\n") | ("t" ^ "\t") | ("a" ^ "\a") | ("b" ^ "\b") | ("f" ^ "\f") \
+		| ("0" ^ "\0") | ("\\" ^ "\\") \
+		| ("u", (hex_digit >> h1, hex_digit >> h2, hex_digit >> h3, hex_digit >> h4) ^ getUnicodeChar([h1, h2, h3, h4]))
 	
 	empty_line = ending_spaces, newline	
 	
@@ -125,7 +140,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	module = (
 		--EOL,
-		((docstring >> s , EOL) | ""),	
+		((tqs >> s , EOL) | ""),	
 		--EOL,
 		((namespace_declaration >> ns , EOL) | ""),		
 		--import_declaration >> ids,
@@ -136,11 +151,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
 
-	docstring = (TDQ, ++(~tdq, ( (('\\', '$') ^ '$')| _)) >> s, TDQ) ^ makeString(s)
 	
-	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | SQS | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
-	dqs = (DQ, ++(~DQ, _) >> s, DQ) ^ makeString(s)	
+	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
 	qualified_name = (ID >> qualifier, --((DOT, id >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
@@ -335,7 +348,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	begin_block_with_doc = (COLON,
 		--EOL,
-		docstring >> s,
+		tqs >> s,
 		INDENT) ^ s	
 	
 	end_block = DEDENT
@@ -356,7 +369,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
 	stmt_macro = (ID >> name, assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
-		
+
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
 	stmt_modifier = (((stmt_modifier_node | "") >> value, (eol|SEMICOLON)) ^ value)
@@ -595,8 +608,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	self_literal = SELF ^ [| self |]
 	
-	string_literal = (SQS >> s) ^ newStringLiteral(s)
-	
+	string_literal = string_interpolation| ( ((tqs | dqs | sqs) >> s) ^ newStringLiteral(s))
+
 	string_interpolation = (
 		DQ,
 		--(
