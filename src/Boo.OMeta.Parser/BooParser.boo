@@ -51,7 +51,7 @@ Expands to something that matches:
 	block.Add(optionalListRule)
 	
 ometa BooParser < WhitespaceSensitiveTokenizer:
-	
+
 	tokens:
 		qq_begin = "[|"
 		qq_end = "|]"
@@ -126,15 +126,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	line_comment = ('#' | "//"), --(~newline, _)
 		
-	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('Z'))) 
+	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('F'))) 
 		
-	keywords "class", "def", "do", "import", "pass", "return", "true", \
-		"false", "and", "or", "as", "not", "if", "isa", "is", "null", \
-		"for", "interface", "internal", "in", "yield", "self", "super", "of", \
-		"event", "private", "protected", "public", "enum", \
-		"callable", "unless", "static", "final", "virtual", "override", "abstract", \
-		"transient", "raise", "else", "elif", "typeof", "then", "struct", "constructor", \
-		"goto", "from", "namespace"
+	keywords "abstract", "and", "as", "callable", "class", "constructor", "def", "do", "elif", "else", \
+		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
+		"interface", "internal", "in", "isa", "is", "namespace", "not", "null", "of", "or", "override", \
+		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
+		"then", "transient", "true", "try", "typeof", "unless", "virtual", "yield"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -362,7 +360,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| stmt_return \
 		| stmt_yield \
 		| stmt_raise \
-		| stmt_unpack
+		| stmt_unpack \
+		| stmt_try
 		
 	stmt_unpack = (declaration_list >> declarations, ASSIGN, rvalue >> e, stmt_modifier >> m) ^ newUnpackStatement(declarations, e, m)
 		
@@ -373,6 +372,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
 	stmt_modifier = (((stmt_modifier_node | "") >> value, (eol|SEMICOLON)) ^ value)
+	
+	stmt_try = (TRY, block >> protectedBlock, \
+		optional_exception_handler_list >> handlers, \
+		((FAILURE, block >> failureBlock) | ""), \
+		((ENSURE, block >> ensureBlock) | "")) ^ newTryStatement(protectedBlock, handlers, failureBlock, ensureBlock)
+	
+	exception_handler = (EXCEPT, (declaration | "") >> d, block >> b) ^ ExceptionHandler(Block: b, Declaration: d)
+	
+	list_of exception_handler
 	
 	stmt_goto = ((GOTO, ID >> label, stmt_modifier >> m) ^ newGotoStatement(label, m)) | ((COLON, ID >> label, eol) ^ LabelStatement(Name: tokenValue(label)))
 	

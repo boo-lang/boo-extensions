@@ -45,6 +45,20 @@ def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
 	for d in declarations: stmt.Declarations.Add(d)
 	return stmt
 
+def newTryStatement(protectedBlock as Block, handlers as List, failureBlock as Block, ensureBlock as Block):
+	stmt = TryStatement(ProtectedBlock: protectedBlock, FailureBlock: failureBlock, EnsureBlock: ensureBlock)	
+	if handlers is not null:
+		for h as ExceptionHandler in handlers:
+			if (h.Declaration is null):
+				h.Flags |= ExceptionHandlerFlags.Anonymous
+				h.Flags |= ExceptionHandlerFlags.Untyped
+			elif h.Declaration.Type is null:
+				h.Flags |= ExceptionHandlerFlags.Untyped
+			
+			stmt.ExceptionHandlers.Add(h)
+	return stmt
+	
+
 def newIfStatement(condition as Expression, trueBlock as Block, falseBlock as Block):
 	return IfStatement(Condition: condition, TrueBlock: trueBlock, FalseBlock: falseBlock)
 	
@@ -432,4 +446,5 @@ def newTimeSpanLiteral(n, tu):
 		case 'h': return TimeSpanLiteralExpression(Value:TimeSpan.FromHours(value))
 		case 'm': return TimeSpanLiteralExpression(Value:TimeSpan.FromMinutes(value))
 		case 'd': return TimeSpanLiteralExpression(Value:TimeSpan.FromDays(value))
+	
 	
