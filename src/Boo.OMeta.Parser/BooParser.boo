@@ -186,7 +186,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		ENUM, ID >> name, begin_block, enum_body >> body, end_block
 	) ^ newEnum(attrs, mod, name, body)
 	
-	enum_body = ++enum_field >> fields ^ fields
+	enum_body = (++enum_field >> fields ^ fields) | (PASS, eol ^ null)
 	
 	enum_field = (attributes >> attrs, ID >> name, ((ASSIGN, expression >> e) | ""), eol) ^ newEnumField(attrs, name, e)
 	
