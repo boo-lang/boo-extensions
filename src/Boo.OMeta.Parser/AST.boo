@@ -447,4 +447,6 @@ def newTimeSpanLiteral(n, tu):
 		case 'm': return TimeSpanLiteralExpression(Value:TimeSpan.FromMinutes(value))
 		case 'd': return TimeSpanLiteralExpression(Value:TimeSpan.FromDays(value))
 	
+def newUnlessStatement(condition, block):
+	return UnlessStatement(Block: block, Condition: condition)
 	

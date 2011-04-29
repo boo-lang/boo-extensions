@@ -291,9 +291,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	) ^ newConstructor(attrs, mod, genericParameters, parameters, body)
 
 
-	method_parameters = (LPAREN, optional_parameter_list >> parameters, param_array >> paramArray, RPAREN) ^ [parameters, paramArray]
+	method_parameters = (LPAREN, \
+				((parameter_list >> parameters, COMMA, param_array >> paramArray) | (param_array >> paramArray) | (optional_parameter_list >> parameters) ), \
+				RPAREN) ^ [parameters, paramArray]
 	
-	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type)) | ("" ^ null)
+	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type))
 	
 	optional_array_type = (AS, type_reference_array) | ""
 	
@@ -399,7 +401,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	declaration = (ID >> name, optional_type >> typeRef) ^ newDeclaration(name, typeRef)
 
-	stmt_block = stmt_if | stmt_for
+	stmt_block = stmt_if | stmt_unless | stmt_for
 
 	stmt_for = (FOR, declaration_list >> dl, IN, rvalue >> e, block >> body, or_block >> orBlock, then_block >> thenBlock) ^ newForStatement(dl, e, body, orBlock, thenBlock)
 
@@ -408,6 +410,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	then_block = ((THEN, block >> thenBlock) ^ thenBlock) | ( "" ^ null)	
 	
 	stmt_if = (IF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newIfStatement(e, trueBlock, falseBlock)
+	
+	stmt_unless	= (UNLESS, assignment >> e, block >> condition) ^ newUnlessStatement(e, condition)
 	
 	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock))) | \
 		((ELSE, block >> falseBlock) ^ falseBlock) | ( "" ^ null)
