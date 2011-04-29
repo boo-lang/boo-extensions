@@ -34,6 +34,10 @@ def newForStatement(declarations, e as Expression, body as Block, orBlock as Blo
 	for d in declarations: node.Declarations.Add(d)
 	return node
 
+def newWhileStatement(condition, body, orBlock, thenBlock):
+	node = WhileStatement(Condition: condition, Block: body, OrBlock: orBlock, ThenBlock: thenBlock)
+	return node
+
 def newDeclaration(name, type as TypeReference):
 	return Declaration(Name: tokenValue(name), Type: type)
 
@@ -354,7 +358,14 @@ def newInfixExpression(op, l as Expression, r as Expression):
 	
 def newPrefixExpression(op, e as Expression):
 	return UnaryExpression(Operator: unaryOperatorFor(op), Operand: e)
+
+def newSuffixExpression(op, e as Expression):
+	return UnaryExpression(Operator: unarySuffixOperatorFor(op), Operand: e)
 	
+def addSuffixUnaryOperator(e, postOp):
+	 return e if postOp is null
+	 return UnaryExpression(Operator: unarySuffixOperatorFor(postOp), Operand: e)
+
 def unaryOperatorFor(op):
 	match tokenValue(op):
 		case "not": return UnaryOperatorType.LogicalNot
@@ -363,6 +374,12 @@ def unaryOperatorFor(op):
 		case "++": return UnaryOperatorType.Increment
 		case "--": return UnaryOperatorType.Decrement
 		case "*": return UnaryOperatorType.Explode
+
+def unarySuffixOperatorFor(op):
+	match tokenValue(op):
+		case "++": return UnaryOperatorType.PostIncrement
+		case "--": return UnaryOperatorType.PostDecrement
+
 	
 def binaryOperatorFor(op):
 	match tokenValue(op):

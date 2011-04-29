@@ -132,7 +132,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
 		"interface", "internal", "in", "isa", "is", "namespace", "not", "null", "of", "or", "override", \
 		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
-		"then", "transient", "true", "try", "typeof", "unless", "virtual", "yield"
+		"then", "transient", "true", "try", "typeof", "unless", "virtual", "while", "yield"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
@@ -401,9 +401,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	declaration = (ID >> name, optional_type >> typeRef) ^ newDeclaration(name, typeRef)
 
-	stmt_block = stmt_if | stmt_unless | stmt_for
+	stmt_block = stmt_if | stmt_unless | stmt_for | stmt_while
 
 	stmt_for = (FOR, declaration_list >> dl, IN, rvalue >> e, block >> body, or_block >> orBlock, then_block >> thenBlock) ^ newForStatement(dl, e, body, orBlock, thenBlock)
+	
+	stmt_while = (WHILE, assignment >> e, block >> body, or_block >> orBlock, then_block >> thenBlock) ^ newWhileStatement(e, body, orBlock, thenBlock)
 
 	or_block = ((OR, block >> orBlock) ^ orBlock) | ( "" ^ null)
 	
@@ -496,7 +498,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = ((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing
+	member_reference = (((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 
@@ -656,7 +658,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	expression_pair = (assignment >> first, COLON, assignment >> second) ^ ExpressionPair(First: first, Second: second)
 	
 	list_of expression_pair
-		
+
 	reference = ID >> r ^ newReference(r) 
 	
 	time_span = ((integer | float) >> f, ("ms" | 's' | 'm' | 'h' | 'd') >> tu) ^ newTimeSpanLiteral(f, tu)
