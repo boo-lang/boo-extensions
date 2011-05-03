@@ -1,13 +1,19 @@
 namespace Boo.OMeta.Parser
 
+import System
 import System.Globalization
 import Boo.OMeta
 import Boo.Lang.PatternMatching
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 
-def newMacro(name, args, body, m):
-	node = MacroStatement(Name: tokenValue(name), Body: body, Modifier: m)
+def newMacro(name, args, block, m):
+	
+	if block isa List:
+		node = MacroStatement(Name: tokenValue(name), Body: (block as List)[1], Modifier: m, Documentation: (block as List)[0])
+	else:
+		node = MacroStatement(Name: tokenValue(name), Body: block, Modifier: m)
+		
 	for arg in args: node.Arguments.Add(arg)
 	return node
 
@@ -23,9 +29,13 @@ def newRValue(items as List):
 	if len(items) > 1: return newArrayLiteral(items)
 	return items[0]
 
-def newForStatement(declarations, e as Expression, body as Block):
-	node = ForStatement(Iterator: e, Block: body)
+def newForStatement(declarations, e as Expression, body as Block, orBlock as Block, thenBlock as Block):
+	node = ForStatement(Iterator: e, Block: body, OrBlock: orBlock, ThenBlock: thenBlock)
 	for d in declarations: node.Declarations.Add(d)
+	return node
+
+def newWhileStatement(condition, body, orBlock, thenBlock):
+	node = WhileStatement(Condition: condition, Block: body, OrBlock: orBlock, ThenBlock: thenBlock)
 	return node
 
 def newDeclaration(name, type as TypeReference):
@@ -39,32 +49,80 @@ def newUnpackStatement(declarations, e as Expression, m as StatementModifier):
 	for d in declarations: stmt.Declarations.Add(d)
 	return stmt
 
-def newIfStatement(condition as Expression, trueBlock as Block):
-	return IfStatement(Condition: condition, TrueBlock: trueBlock)
+def newTryStatement(protectedBlock as Block, handlers as List, failureBlock as Block, ensureBlock as Block):
+	stmt = TryStatement(ProtectedBlock: protectedBlock, FailureBlock: failureBlock, EnsureBlock: ensureBlock)	
+	if handlers is not null:
+		for h as ExceptionHandler in handlers:
+			if (h.Declaration is null):
+				h.Flags |= ExceptionHandlerFlags.Anonymous
+				h.Flags |= ExceptionHandlerFlags.Untyped
+			elif h.Declaration.Type is null:
+				h.Flags |= ExceptionHandlerFlags.Untyped
+			
+			stmt.ExceptionHandlers.Add(h)
+	return stmt
 	
-def newCallable(name, parameters, type):
+
+def newIfStatement(condition as Expression, trueBlock as Block, falseBlock as Block):
+	return IfStatement(Condition: condition, TrueBlock: trueBlock, FalseBlock: falseBlock)
+	
+def newCallable(modifiers, name, genericParameters as List, parameters as List, type):
 	node = CallableDefinition(Name: tokenValue(name), ReturnType: type)
-	setUpParameters node, parameters
+	
+	#return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)	
+	setUpMember(node, null, modifiers)
+	
+	if genericParameters is not null:
+		for genericParameter in genericParameters:			
+			node.GenericParameters.Add(genericParameter)
+	
+	if parameters[1] is not null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
 	return node
 	
-def newModule(doc, imports, members, stmts):
+def newModule(ns as string, doc, imports, members, stmts):
 	m = Module(Documentation: doc)
+	
+	if ns is not null:
+		m.Namespace = NamespaceDeclaration(ns)
+	
 	for item in imports: m.Imports.Add(item)
 	for member in flatten(members):
-		if member isa Attribute:
+		if member isa Ast.Attribute:
 			m.AssemblyAttributes.Add(member)
+		elif member isa MacroStatement:
+			m.Globals.Add(member as Statement)
 		else:
 			m.Members.Add(member)
 	for stmt as Statement in stmts: m.Globals.Add(stmt)
 	return m
 	
-def newImport(qname as string):
-	return Import(Namespace: qname)
+def newImport(qname as string, assembly, alias):
+	assemblyReference = null
+	if assembly isa Token:
+		assemblyReference = ReferenceExpression(Name: tokenValue(assembly))
+	else:
+		assemblyReference = ReferenceExpression(Name: assembly) if assembly is not null
+		
+	importAlias = null
+	if alias isa Token:
+		importAlias =	ReferenceExpression(Name: tokenValue(alias))
+	else:
+		importAlias =	ReferenceExpression(Name: alias) if alias is not null
+		
+	return Import(Namespace: qname, AssemblyReference: assemblyReference, Alias: importAlias)
 
 def newInteger(t, style as NumberStyles):
 	value = int.Parse(tokenValue(t), style)
 	return IntegerLiteralExpression(Value: value)
-	
+
+def newFloat(t):
+	value = double.Parse(t)
+	return DoubleLiteralExpression(Value: value)
+
 def newEvent(attributes, modifiers, name, type):
 	return setUpMember(Event(Name: tokenValue(name), Type: type), attributes, modifiers)
 	
@@ -89,24 +147,59 @@ def setUpMember(member as TypeMember, attributes, modifiers):
 def setUpParameters(node as INodeWithParameters, parameters):
 	for p in flatten(parameters): node.Parameters.Add(p)
 	
-def newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType as TypeReference, body as Block) as Method:
+def newMethod(attributes, modifiers, name, parameters as List, returnTypeAttributes, returnType as TypeReference, body as Block) as Method:
 	node = Method(Name: tokenValue(name), Body: body, ReturnType: returnType)
-	setUpParameters node, parameters
+
+	if parameters[1] != null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
+
 	for a in flatten(returnTypeAttributes): node.ReturnTypeAttributes.Add(a)
 	return setUpMember(node, attributes, modifiers)
 	
-def newGenericMethod(attributes, modifiers, name, genericParameters, parameters, returnTypeAttributes, returnType as TypeReference, body as Block):
+def newGenericMethod(attributes, modifiers, name, genericParameters, parameters as List, returnTypeAttributes, returnType as TypeReference, body as Block):
 	node = newMethod(attributes, modifiers, name, parameters, returnTypeAttributes, returnType, body)
 	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
 	return node
+	
+	
+def newConstructor(attributes, modifiers, genericParameters, parameters as List, body as Block):
+	node = Constructor(Name: "constructor", Body: body)
+
+	if parameters[1] != null: //Check if ParamArray is present
+		setUpParameters node, parameters
+		node.Parameters.HasParamArray = true
+	else:
+		setUpParameters node, parameters[0]
+
+	setUpMember(node, attributes, modifiers)
+	
+	for gp in flatten(genericParameters): node.GenericParameters.Add(gp)
+	return node	
+	
+	
 
 def newGenericTypeReference(qname, args):
 	node = GenericTypeReference(Name: qname)
 	for arg in flatten(args): node.GenericArguments.Add(arg)
 	return node
-	
-def newGenericParameterDeclaration(name):
+
+def newGenericTypeDefinitionReference(qname, placeholders as List):
+	return GenericTypeDefinitionReference(Name: qname,  GenericPlaceholders: placeholders.Count)
+
+
+def newGenericParameterDeclaration(name, constraints):
 	node = GenericParameterDeclaration(Name: tokenValue(name))
+
+	if constraints is not null:
+		for constraint in constraints:
+			if constraint isa TypeReference:
+				node.BaseTypes.Add(constraint)
+			else:
+				node.Constraints |= cast(GenericParameterConstraints, constraint)
+	
 	return node
 	
 def newParameterDeclaration(attributes, name, type):
@@ -114,7 +207,7 @@ def newParameterDeclaration(attributes, name, type):
 	return setUpAttributes(node, attributes)
 	
 def newEnum(attributes, modifiers, name, members):
-	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, members)
+	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
 def newCallableTypeReference(params, type):
 	node = CallableTypeReference(ReturnType: type)
@@ -149,14 +242,21 @@ def newEnumField(attributes, name, initializer):
 			pass
 	return setUpMember(EnumMember(Name: tokenValue(name), Initializer: initializer), attributes, null)
 	
-def newClass(attributes, modifiers, name, baseTypes, members):
-	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
+def newClass(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(ClassDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
-def setUpType(type as TypeDefinition, attributes, modifiers, baseTypes, members):
+def newStruct(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(StructDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
+	
+	
+def setUpType(type as TypeDefinition, attributes, modifiers, genericParameters, baseTypes, members):
 	if members is not null: 
 		for member in members: type.Members.Add(member)
 	if baseTypes is not null:
 		for baseType in baseTypes: type.BaseTypes.Add(baseType)
+	if genericParameters is not null:
+		for genericParameter in genericParameters: type.GenericParameters.Add(genericParameter)
+			
 	return setUpMember(type, attributes, modifiers)
 	
 macro setUpArgs:
@@ -172,19 +272,24 @@ macro setUpArgs:
 	return code
 	
 def newAttribute(name, args):
-	node = Attribute(Name: tokenValue(name))
+	node = Ast.Attribute(Name: tokenValue(name))
 	setUpArgs node, args
 	return node
 	
 def newNamedArgument(name, value):
 	return ExpressionPair(First: newReference(name), Second: value)
 	
-def newInterface(attributes, modifiers, name, baseTypes, members):
-	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, baseTypes, members)
+def newInterface(attributes, modifiers, name, genericParameters, baseTypes, members):
+	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
-def newInvocation(target as Expression, args as List):
+def newInvocation(target as Expression, args as List, genericArgs as object):
+	if genericArgs is not null:
+		target = GenericReferenceExpression(Target: target)
+		for arg in genericArgs:
+			(target as GenericReferenceExpression).GenericArguments.Add(arg)
+	
 	mie = MethodInvocationExpression(Target: target)
-	setUpArgs mie, args
+	setUpArgs mie, args	
 	return mie
 	
 def newQuasiquoteBlock(m):
@@ -221,7 +326,7 @@ def newHashLiteral(items):
 	return literal
 	
 def newStringLiteral(s):
-	return StringLiteralExpression(Value: tokenValue(s))
+	return StringLiteralExpression(Value: s)
 	
 def newStringInterpolation(items as List):
 	if len(items) == 0: return StringLiteralExpression("")
@@ -234,13 +339,14 @@ def newStringInterpolation(items as List):
 def newConditionalExpression(condition, trueValue, falseValue):
 	return ConditionalExpression(Condition: condition, TrueValue: trueValue, FalseValue: falseValue)
 	
-def newBlockExpression(parameters, body):
+def newBlockExpression(parameters as List, body):
 	node = BlockExpression(Body: body)
-	for p in parameters: node.Parameters.Add(p)
+	for p in parameters[0]:
+		node.Parameters.Add(p)
 	return node
 	
 def newTypeofExpression(type):
-	return TypeofExpression(type)
+	return TypeofExpression(Type: type)
 	
 def newInvocationWithBlock(invocation as MethodInvocationExpression, block as BlockExpression):
 	node = invocation.CloneNode()
@@ -252,7 +358,14 @@ def newInfixExpression(op, l as Expression, r as Expression):
 	
 def newPrefixExpression(op, e as Expression):
 	return UnaryExpression(Operator: unaryOperatorFor(op), Operand: e)
+
+def newSuffixExpression(op, e as Expression):
+	return UnaryExpression(Operator: unarySuffixOperatorFor(op), Operand: e)
 	
+def addSuffixUnaryOperator(e, postOp):
+	 return e if postOp is null
+	 return UnaryExpression(Operator: unarySuffixOperatorFor(postOp), Operand: e)
+
 def unaryOperatorFor(op):
 	match tokenValue(op):
 		case "not": return UnaryOperatorType.LogicalNot
@@ -260,10 +373,18 @@ def unaryOperatorFor(op):
 		case "~": return UnaryOperatorType.OnesComplement
 		case "++": return UnaryOperatorType.Increment
 		case "--": return UnaryOperatorType.Decrement
+		case "*": return UnaryOperatorType.Explode
+
+def unarySuffixOperatorFor(op):
+	match tokenValue(op):
+		case "++": return UnaryOperatorType.PostIncrement
+		case "--": return UnaryOperatorType.PostDecrement
+
 	
 def binaryOperatorFor(op):
 	match tokenValue(op):
 		case "is": return BinaryOperatorType.ReferenceEquality
+		case "isa": return BinaryOperatorType.TypeTest
 		case "is not": return BinaryOperatorType.ReferenceInequality
 		case "in": return BinaryOperatorType.Member
 		case "not in": return BinaryOperatorType.NotMember
@@ -294,6 +415,8 @@ def binaryOperatorFor(op):
 		case "<=": return BinaryOperatorType.LessThanOrEqual
 		case ">": return BinaryOperatorType.GreaterThan
 		case ">=": return BinaryOperatorType.GreaterThanOrEqual
+		case ">>=": return BinaryOperatorType.InPlaceShiftRight
+		case "<<=": return BinaryOperatorType.InPlaceShiftLeft
 	
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
@@ -315,3 +438,32 @@ def prepend(first, tail as List):
 def buildQName(q, rest):
 	return join(tokenValue(t) for t in prepend(q, rest), '.')
 
+def newGenericParameterConstraint(constraint):
+	match tokenValue(constraint):
+		case "class": return GenericParameterConstraints.ReferenceType
+		case "struct": return GenericParameterConstraints.ValueType
+		case "constructor": return GenericParameterConstraints.Constructable
+		
+def newGotoStatement(label, modifier):
+	return GotoStatement(Label: ReferenceExpression(Name: tokenValue(label)), Modifier: modifier)
+	
+def getUnicodeChar(hex):
+	return cast(char, int.Parse(flatString(hex), System.Globalization.NumberStyles.HexNumber))
+	
+def newTimeSpanLiteral(n, tu):
+	value as double = 0
+	if n isa IntegerLiteralExpression:
+		value = (n as IntegerLiteralExpression).Value
+	else:
+		value = (n as DoubleLiteralExpression).Value
+	
+	match tu:
+		case 'ms': return TimeSpanLiteralExpression(Value:TimeSpan.FromMilliseconds(value))
+		case 's': return TimeSpanLiteralExpression(Value:TimeSpan.FromSeconds(value))
+		case 'h': return TimeSpanLiteralExpression(Value:TimeSpan.FromHours(value))
+		case 'm': return TimeSpanLiteralExpression(Value:TimeSpan.FromMinutes(value))
+		case 'd': return TimeSpanLiteralExpression(Value:TimeSpan.FromDays(value))
+	
+def newUnlessStatement(condition, block):
+	return UnlessStatement(Block: block, Condition: condition)
+	

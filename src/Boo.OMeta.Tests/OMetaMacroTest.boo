@@ -203,7 +203,7 @@ class OMetaMacroTest:
 	[Test]
 	def TestBinding():
 		ometa NumberListParser:
-			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as List))
+			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as Boo.Lang.List))
 			dig = '1' | '2' | '3' | '4' | '5'
 			num = ++dig >> value ^ int.Parse(join(value, ''))
 			
