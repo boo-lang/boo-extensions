@@ -38,7 +38,7 @@ level11
 		]
 		
 		tokenizer = ParensForGrouping()
-		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', code)])
+		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', normalize(code))])
 	
 	[Test] def IndentDedent():
 		code = """
@@ -55,7 +55,7 @@ level 1.3:
 	level 2.3
 	level 2.4:
 		level 3.1
-"""
+		"""
 		
 		expected = [
 			Token('eol', 'eol'), 
@@ -81,7 +81,10 @@ level 1.3:
 		]
 		
 		tokenizer = WhitespaceSensitiveTokenizer()
-		Assert.AreEqual(expected, [item for item in scan(tokenizer, 'scanner', code)])
+		s = scan(tokenizer, 'scanner', code)		
+		Assert.AreEqual(expected, [item for item in s])
 #		for t as Token in scan(tokenizer, 'scanner', code):
 #			print "Token('${t.kind}', '${t.value}'), "
-		
+
+	def normalize(s as string):
+		return s.Replace("\r\n", "\n")
