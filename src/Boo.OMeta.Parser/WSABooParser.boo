@@ -11,3 +11,6 @@ ometa WSABooParser < BooParser:
 	begin_block = COLON, eol
 	end_block = keyword["end"], eol
 	empty_block = (begin_block, end_block) ^ Block()
+	
+	INDENT = eol | ""
+	DEDENT = eol | ""
