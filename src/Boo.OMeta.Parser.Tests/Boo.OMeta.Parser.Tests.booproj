@@ -47,6 +47,8 @@
     <Compile Include="BooParserTestFixture.Generated.boo" />
     <Compile Include="SyntaxMacroTest.boo" />
     <Compile Include="WhitespaceSensitiveTokenizerTest.boo" />
+    <Compile Include="WSABooParserTestFixture.boo" />
+    <Compile Include="WSABooParserTestFixture.Generated.boo" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
