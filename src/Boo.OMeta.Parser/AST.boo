@@ -272,7 +272,7 @@ macro setUpArgs:
 	return code
 	
 def newAttribute(name, args):
-	node = Ast.Attribute(Name: tokenValue(name))
+	node = Ast.Attribute(Name: name)
 	setUpArgs node, args
 	return node
 	

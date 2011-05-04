@@ -324,7 +324,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
 	
-	attribute = (ID >> name, attribute_arguments >> args) ^ newAttribute(name, args)
+	attribute = (qualified_name >> name, attribute_arguments >> args) ^ newAttribute(name, args)
 	
 	attribute_arguments = invocation_arguments | ""
 	
