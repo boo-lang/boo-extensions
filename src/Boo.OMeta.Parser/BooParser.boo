@@ -527,7 +527,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = invocation_expression | atom
+	invocation = at_operator | invocation_expression | atom
+	
+	at_operator = ("@", invocation_arguments >> args) ^ newInvocation(ReferenceExpression("@"), args, null)
 	
 	invocation_expression = (member_reference >> target, optional_generic_arguments >> generic_args, invocation_arguments >> args) ^ newInvocation(target, args, generic_args)
 		
