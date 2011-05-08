@@ -128,7 +128,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('F'))) 
 		
-	keywords "abstract", "and", "as", "callable", "class", "constructor", "def", "do", "elif", "else", \
+	keywords "abstract", "and", "as", "callable", "cast", "class", "constructor", "def", "do", "elif", "else", \
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
 		"interface", "internal", "in", "isa", "is", "namespace", "not", "null", "of", "or", "override", \
 		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
@@ -496,7 +496,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix exponentiation_expression, EXPONENTIATION, try_cast
 	
-	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | member_reference
+	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | cast_operator 
+	
+	cast_operator = ((cast_operator >> e, CAST, type_reference >> typeRef) ^ CastExpression(Target: e, Type: typeRef)) | member_reference
 	
 	member_reference = (((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
 	
