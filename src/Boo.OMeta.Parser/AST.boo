@@ -209,11 +209,15 @@ def newParameterDeclaration(attributes, name, type):
 def newEnum(attributes, modifiers, name, members):
 	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
-def newCallableTypeReference(params, type):
+def newCallableTypeReference(params, paramArray, type):
 	node = CallableTypeReference(ReturnType: type)
 	i = 0
 	for p in flatten(params):
 		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
+		
+	if paramArray is not null:
+		node.Parameters.Add(paramArray)
+		node.Parameters.HasParamArray = true
 	return node
 	
 def newStatementModifier(t, e as Expression):
