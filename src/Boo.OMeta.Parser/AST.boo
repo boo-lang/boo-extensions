@@ -473,3 +473,6 @@ def newTimeSpanLiteral(n, tu):
 def newUnlessStatement(condition, block):
 	return UnlessStatement(Block: block, Condition: condition)
 	
+def newCollectionInitialization(collection, initializer):
+	return CollectionInitializationExpression(Collection: collection, Initializer: initializer)
+	

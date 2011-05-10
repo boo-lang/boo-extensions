@@ -530,7 +530,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = at_operator | invocation_expression | atom
+	invocation = at_operator | collection_initialization | invocation_expression | atom
 	
 	at_operator = ("@", invocation_arguments >> args) ^ newInvocation(ReferenceExpression("@"), args, null)
 	
@@ -663,6 +663,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	list_literal = (LBRACK, optional_expression_list >> items, optional_comma, RBRACK) ^ newListLiteral(items)
 	
 	hash_literal = (LBRACE, optional_expression_pair_list >> items, optional_comma, RBRACE) ^ newHashLiteral(items)
+	
+	initialization_list_literal = (LBRACE, optional_expression_list >> items, optional_comma, RBRACE) ^ newListLiteral(items)
+	
+	collection_initialization = invocation_expression >> e, initialization_list_literal >> i ^ newCollectionInitialization(e, i)
 	
 	optional_comma = COMMA | ""
 	
