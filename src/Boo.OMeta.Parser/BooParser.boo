@@ -644,7 +644,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			) >> items,
 		DQ) ^ newStringInterpolation(items)
 		
-	reg_exp_string = ( (("/" | "@/"), (--(~"/", _) >> s), "/")  ) ^ RELiteralExpression(makeString("/", s, "/"))		
+	reg_exp_string = ( (((~"/*","/") | "@/"), (--(~"/", _) >> s), "/")  ) ^ RELiteralExpression(makeString("/", s, "/"))		
 		
 	string_char = ('\\', ('\\' | '$')) | (~'\\', _)
 	
@@ -697,5 +697,5 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	false_literal = FALSE ^ [| false |]
 	
-	eol = (++EOL | ~_) ^ null	
-	
+	eol = (++EOL | ~_) ^ null
+
