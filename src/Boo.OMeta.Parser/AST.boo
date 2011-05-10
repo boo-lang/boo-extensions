@@ -287,13 +287,15 @@ def newInterface(attributes, modifiers, name, genericParameters, baseTypes, memb
 	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
 def newInvocation(target as Expression, args as List, genericArgs as object):
+	
 	if genericArgs is not null:
 		target = GenericReferenceExpression(Target: target)
 		for arg in genericArgs:
 			(target as GenericReferenceExpression).GenericArguments.Add(arg)
 	
 	mie = MethodInvocationExpression(Target: target)
-	setUpArgs mie, args	
+	
+	setUpArgs mie, flattenNoNulls(args)	
 	return mie
 	
 def newQuasiquoteBlock(m):

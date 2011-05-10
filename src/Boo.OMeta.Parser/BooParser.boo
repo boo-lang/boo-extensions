@@ -324,9 +324,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
 	
-	attribute = (qualified_name >> name, attribute_arguments >> args) ^ newAttribute(name, args)
-	
-	attribute_arguments = invocation_arguments | ""
+	attribute = (qualified_name >> name, optional_invocation_arguments >> args) ^ newAttribute(name, args)
 	
 	list_of attribute
 	
@@ -428,16 +426,19 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	block_expression = invocation_with_block | closure_block | dsl_friendly_invocation
 	
-	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), (closure_block) >> c) ^ newInvocationWithBlock(e, c)
-	
-	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), (block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)],null)
+	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), \
+		(closure_block | (block >> b ^ newBlockExpression([[], null], b))) >> c ^ newInvocationWithBlock(e, c) ) 
+
+	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), \
+		(block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)], null)
 	
 	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
 	optional_parameters = method_parameters | ("" ^ [[], null])
 
 	stmt_expression = stmt_expression_block \
-		| ((dsl_friendly_invocation >> e) ^ ExpressionStatement(Expression: e)) | (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
+		| ((block_expression >> e) ^ ExpressionStatement(Expression: e)) \
+		| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	
@@ -537,6 +538,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	invocation_arguments = (LPAREN, optional_invocation_argument_list >> args, RPAREN) ^ args
 	
+	optional_invocation_arguments = invocation_arguments | ""
+	
 	invocation_argument = named_argument | assignment
 	
 	list_of invocation_argument
@@ -598,7 +601,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	closure_stmt_modifier = stmt_modifier_node | ~~(RBRACE | SEMICOLON)
 	
-	closure_stmt_return = (RETURN, rvalue >> e, closure_stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	closure_stmt_return = (RETURN, (rvalue | "") >> e, closure_stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
 	
 	closure_stmt_raise = (RAISE, expression >> e, closure_stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 	
