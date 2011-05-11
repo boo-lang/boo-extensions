@@ -546,12 +546,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_splice \
+	type_reference = (type_reference_splice \
 		| type_reference_generic_definition \
 		| type_reference_generic \
 		| type_reference_simple \
 		| type_reference_array \
-		| type_reference_callable
+		| type_reference_callable) >> t, --star >> s ^ checkEnumerableTypeShortcut(t, s)  
 		
 	type_reference_splice = SPLICE_BEGIN, atom >> e ^ SpliceTypeReference(Expression: e)
 	

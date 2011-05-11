@@ -476,3 +476,14 @@ def newUnlessStatement(condition, block):
 def newCollectionInitialization(collection, initializer):
 	return CollectionInitializationExpression(Collection: collection, Initializer: initializer)
 	
+def checkEnumerableTypeShortcut(type, stars as List):
+	if stars is null:
+		return type
+	
+	enumerable = type
+	for star in stars:
+		enumerable = GenericTypeReference(Name: "System.Collections.Generic.IEnumerable")
+		(enumerable as GenericTypeReference).GenericArguments.Add(type)
+		type = enumerable
+	return enumerable
+	
