@@ -9,7 +9,7 @@ ometa WSABooParser < BooParser:
 	keywords = "end" | super
 	
 	begin_block = COLON, eol
-	end_block = (keyword["end"], eol) | (~~ELSE) | (~~ELIF)
+	end_block = (keyword["end"], eol) | (~~ELSE) | (~~ELIF) | (~~(OR, COLON)) | (~~THEN)
 	empty_block = (begin_block, end_block) ^ Block()
 	
 	INDENT = eol | ""
@@ -18,3 +18,5 @@ ometa WSABooParser < BooParser:
 	class_body = (--class_member >> members ^ members)
 	struct_body = (--struct_member >> members ^ members)
 	interface_body = (--interface_member >> members ^ members)
+
+	stmt_macro = (PASS >> name, optional_assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m) | super

@@ -367,7 +367,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
-	stmt_macro = (ID >> name, assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
+	stmt_macro = (ID >> name, optional_assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
 
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
