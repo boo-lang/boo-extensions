@@ -666,7 +666,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	initialization_list_literal = (LBRACE, optional_expression_list >> items, optional_comma, RBRACE) ^ newListLiteral(items)
 	
-	collection_initialization = invocation_expression >> e, initialization_list_literal >> i ^ newCollectionInitialization(e, i)
+	collection_initialization = invocation_expression >> e, (initialization_list_literal | hash_literal) >> i ^ newCollectionInitialization(e, i)
 	
 	optional_comma = COMMA | ""
 	
