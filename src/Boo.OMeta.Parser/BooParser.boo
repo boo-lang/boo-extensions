@@ -332,15 +332,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	optional_type = (AS, type_reference) | ""
 	
-	block = empty_block | multi_line_block | multi_line_block_with_doc | single_line_block
+	block = empty_block | multi_line_block_with_doc | multi_line_block | single_line_block
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
+	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts, null)
 	
-	multi_line_block_with_doc = (begin_block_with_doc >> doc, ++stmt >> stmts, end_block)  ^ [doc, newBlock(stmts)]
+	multi_line_block_with_doc = (begin_block_with_doc >> doc, ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
-	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line)
+	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line, null)
 	
 	begin_block = COLON, INDENT
 	
@@ -413,7 +413,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_unless	= (UNLESS, assignment >> e, block >> condition) ^ newUnlessStatement(e, condition)
 	
-	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock))) | \
+	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock), null)) | \
 		((ELSE, block >> falseBlock) ^ falseBlock) | ( "" ^ null)
 	
 	stmt_return = (
@@ -589,7 +589,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
-	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body))
+	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body, null))
 	
 	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ [parameters, null]) | ("" ^ [[],null])
 	

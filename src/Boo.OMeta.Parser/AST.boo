@@ -440,7 +440,7 @@ def binaryOperatorFor(op):
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
 	
-def newBlock(contents):
+def newBlock(contents, doc):
 	b = Block()
 	match contents:
 		case Statement():
@@ -448,6 +448,7 @@ def newBlock(contents):
 		otherwise:
 			for item in contents:
 				b.Statements.Add(item)
+	b.Documentation  = doc
 	return b
 	
 def prepend(first, tail as List):
