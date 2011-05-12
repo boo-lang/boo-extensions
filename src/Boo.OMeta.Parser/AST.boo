@@ -115,9 +115,22 @@ def newImport(qname as string, assembly, alias):
 		
 	return Import(Namespace: qname, AssemblyReference: assemblyReference, Alias: importAlias)
 
-def newInteger(t, style as NumberStyles):
-	value = int.Parse(tokenValue(t), style)
-	return IntegerLiteralExpression(Value: value)
+def newInteger(sign, t, style as NumberStyles, suffix):
+	s = tokenValue(sign) + tokenValue(t)
+	value = long.Parse(s, style)
+	result = IntegerLiteralExpression(Value: value)
+	if suffix in ["L", "l"]: result.IsLong = true
+	return result
+	
+def IsValidLong(sign, n):
+	s = tokenValue(sign) + tokenValue(n)
+	r as long
+	return long.TryParse(s, NumberStyles.AllowLeadingSign, null, r)
+	
+def IsValidHexLong(sign, n):
+	s = tokenValue(sign) + tokenValue(n)
+	r as long
+	return long.TryParse(s, NumberStyles.HexNumber, null, r)
 
 def newFloat(t):
 	value = double.Parse(t)

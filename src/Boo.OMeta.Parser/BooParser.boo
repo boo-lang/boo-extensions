@@ -678,8 +678,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	time_span = ((integer | float) >> f, ("ms" | 's' | 'm' | 'h' | 'd') >> tu) ^ newTimeSpanLiteral(f, tu)
 	
-	integer = (NUM >> n ^ newInteger(n, NumberStyles.None)) \
-		| (HEXNUM >> n ^ newInteger(n, NumberStyles.HexNumber))
+	integer = ((MINUS | "") >> sign, NUM >> n and (IsValidLong(sign, n)), ("L" | "l" | "") >> suffix ^ newInteger(sign, n, NumberStyles.AllowLeadingSign, suffix)) \
+		| ((MINUS | "") >> sign, (HEXNUM >> n and (IsValidHexLong(sign, n))), ("L" | "l" | "") >> suffix ^ newInteger(sign, n, NumberStyles.HexNumber, suffix))
 	
 	float = ( (fractional_constant >> n, (exponent_part | "") >> e , floating_suffix ) ^ newFloat(makeString(n,e))) | ((NUM >> n, exponent_part >> e, floating_suffix)  ^ newFloat(makeString(tokenValue(n),e)))
 
