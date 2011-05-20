@@ -105,11 +105,15 @@ for indirectly/mutually left recursive rules.
 		if h.evalSet.Contains(r):
 			h.evalSet.Remove(r)
 			m = Apply(r, input)
-			_memo[memoKey] = m
+			if _memo[memoKey] is null or (not (m isa FailedMatch and _memo[memoKey] isa SuccessfulMatch) ):
+				_memo[memoKey] = m
+			else:
+				return _memo[memoKey]
 		return m
 		
-	def GrowLR(memoKey as MemoKey, lr as LeftRecursion):		
+	def GrowLR(memoKey as MemoKey, lr as LeftRecursion):	
 		rule = memoKey.rule
+
 		input = memoKey.input
 		h = lr.head
 		lastSuccessfulMatch as OMetaMatch = lr.seed
