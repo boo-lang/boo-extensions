@@ -148,8 +148,6 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	) ^ newModule(ns, s, ids, members, stmts)
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
-
-	
 	
 	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
@@ -332,14 +330,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	optional_type = (AS, type_reference) | ""
 	
-	block = empty_block | multi_line_block_with_doc | multi_line_block | single_line_block
+	block = empty_block | multi_line_block | single_line_block
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts, null)
+	multi_line_block = ((begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
-	multi_line_block_with_doc = (begin_block_with_doc >> doc, ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
+	macro_block = empty_block | multi_line_macro_block
 	
+	multi_line_macro_block = ((begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(stmts, doc)
+	
+	type_member_stmt = (type_def | method) >> tm ^ TypeMemberStatement(TypeMember: tm)
+
 	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line, null)
 	
 	begin_block = COLON, INDENT
@@ -367,8 +369,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
-	stmt_macro = (ID >> name, optional_assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
-
+	stmt_macro = (ID >> name, optional_assignment_list >> args, ((macro_block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
+	
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
 	stmt_modifier = (((stmt_modifier_node | "") >> value, (eol|SEMICOLON)) ^ value)
