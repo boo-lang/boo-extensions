@@ -130,7 +130,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	keywords "abstract", "and", "as", "callable", "cast", "class", "constructor", "def", "do", "elif", "else", \
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
-		"interface", "internal", "in", "isa", "is", "namespace", "not", "null", "of", "or", "override", \
+		"interface", "internal", "in", "isa", "is", "namespace", "new", "not", "null", "of", "or", "override", \
 		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
 		"then", "transient", "true", "try", "typeof", "unless", "virtual", "while", "yield"
 	
@@ -266,6 +266,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| (OVERRIDE ^ TypeMemberModifiers.Override)
 		| (TRANSIENT ^ TypeMemberModifiers.Transient)
 		| (ABSTRACT ^ TypeMemberModifiers.Abstract)
+		| (NEW ^ TypeMemberModifiers.New)
 	) >> all ^ all
 	
 	method = (
