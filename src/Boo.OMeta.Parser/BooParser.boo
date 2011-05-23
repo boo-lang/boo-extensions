@@ -438,7 +438,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	stmt_expression = stmt_expression_block \
 		| ((block_expression >> e) ^ ExpressionStatement(Expression: e)) \
-		| (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
+		| (((multi_assignment | assignment) >> e and (not (e isa ReferenceExpression or e isa MemberReferenceExpression)), \
+			stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	
