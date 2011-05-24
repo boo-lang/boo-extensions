@@ -198,7 +198,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = type_def | property_def | constructor_method | method | field | event_def
+	class_member = type_def | property_def | constructor_method | method | field | event_def | splice_type_definition_body
 	
 	struct_member = constructor_method | method | field
 	
@@ -561,6 +561,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	type_reference_splice = SPLICE_BEGIN, atom >> e ^ SpliceTypeReference(Expression: e)
 	
 	splice_expression = SPLICE_BEGIN, atom >> e ^ SpliceExpression(Expression: e)
+	
+	splice_type_definition_body = SPLICE_BEGIN, atom >> e, eol ^ setUpMember(SpliceTypeDefinitionBody(Expression: e), [], []) 
 	
 	type_reference_generic_definition = (qualified_name >> qname, generic_placeholders >> placeholders) ^ newGenericTypeDefinitionReference(qname, placeholders)
 

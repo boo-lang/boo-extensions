@@ -800,14 +800,14 @@ partial class WSABooParserTestFixture:
 		runTestCase("splicing-1.boo")
 	
 	
-	[Test]
-	def splicing_class_body():	
-		runTestCase("splicing-class-body.boo")
-	
-	
-	[Test]
-	def splicing_enum_body():	
-		runTestCase("splicing-enum-body.boo")
+//	[Test]
+//	def splicing_class_body():	
+//		runTestCase("splicing-class-body.boo")
+//	
+//	
+//	[Test]
+//	def splicing_enum_body():	
+//		runTestCase("splicing-enum-body.boo")
 	
 	
 	[Test]
