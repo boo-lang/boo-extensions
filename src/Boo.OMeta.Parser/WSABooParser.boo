@@ -9,7 +9,7 @@ ometa WSABooParser < BooParser:
 	keywords = ~"pass", ("end" | super)
 	
 	begin_block = COLON, eol
-	end_block = (keyword["end"], eol) | (~~ELSE) | (~~ELIF) | (~~(OR, COLON)) | (~~THEN)
+	end_block = (keyword["end"], eol) | (~~ELSE) | (~~ELIF) | (~~(OR, COLON)) | (~~THEN) | (~~EXCEPT) | (~~ENSURE)
 	empty_block = (begin_block, end_block) ^ Block()
 	
 	member_reference = (((member_reference >> e,  DOT, enterWhitespaceAgnosticRegion, ID >> name, leaveWhitespaceAgnosticRegion) \
