@@ -505,7 +505,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	cast_operator = ((cast_operator >> e, CAST, type_reference >> typeRef) ^ CastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = (((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
+	member_reference = ((member_reference >> e, DOT, ID >> name ^ newMemberReference(e, name)) \
+		| slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 
@@ -589,7 +590,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	atom = time_span | float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
-		| type_literal | splice_expression
+		| type_literal | splice_expression | ommited
+	
+	ommited = ~~DOT ^ OmittedExpression()
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		

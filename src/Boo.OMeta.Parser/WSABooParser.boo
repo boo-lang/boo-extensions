@@ -12,7 +12,7 @@ ometa WSABooParser < BooParser:
 	end_block = (keyword["end"], eol) | (~~ELSE) | (~~ELIF) | (~~(OR, COLON)) | (~~THEN)
 	empty_block = (begin_block, end_block) ^ Block()
 	
-	member_reference = (((member_reference >> e, enterWhitespaceAgnosticRegion, DOT, ID >> name, leaveWhitespaceAgnosticRegion) \
+	member_reference = (((member_reference >> e,  DOT, enterWhitespaceAgnosticRegion, ID >> name, leaveWhitespaceAgnosticRegion) \
 		^ newMemberReference(e, name)) | slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
 	
 	INDENT = eol | ""
