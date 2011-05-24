@@ -556,7 +556,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| type_reference_generic \
 		| type_reference_simple \
 		| type_reference_array \
-		| type_reference_callable) >> t, --star >> s ^ checkEnumerableTypeShortcut(t, s)  
+		| type_reference_callable) >> t, --(star|STAR) >> s ^ checkEnumerableTypeShortcut(t, s)  
 		
 	type_reference_splice = SPLICE_BEGIN, atom >> e ^ SpliceTypeReference(Expression: e)
 	
