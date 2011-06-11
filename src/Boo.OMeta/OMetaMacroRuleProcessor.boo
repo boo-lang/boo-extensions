@@ -84,7 +84,7 @@ class OMetaMacroRuleProcessor:
 				while true:
 					$(expand(e, tempInput, lastMatch))
 					smatch = $lastMatch as SuccessfulMatch
-					break if smatch is null
+					break if (smatch is null) or ($tempInput == smatch.Input)
 					$tempInput = smatch.Input
 					$(resultAppend(result))
 

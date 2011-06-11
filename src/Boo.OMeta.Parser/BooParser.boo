@@ -128,9 +128,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	hex_digit = _ >> c as char and ((c >= char('a') and c <= char('f')) or (c >= char('A') and c <= char('F'))) 
 		
-	keywords "abstract", "and", "as", "callable", "class", "constructor", "def", "do", "elif", "else", \
+	keywords "abstract", "and", "as", "callable", "cast", "class", "constructor", "def", "do", "elif", "else", \
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
-		"interface", "internal", "in", "isa", "is", "namespace", "not", "null", "of", "or", "override", \
+		"interface", "internal", "in", "isa", "is", "namespace", "new", "not", "null", "of", "or", "override", \
 		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
 		"then", "transient", "true", "try", "typeof", "unless", "virtual", "while", "yield"
 	
@@ -148,8 +148,6 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	) ^ newModule(ns, s, ids, members, stmts)
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
-
-	
 	
 	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
 	
@@ -200,7 +198,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	no_member = (PASS, eol) ^ null
 	
-	class_member = type_def | property_def | constructor_method | method | field | event_def
+	class_member = type_def | property_def | constructor_method | method | field | event_def | splice_type_definition_body
 	
 	struct_member = constructor_method | method | field
 	
@@ -268,6 +266,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		| (OVERRIDE ^ TypeMemberModifiers.Override)
 		| (TRANSIENT ^ TypeMemberModifiers.Transient)
 		| (ABSTRACT ^ TypeMemberModifiers.Abstract)
+		| (NEW ^ TypeMemberModifiers.New)
 	) >> all ^ all
 	
 	method = (
@@ -324,9 +323,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
 	
-	attribute = (ID >> name, attribute_arguments >> args) ^ newAttribute(name, args)
-	
-	attribute_arguments = invocation_arguments | ""
+	attribute = (qualified_name >> name, optional_invocation_arguments >> args) ^ newAttribute(name, args)
 	
 	list_of attribute
 	
@@ -334,15 +331,19 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	optional_type = (AS, type_reference) | ""
 	
-	block = empty_block | multi_line_block | multi_line_block_with_doc | single_line_block
+	block = empty_block | multi_line_block | single_line_block
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	multi_line_block = (begin_block, ++stmt >> stmts, end_block)  ^ newBlock(stmts)
+	multi_line_block = ((begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
-	multi_line_block_with_doc = (begin_block_with_doc >> doc, ++stmt >> stmts, end_block)  ^ [doc, newBlock(stmts)]
+	macro_block = empty_block | multi_line_macro_block
 	
-	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line)
+	multi_line_macro_block = ((begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(stmts, doc)
+	
+	type_member_stmt = (type_def | method) >> tm ^ TypeMemberStatement(TypeMember: tm)
+
+	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line, null)
 	
 	begin_block = COLON, INDENT
 	
@@ -369,8 +370,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
-	stmt_macro = (ID >> name, assignment_list >> args, ((block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
-
+	stmt_macro = (ID >> name, optional_assignment_list >> args, ((macro_block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
+	
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
 	stmt_modifier = (((stmt_modifier_node | "") >> value, (eol|SEMICOLON)) ^ value)
@@ -415,7 +416,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_unless	= (UNLESS, assignment >> e, block >> condition) ^ newUnlessStatement(e, condition)
 	
-	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock))) | \
+	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock), null)) | \
 		((ELSE, block >> falseBlock) ^ falseBlock) | ( "" ^ null)
 	
 	stmt_return = (
@@ -428,16 +429,20 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	block_expression = invocation_with_block | closure_block | dsl_friendly_invocation
 	
-	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), (closure_block) >> c) ^ newInvocationWithBlock(e, c)
-	
-	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), (block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)],null)
+	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), \
+		(closure_block | (block >> b ^ newBlockExpression([[], null], b))) >> c ^ newInvocationWithBlock(e, c) ) 
+
+	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), \
+		(block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)], null)
 	
 	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
 	
 	optional_parameters = method_parameters | ("" ^ [[], null])
 
 	stmt_expression = stmt_expression_block \
-		| ((dsl_friendly_invocation >> e) ^ ExpressionStatement(Expression: e)) | (((multi_assignment | assignment) >> e, stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
+		| ((block_expression >> e) ^ ExpressionStatement(Expression: e)) \
+		| (((multi_assignment | assignment) >> e and (not (e isa ReferenceExpression or e isa MemberReferenceExpression)), \
+			stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m))
 	
 	multi_assignment = (expression >> l, ASSIGN >> op, rvalue >> r) ^ newInfixExpression(op, l, r)
 	
@@ -496,9 +501,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	infix exponentiation_expression, EXPONENTIATION, try_cast
 	
-	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | member_reference
+	try_cast = ((try_cast >> e, AS, type_reference >> typeRef) ^ TryCastExpression(Target: e, Type: typeRef)) | cast_operator 
 	
-	member_reference = (((member_reference >> e, DOT, ID >> name) ^ newMemberReference(e, name)) | slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
+	cast_operator = ((cast_operator >> e, CAST, type_reference >> typeRef) ^ CastExpression(Target: e, Type: typeRef)) | member_reference
+	
+	member_reference = ((member_reference >> e, DOT, ID >> name ^ newMemberReference(e, name)) \
+		| slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 
@@ -527,11 +535,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 				
 	omitted_expression = (COLON, expression) | (COLON ^ OmittedExpression.Default)
 		
-	invocation = invocation_expression | atom
+	invocation = at_operator | collection_initialization | invocation_expression | atom
+	
+	at_operator = ("@", invocation_arguments >> args) ^ newInvocation(ReferenceExpression("@"), args, null)
 	
 	invocation_expression = (member_reference >> target, optional_generic_arguments >> generic_args, invocation_arguments >> args) ^ newInvocation(target, args, generic_args)
 		
 	invocation_arguments = (LPAREN, optional_invocation_argument_list >> args, RPAREN) ^ args
+	
+	optional_invocation_arguments = invocation_arguments | ""
 	
 	invocation_argument = named_argument | assignment
 	
@@ -539,16 +551,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	named_argument = (ID >> name, COLON, assignment >> value) ^ newNamedArgument(name, value)
 	
-	type_reference = type_reference_splice \
+	type_reference = (type_reference_splice \
 		| type_reference_generic_definition \
 		| type_reference_generic \
 		| type_reference_simple \
 		| type_reference_array \
-		| type_reference_callable
+		| type_reference_callable) >> t, --(star|STAR) >> s ^ checkEnumerableTypeShortcut(t, s)  
 		
 	type_reference_splice = SPLICE_BEGIN, atom >> e ^ SpliceTypeReference(Expression: e)
 	
 	splice_expression = SPLICE_BEGIN, atom >> e ^ SpliceExpression(Expression: e)
+	
+	splice_type_definition_body = SPLICE_BEGIN, atom >> e, eol ^ setUpMember(SpliceTypeDefinitionBody(Expression: e), [], []) 
 	
 	type_reference_generic_definition = (qualified_name >> qname, generic_placeholders >> placeholders) ^ newGenericTypeDefinitionReference(qname, placeholders)
 
@@ -564,8 +578,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	optional_generic_arguments = generic_arguments | ""
 	
 	type_reference_callable = (
-		CALLABLE, LPAREN, optional_type_reference_list >> params, RPAREN, optional_type >> type
-	) ^ newCallableTypeReference(params, type) | ((CALLABLE)^ SimpleTypeReference("callable"))
+		CALLABLE, LPAREN, \
+		((type_reference_list >> params, COMMA, param_array_reference >> paramArray) | (param_array_reference >> paramArray) | (optional_type_reference_list >> params) ), \
+		RPAREN, optional_type >> type
+	) ^ newCallableTypeReference(params, paramArray, type) | ((CALLABLE)^ SimpleTypeReference("callable"))
+	
+	param_array_reference = ((STAR, type_reference >> type) ^ newParameterDeclaration(null, makeToken("arg0"), type))
 	
 	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	
@@ -574,11 +592,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	atom = time_span | float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
 		| self_literal | super_literal | quasi_quote | closure | hash_literal \
-		| type_literal | splice_expression
+		| type_literal | splice_expression | ommited
+	
+	ommited = ~~DOT ^ OmittedExpression()
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
-	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body))
+	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body, null))
 	
 	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ [parameters, null]) | ("" ^ [[],null])
 	
@@ -590,7 +610,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	closure_stmt_modifier = stmt_modifier_node | ~~(RBRACE | SEMICOLON)
 	
-	closure_stmt_return = (RETURN, rvalue >> e, closure_stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
+	closure_stmt_return = (RETURN, (rvalue | "") >> e, closure_stmt_modifier >> m) ^ ReturnStatement(Expression: e, Modifier: m)
 	
 	closure_stmt_raise = (RAISE, expression >> e, closure_stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 	
@@ -633,7 +653,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 			) >> items,
 		DQ) ^ newStringInterpolation(items)
 		
-	reg_exp_string = ( (("/" | "@/"), (--(~"/", _) >> s), "/")  ) ^ RELiteralExpression(makeString("/", s, "/"))		
+	reg_exp_string = ( (((~"/*","/") | "@/"), (--(~"/", _) >> s), "/")  ) ^ RELiteralExpression(makeString("/", s, "/"))		
 		
 	string_char = ('\\', ('\\' | '$')) | (~'\\', _)
 	
@@ -653,6 +673,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	hash_literal = (LBRACE, optional_expression_pair_list >> items, optional_comma, RBRACE) ^ newHashLiteral(items)
 	
+	initialization_list_literal = (LBRACE, optional_expression_list >> items, optional_comma, RBRACE) ^ newListLiteral(items)
+	
+	collection_initialization = invocation_expression >> e, (initialization_list_literal | hash_literal) >> i ^ newCollectionInitialization(e, i)
+	
 	optional_comma = COMMA | ""
 	
 	expression_pair = (assignment >> first, COLON, assignment >> second) ^ ExpressionPair(First: first, Second: second)
@@ -663,8 +687,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	time_span = ((integer | float) >> f, ("ms" | 's' | 'm' | 'h' | 'd') >> tu) ^ newTimeSpanLiteral(f, tu)
 	
-	integer = (NUM >> n ^ newInteger(n, NumberStyles.None)) \
-		| (HEXNUM >> n ^ newInteger(n, NumberStyles.HexNumber))
+	integer = ((MINUS | "") >> sign, NUM >> n and (IsValidLong(sign, n)), ("L" | "l" | "") >> suffix ^ newInteger(sign, n, NumberStyles.AllowLeadingSign, suffix)) \
+		| ((MINUS | "") >> sign, (HEXNUM >> n and (IsValidHexLong(sign, n))), ("L" | "l" | "") >> suffix ^ newInteger(sign, n, NumberStyles.HexNumber, suffix))
 	
 	float = ( (fractional_constant >> n, (exponent_part | "") >> e , floating_suffix ) ^ newFloat(makeString(n,e))) | ((NUM >> n, exponent_part >> e, floating_suffix)  ^ newFloat(makeString(tokenValue(n),e)))
 
@@ -682,5 +706,5 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	false_literal = FALSE ^ [| false |]
 	
-	eol = (++EOL | ~_) ^ null	
-	
+	eol = (++EOL | ~_) ^ null
+
