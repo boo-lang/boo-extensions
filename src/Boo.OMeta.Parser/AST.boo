@@ -115,9 +115,22 @@ def newImport(qname as string, assembly, alias):
 		
 	return Import(Namespace: qname, AssemblyReference: assemblyReference, Alias: importAlias)
 
-def newInteger(t, style as NumberStyles):
-	value = int.Parse(tokenValue(t), style)
-	return IntegerLiteralExpression(Value: value)
+def newInteger(sign, t, style as NumberStyles, suffix):
+	s = tokenValue(sign) + tokenValue(t)
+	value = long.Parse(s, style)
+	result = IntegerLiteralExpression(Value: value)
+	if suffix in ["L", "l"]: result.IsLong = true
+	return result
+	
+def IsValidLong(sign, n):
+	s = tokenValue(sign) + tokenValue(n)
+	r as long
+	return long.TryParse(s, NumberStyles.AllowLeadingSign, null, r)
+	
+def IsValidHexLong(sign, n):
+	s = tokenValue(sign) + tokenValue(n)
+	r as long
+	return long.TryParse(s, NumberStyles.HexNumber, null, r)
 
 def newFloat(t):
 	value = double.Parse(t)
@@ -209,11 +222,15 @@ def newParameterDeclaration(attributes, name, type):
 def newEnum(attributes, modifiers, name, members):
 	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
-def newCallableTypeReference(params, type):
+def newCallableTypeReference(params, paramArray, type):
 	node = CallableTypeReference(ReturnType: type)
 	i = 0
 	for p in flatten(params):
 		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
+		
+	if paramArray is not null:
+		node.Parameters.Add(paramArray)
+		node.Parameters.HasParamArray = true
 	return node
 	
 def newStatementModifier(t, e as Expression):
@@ -272,7 +289,7 @@ macro setUpArgs:
 	return code
 	
 def newAttribute(name, args):
-	node = Ast.Attribute(Name: tokenValue(name))
+	node = Ast.Attribute(Name: name)
 	setUpArgs node, args
 	return node
 	
@@ -283,13 +300,15 @@ def newInterface(attributes, modifiers, name, genericParameters, baseTypes, memb
 	return setUpType(InterfaceDefinition(Name: tokenValue(name)), attributes, modifiers, genericParameters, baseTypes, members)
 	
 def newInvocation(target as Expression, args as List, genericArgs as object):
+	
 	if genericArgs is not null:
 		target = GenericReferenceExpression(Target: target)
 		for arg in genericArgs:
 			(target as GenericReferenceExpression).GenericArguments.Add(arg)
 	
 	mie = MethodInvocationExpression(Target: target)
-	setUpArgs mie, args	
+	
+	setUpArgs mie, flattenNoNulls(args)	
 	return mie
 	
 def newQuasiquoteBlock(m):
@@ -421,7 +440,7 @@ def binaryOperatorFor(op):
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
 	
-def newBlock(contents):
+def newBlock(contents, doc):
 	b = Block()
 	match contents:
 		case Statement():
@@ -429,6 +448,7 @@ def newBlock(contents):
 		otherwise:
 			for item in contents:
 				b.Statements.Add(item)
+	b.Documentation  = doc
 	return b
 	
 def prepend(first, tail as List):
@@ -466,4 +486,18 @@ def newTimeSpanLiteral(n, tu):
 	
 def newUnlessStatement(condition, block):
 	return UnlessStatement(Block: block, Condition: condition)
+	
+def newCollectionInitialization(collection, initializer):
+	return CollectionInitializationExpression(Collection: collection, Initializer: initializer)
+	
+def checkEnumerableTypeShortcut(type, stars as List):
+	if stars is null:
+		return type
+	
+	enumerable = type
+	for star in stars:
+		enumerable = GenericTypeReference(Name: "System.Collections.Generic.IEnumerable")
+		(enumerable as GenericTypeReference).GenericArguments.Add(type)
+		type = enumerable
+	return enumerable
 	

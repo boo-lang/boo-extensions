@@ -55,7 +55,7 @@ level 1.3:
 	level 2.3
 	level 2.4:
 		level 3.1
-		"""
+"""
 		
 		expected = [
 			Token('eol', 'eol'), 

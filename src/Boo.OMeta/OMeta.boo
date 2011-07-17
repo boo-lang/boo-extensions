@@ -41,3 +41,15 @@ def flatten(items) as object*:
 		return
 	for item in e1:
 		yieldAll flatten(item)
+		
+def flattenNoNulls(items) as object*:
+	if items is null: return
+	e1 = items as System.Collections.IEnumerable
+	if e1 is null:
+		yield items
+		return
+	for item in e1:
+		for ___item in flattenNoNulls(item):
+			yield ___item if item is not null
+
+	
