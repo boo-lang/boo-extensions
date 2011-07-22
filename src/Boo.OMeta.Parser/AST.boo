@@ -447,7 +447,8 @@ def newBlock(contents, doc):
 			b.Statements.Add(contents)
 		otherwise:
 			for item in contents:
-				b.Statements.Add(item)
+				if item:
+					b.Statements.Add(item)
 	b.Documentation  = doc
 	return b
 	

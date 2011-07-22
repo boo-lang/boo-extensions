@@ -591,7 +591,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	atom = time_span | float | integer | boolean | reference | array_literal | list_literal \
 		| string_interpolation | string_literal | reg_exp_string | null_literal | parenthesized_expression  \
-		| self_literal | super_literal | quasi_quote | closure | hash_literal \
+		| self_literal | super_literal | quasi_quote | hash_literal | closure  \
 		| type_literal | splice_expression | ommited
 	
 	ommited = ~~DOT ^ OmittedExpression()
@@ -604,7 +604,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	list_of closure_stmt, SEMICOLON
 	
-	closure_stmt = closure_stmt_expression | closure_stmt_macro | closure_stmt_return | closure_stmt_raise | closure_stmt_unpack
+	closure_stmt = closure_stmt_expression | closure_stmt_macro | closure_stmt_return | closure_stmt_raise | closure_stmt_unpack | closure_stmt_empty
 	
 	closure_stmt_macro = (ID >> name, assignment_list >> args, closure_stmt_modifier >> m) ^ newMacro(name, args, null, m)
 	
@@ -616,8 +616,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	closure_stmt_expression = (assignment >> e, closure_stmt_modifier >> m) ^ ExpressionStatement(Expression: e, Modifier: m)
 	
-	closure_stmt_unpack = (declaration_list >> declarations, ASSIGN, rvalue >> e, closure_stmt_modifier >> m) ^ newUnpackStatement(declarations, e, m)		
+	closure_stmt_empty = ~~(RBRACE | SEMICOLON)
 	
+	closure_stmt_unpack = (declaration_list >> declarations, ASSIGN, rvalue >> e, closure_stmt_modifier >> m) ^ newUnpackStatement(declarations, e, m)
+
 	optional_stmt_modifier_node = stmt_modifier_node | ""
 		
 	quasi_quote = quasi_quote_member | quasi_quote_module | quasi_quote_expression | quasi_quote_stmt
