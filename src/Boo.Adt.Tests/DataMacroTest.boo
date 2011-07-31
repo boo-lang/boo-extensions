@@ -4,7 +4,7 @@ import NUnit.Framework
 import Boo.Adt
 
 data Expression = Const(value as int) \
-			| Add(left as Expression, right as Expression)
+			| Add(left as Expression, right)
 			
 data ExpressionX < Expression = Mult(left as Expression, right as Expression)
 
@@ -16,6 +16,11 @@ data Foo(Value as int)
 
 [TestFixture]
 class DataMacroTest:
+	
+	[Test]
+	def OmittedFieldTypeDefaultsToDataType():
+		for parameter in typeof(Add).GetConstructors()[0].GetParameters():
+			assert Expression is parameter.ParameterType 
 	
 	[Test]
 	def TestMutableField():
