@@ -1,10 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-# SharpDevelop 3.2.0.5403
-Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Pegs", "src\Boo.Pegs\Boo.Pegs.booproj", "{89A65375-A2D9-40CD-84DA-BA7EC539E483}"
+Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Pegs", "src\Boo.Pegs\Boo.Pegs.booproj", "{89A65375-A2D9-40CD-84DA-BA7EC539E483}"
 EndProject
-Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Pegs.Tests", "src\Boo.Pegs.Tests\Boo.Pegs.Tests.booproj", "{C1A0CCD0-676F-4BF8-8018-9B960E614B74}"
+Project("{B3672514-7503-4B01-B4B4-B44E87061EA2}") = "Boo.Pegs.Tests", "src\Boo.Pegs.Tests\Boo.Pegs.Tests.booproj", "{C1A0CCD0-676F-4BF8-8018-9B960E614B74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,13 +11,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89A65375-A2D9-40CD-84DA-BA7EC539E483}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1A0CCD0-676F-4BF8-8018-9B960E614B74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = src\Boo.Pegs\Boo.Pegs.booproj
 	EndGlobalSection
 EndGlobal
