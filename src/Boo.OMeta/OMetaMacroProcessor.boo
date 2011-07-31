@@ -9,10 +9,12 @@ class OMetaMacroProcessor:
 	
 	ometa as MacroStatement
 	options = []
+	ruleNames as (string)
 	
 	def constructor(ometa as MacroStatement):
 		self.ometa = ometa
 		self.options = ometa["options"] or []
+		self.ruleNames = array(ruleNameFor(rule) for rule in ometa.Body.Statements)
 		
 	def expandGrammarSetup():
 		block = Block()
@@ -34,7 +36,7 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
 					m0 = [|
 						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
-							$(OMetaMacroRuleProcessor(name, options).expand(pattern))
+							$(OMetaMacroRuleProcessor(name, options, ruleNames).expand(pattern))
 					|]
 					type.Members.Add(m0)
 					m1 = [|
@@ -51,7 +53,7 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]):
 					m0 = [|
 						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
-							$(OMetaMacroRuleProcessor(name, options).expand(pattern, arg))
+							$(OMetaMacroRuleProcessor(name, options, ruleNames).expand(pattern, arg))
 					|]
 					type.Members.Add(m0)
 					m1 = [|
@@ -74,6 +76,17 @@ class OMetaMacroProcessor:
 							ReturnType: block.ReturnType)
 					
 					type.Members.Add(m)
+					
+	def ruleNameFor(rule):
+		match rule:
+			case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
+				return name
+				
+			case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$_] = $pattern |]):
+				return name
+				
+			case DeclarationStatement(Declaration: Declaration(Name: name)):
+				return name
 		
 	def expandType():
 		declaration = ometa.Arguments[0]

@@ -164,6 +164,25 @@ class OMetaMacroTest:
 				pass
 				
 	[Test]
+	def RuleArgumentCanBeRuleReference():
+		ometa ORuleArgumentCanBeRuleReference:
+			next = token[eq] | token[gte]
+			eq = "="
+			gte = "<="
+			token[t] = --whitespace, t
+			
+		def token(input as string):
+			return ORuleArgumentCanBeRuleReference().next(input)
+				
+		match token("   =-"):
+			case SuccessfulMatch(Value: "=", Input: OMetaInput(Head: char('-'))):
+				pass
+				
+		match token("   <=*"):
+			case SuccessfulMatch(Value: "<=", Input: OMetaInput(Head: char('*'))):
+				pass
+				
+	[Test]
 	def TestParseTree():
 		assertE E()
 		
@@ -203,7 +222,7 @@ class OMetaMacroTest:
 	[Test]
 	def TestBinding():
 		ometa NumberListParser:
-			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as List))
+			parse = (num >> head, ++((',', num >> value) ^ value) >> tail) ^ ([head] + (tail as Boo.Lang.List))
 			dig = '1' | '2' | '3' | '4' | '5'
 			num = ++dig >> value ^ int.Parse(join(value, ''))
 			

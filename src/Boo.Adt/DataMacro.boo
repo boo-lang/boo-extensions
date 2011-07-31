@@ -21,7 +21,7 @@ Usage:
 	
 	data TypeWithMutableField(@MutableValue as int) // @ makes the field mutable
 """
-
+	
 	DataMacroExpansion(data)
 
 class DataMacroExpansion:
@@ -54,7 +54,7 @@ class DataMacroExpansion:
 		
 	def abstractType(name as string):
 		type = [|
-			abstract class $name:
+			partial abstract class $name:
 				pass
 		|]
 		return type
@@ -66,22 +66,22 @@ class DataMacroExpansion:
 				
 			case [| $(ReferenceExpression(Name: name)) < $(ReferenceExpression(Name: baseType)) |]:
 				type = [|
-					abstract class $name($baseType):
+					partial abstract class $name($baseType):
 						pass
 				|]
 				return type
 				
 			case mie=MethodInvocationExpression(Target: ReferenceExpression(Name: name)):
 				type = abstractType(name)
-				for arg in mie.Arguments:
-					type.Members.Add(fieldForArg(arg))
-				type.Members.Add(constructorForInvocation(mie))
+				fields = fieldsFrom(mie)
+				type.Members.Extend(fields)
+				type.Members.Add(constructorForFields(fields))
 				return type
 				
 			case gre=SlicingExpression(
 						Target: ReferenceExpression(Name: name)):
 				type = [|
-					abstract class $name[of T]:
+					partial abstract class $name[of T]:
 						pass
 				|]
 				type.GenericParameters.Clear()
@@ -107,16 +107,15 @@ class DataMacroExpansion:
 	def expandDataConstructor(node as MethodInvocationExpression):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
-		for arg in node.Arguments:
-			type.Members.Add(fieldForArg(arg))	
+		type.Members.Extend(fields = fieldsFrom(node))
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type)) 
 		
-		ctor = constructorForInvocation(node)
+		ctor = constructorForFields(fields)
 		if len(_baseType.Members):
 			superInvocation = [| super() |]
 			i = 0
-			for field as Field in fields(_baseType):
+			for field as Field in fieldsOf(_baseType):
 				ctor.Parameters.Insert(i++, 
 					ParameterDeclaration(Name: field.Name, Type: field.Type))
 				superInvocation.Arguments.Add(ReferenceExpression(field.Name))
@@ -129,7 +128,7 @@ class DataMacroExpansion:
 		match node:
 			case ReferenceExpression(Name: name):
 				type = [|
-					class $name($_baseType):
+					partial class $name($_baseType):
 						pass
 				|]
 				for arg in _baseType.GenericParameters:
@@ -184,41 +183,42 @@ class DataMacroExpansion:
 		|]
 		
 	def fieldsIncludingBaseType(type as TypeDefinition):
-		return cat(fields(_baseType), fields(type))
+		return cat(fieldsOf(_baseType), fieldsOf(type))
 		
-	def fields(type as TypeDefinition):
+	def fieldsOf(type as TypeDefinition):
 		return type.Members.Select(NodeType.Field)
 		
-	def constructorForInvocation(node as MethodInvocationExpression):
+	def constructorForFields(fields as (Field)):
 		ctor = [|
 			def constructor():
 				pass
 		|]
-		for arg in node.Arguments:
-			match arg:
-				case [| $(ReferenceExpression(Name: name)) as $type |]:
-					name = fieldName(name)
-					ctor.Parameters.Add(
-						ParameterDeclaration(Name: name, Type: type))
-					ctor.Body.Add([|
-						self.$name = $(ReferenceExpression(name))
-					|])
+		for f in fields:
+			ctor.Parameters.Add(p=ParameterDeclaration(Name: f.Name, Type: f.Type))
+			ctor.Body.Add([| self.$(f.Name) = $p |])
 		return ctor
+		
+	def fieldsFrom(node as MethodInvocationExpression):
+		return array(fieldFrom(expression) for expression in node.Arguments)
 	
-	def fieldForArg(node as Expression):
+	def fieldFrom(node as Expression):
 		match node:
 			case [| $(ReferenceExpression(Name: name)) as $type |]:
-				if name.StartsWith("@"): // mutable field
-					return [|
-						public $(fieldName(name)) as $type
-					|]
-				return [|
-					public final $name as $type
-				|]
+				return fieldWith(name, type)
+			case ReferenceExpression(Name: name):
+				return fieldWith(name, TypeReference.Lift(_baseType))
+				
+	def fieldWith(name as string, type as TypeReference):
+		if name.StartsWith("@"): // mutable field
+			return [|
+				public $(fieldName(name)) as $type
+			|]
+		return [|
+			public final $name as $type
+		|]
 				
 	def fieldName(name as string):
-		if name.StartsWith("@"): return name[1:]
-		return name
+		return (name[1:] if name.StartsWith("@") else name)
 		
 	def registerType(type as TypeDefinition):
 		_module.Members.Add(type)

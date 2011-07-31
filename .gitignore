@@ -3,3 +3,4 @@ build
 build.properties
 *.pidb
 *.userprefs
+test-results

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5AE81F05-B040-4C19-8F33-35996E44032C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Boo.Adt.Tests</RootNamespace>
+    <AssemblyName>Boo.Adt.Tests</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <ducky>false</ducky>
+    <culture />
+    <nostdlib>false</nostdlib>
+    <ConsolePause>false</ConsolePause>
+    <genwarnings>false</genwarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <ducky>false</ducky>
+    <culture />
+    <nostdlib>false</nostdlib>
+    <ConsolePause>false</ConsolePause>
+    <genwarnings>false</genwarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Boo.Lang, Version=2.0.9.4, Culture=neutral, PublicKeyToken=32c39770e9a21a67" />
+    <Reference Include="Boo.Lang.PatternMatching, Version=2.0.9.4, Culture=neutral, PublicKeyToken=32c39770e9a21a67" />
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataMacroTest.boo" />
+    <Compile Include="GenericDataMacroTest.boo" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boo.Adt\Boo.Adt.booproj">
+      <Project>{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}</Project>
+      <Name>Boo.Adt</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
