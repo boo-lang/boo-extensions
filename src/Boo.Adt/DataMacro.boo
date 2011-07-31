@@ -21,7 +21,7 @@ Usage:
 	
 	data TypeWithMutableField(@MutableValue as int) // @ makes the field mutable
 """
-
+	
 	DataMacroExpansion(data)
 
 class DataMacroExpansion:
@@ -54,7 +54,7 @@ class DataMacroExpansion:
 		
 	def abstractType(name as string):
 		type = [|
-			abstract class $name:
+			partial abstract class $name:
 				pass
 		|]
 		return type
@@ -66,7 +66,7 @@ class DataMacroExpansion:
 				
 			case [| $(ReferenceExpression(Name: name)) < $(ReferenceExpression(Name: baseType)) |]:
 				type = [|
-					abstract class $name($baseType):
+					partial abstract class $name($baseType):
 						pass
 				|]
 				return type
@@ -81,7 +81,7 @@ class DataMacroExpansion:
 			case gre=SlicingExpression(
 						Target: ReferenceExpression(Name: name)):
 				type = [|
-					abstract class $name[of T]:
+					partial abstract class $name[of T]:
 						pass
 				|]
 				type.GenericParameters.Clear()
@@ -128,7 +128,7 @@ class DataMacroExpansion:
 		match node:
 			case ReferenceExpression(Name: name):
 				type = [|
-					class $name($_baseType):
+					partial class $name($_baseType):
 						pass
 				|]
 				for arg in _baseType.GenericParameters:
