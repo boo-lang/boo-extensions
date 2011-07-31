@@ -8,11 +8,17 @@ class OMetaMacroRuleProcessor:
 	_ruleName as string
 	_collectingParseTree as DynamicVariable[of bool]
 	_optionParseTree as bool
+	_ruleArgs as (Expression)
+	_ruleNames as (string)
 
-	def constructor(ruleName as string, options as List):
+	def constructor(ruleName as string, options as List, ruleNames as (string)):
 		_ruleName = ruleName
 		_optionParseTree = "ParseTree" in options
 		_collectingParseTree = DynamicVariable[of bool](_optionParseTree)
+		_ruleNames = ruleNames
+		
+	def ruleArgNames():
+		return (arg.ToString() for arg in _ruleArgs if arg isa ReferenceExpression)
 	
 	def expand(e as Expression, *args as (Expression)) as Block:
 		
@@ -29,6 +35,7 @@ class OMetaMacroRuleProcessor:
 			|].Body
 			block.Add(code)
 		
+		_ruleArgs = args
 		expand block, e, input, [| lastMatch |]
 		block.Add([| return lastMatch |])
 		
@@ -170,7 +177,8 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $rule[$arg] |]:
 				newInput = uniqueName()
-				block.Add([| $newInput = OMetaInput.Prepend($arg, $input) |])
+				effectiveArg = effectiveArgForRule(arg)
+				block.Add([| $newInput = OMetaInput.Prepend($effectiveArg, $input) |])
 				expand block, rule, newInput, lastMatch
 				
 			case [| $pattern and $predicate |]:
@@ -239,7 +247,8 @@ class OMetaMacroRuleProcessor:
 				expandNegation block, rule, input, lastMatch
 				
 			case ReferenceExpression(Name: name):
-				block.Add([| $lastMatch = context.Eval($name, $input) |])
+				rule = (e if name in ruleArgNames() else [| $name |])
+				block.Add([| $lastMatch = context.Eval($rule, $input) |])
 				
 			case [| super |]:
 				block.Add([| $lastMatch = SuperApply(context, $_ruleName, $input) |])
@@ -269,6 +278,13 @@ class OMetaMacroRuleProcessor:
 							expand negation.TrueBlock, items[1], input, lastMatch
 					otherwise:
 						expandSequence block, items, input, lastMatch 
+						
+	def effectiveArgForRule(arg as Expression):
+		match arg:
+			case ReferenceExpression(Name) and Name in _ruleNames:
+				return [| $(arg.ToString()) |]
+			otherwise:
+				return arg
 				
 	def processObjectPatternRules(pattern as Expression):
 		rules = []

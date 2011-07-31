@@ -164,6 +164,25 @@ class OMetaMacroTest:
 				pass
 				
 	[Test]
+	def RuleArgumentCanBeRuleReference():
+		ometa ORuleArgumentCanBeRuleReference:
+			next = token[eq] | token[gte]
+			eq = "="
+			gte = "<="
+			token[t] = --whitespace, t
+			
+		def token(input as string):
+			return ORuleArgumentCanBeRuleReference().next(input)
+				
+		match token("   =-"):
+			case SuccessfulMatch(Value: "=", Input: OMetaInput(Head: char('-'))):
+				pass
+				
+		match token("   <=*"):
+			case SuccessfulMatch(Value: "<=", Input: OMetaInput(Head: char('*'))):
+				pass
+				
+	[Test]
 	def TestParseTree():
 		assertE E()
 		
