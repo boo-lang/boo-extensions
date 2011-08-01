@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Boo.OMeta.Parser</RootNamespace>
     <AssemblyName>Boo.OMeta.Parser</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
@@ -45,10 +45,6 @@
     <genwarnings>false</genwarnings>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Boo.Lang">
-      <HintPath>..\..\..\..\boo\bin\Boo.Lang.dll</HintPath>
-    </Reference>
-    <Reference Include="Boo.Lang.Useful" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -58,6 +54,8 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="Boo.Lang.Useful, Version=2.0.9.5, Culture=neutral, PublicKeyToken=32c39770e9a21a67" />
+    <Reference Include="Boo.Lang, Version=2.0.9.5, Culture=neutral, PublicKeyToken=32c39770e9a21a67" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.boo" />
