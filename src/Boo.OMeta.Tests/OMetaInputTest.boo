@@ -36,6 +36,7 @@ class OMetaInputTest:
 			Assert.AreEqual(i, input.Position)
 			input = input.Tail
 		assert input.IsEmpty
+		Assert.AreEqual(10, input.Position)
 		
 	[Test]
 	def TailIsCached():
