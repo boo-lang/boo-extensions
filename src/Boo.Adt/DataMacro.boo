@@ -171,9 +171,10 @@ class DataMacroExpansion:
 		items.Add([| $("${type.Name}(") |])
 		
 		comma = false
-		for field as Field in fieldsIncludingBaseType(type):
+		for field in fieldsIncludingBaseType(type):
 			if comma: items.Add([| ", " |])
-			items.Add([| self.$(field.Name) |])
+			items.Extend(toStringForField(field))
+			
 			comma = true
 		
 		items.Add([| $(")") |])
@@ -181,6 +182,15 @@ class DataMacroExpansion:
 			override def ToString():
 				return $expression
 		|]
+		
+	def toStringForField(field as Field):
+		match field.Type:
+			case ArrayTypeReference():
+				yield [| "[" |]
+				yield [| join(self.$(field.Name), ', ') |]
+				yield [| "]" |]
+			otherwise:
+				yield [| self.$(field.Name) |]
 		
 	def fieldsIncludingBaseType(type as TypeDefinition):
 		return cat(fieldsOf(_baseType), fieldsOf(type))
