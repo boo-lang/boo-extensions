@@ -246,6 +246,9 @@ class OMetaMacroRuleProcessor:
 			case [| ~$rule |]:
 				expandNegation block, rule, input, lastMatch
 				
+			case MemberReferenceExpression(Target: t, Name: n):
+				block.Add([| $lastMatch = $t.$n($input) |])
+				
 			case ReferenceExpression(Name: name):
 				rule = (e if name in ruleArgNames() else [| $name |])
 				block.Add([| $lastMatch = context.Eval($rule, $input) |])

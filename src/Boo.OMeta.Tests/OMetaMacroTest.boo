@@ -19,6 +19,15 @@ ometa E:
 class OMetaMacroTest:
 	
 	[Test]
+	def GrammarAggregation():
+		
+		ometa X(e=E()):
+			num = e.num
+			
+		match X().num("1"):
+			case SuccessfulMatch(Value: ["1"])
+	
+	[Test]
 	def ChoiceBacktracking():
 		
 		data NC1Item(name as string, foo as string, bar as string)
