@@ -206,6 +206,7 @@ class DataMacroExpansion:
 		for f in fields:
 			ctor.Parameters.Add(p=ParameterDeclaration(Name: f.Name, Type: f.Type))
 			ctor.Body.Add([| self.$(f.Name) = $p |])
+		ctor.Parameters.HasParamArray = len(fields) > 0 and fields[-1].ContainsAnnotation("*")
 		return ctor
 		
 	def fieldsFrom(node as MethodInvocationExpression):
@@ -213,10 +214,17 @@ class DataMacroExpansion:
 	
 	def fieldFrom(node as Expression):
 		match node:
+			case [| *$(ReferenceExpression(Name: name)) |]:
+				field = fieldWith(name, ArrayTypeReference(baseTypeRef()))
+				field.Annotate("*")
+				return field
 			case [| $(ReferenceExpression(Name: name)) as $type |]:
 				return fieldWith(name, type)
 			case ReferenceExpression(Name: name):
-				return fieldWith(name, TypeReference.Lift(_baseType))
+				return fieldWith(name, baseTypeRef())
+		
+	def baseTypeRef():
+		return TypeReference.Lift(_baseType)
 				
 	def fieldWith(name as string, type as TypeReference):
 		if name.StartsWith("@"): // mutable field

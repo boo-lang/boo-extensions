@@ -66,6 +66,10 @@ class DataMacroTest:
 		Assert.AreEqual("C([B(), C([])])", C(B(), C()).ToString())
 		
 	[Test]
+	def OmittedArrayTypeDefaultsToArrayOfDataType():
+		assert typeof((A)) is typeof(C).GetConstructors()[0].GetParameters()[0].ParameterType
+		
+	[Test]
 	def TestEquals():
 		Assert.AreEqual(Const(42), Const(42))
 		assert Const(-1) != Const(42)
