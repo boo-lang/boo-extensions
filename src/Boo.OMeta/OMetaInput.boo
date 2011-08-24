@@ -99,7 +99,7 @@ internal class OMetaInputWithMemo(DelegatingInput):
 
 	override def GetMemo(key as string):
 		if key is _key: return _value
-		return super(key)
+		return _input.GetMemo(key)
 		
 internal class OMetaInputMemoTail(DelegatingInput):
 	
@@ -111,12 +111,13 @@ internal class OMetaInputMemoTail(DelegatingInput):
 		_parent = parent
 		
 	override Tail:
-		get: return _tail or _tail = OMetaInputMemoTail(self, _input.Tail)
+		get: return _tail or _tail = OMetaInputMemoTail(_parent, _input.Tail)
+		
 	override def SetMemo(key as string, value) as OMetaInput:
-		return _parent.SetMemo(key, value).Tail
+		return OMetaInputMemoTail(_parent.SetMemo(key, value), _input)
 		
 	override def GetMemo(key as string):
-		return _parent.GetMemo(key)
+		return _parent.GetMemo(key)	
 		
 internal class OMetaInputCons(OMetaInput):
 	[getter(Head)] _argument as object

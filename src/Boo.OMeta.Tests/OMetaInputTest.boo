@@ -45,3 +45,18 @@ class OMetaInputTest:
 		while not input.IsEmpty:
 			Assert.AreSame(input.Tail, input.Tail)
 			input = input.Tail
+			
+	[Test]
+	def OMetaInputWithMemoStoresValues():
+		input = OMetaInput.For(range(3))
+		
+		input = input.SetMemo("a", 1)
+		input = input.Tail.SetMemo("b", 2)
+		
+		assert input.GetMemo("a") == 1
+		assert input.GetMemo("b") == 2
+
+		assert input.Tail.GetMemo("a") == 1
+		assert input.Tail.GetMemo("b") == 2
+
+		
