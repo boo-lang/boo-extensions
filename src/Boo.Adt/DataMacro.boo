@@ -214,14 +214,19 @@ class DataMacroExpansion:
 	
 	def fieldFrom(node as Expression):
 		match node:
+			case [| *$(ReferenceExpression(Name: name)) as $(arrayType = ArrayTypeReference()) |]:
+				return arrayField(name, arrayType)
 			case [| *$(ReferenceExpression(Name: name)) |]:
-				field = fieldWith(name, ArrayTypeReference(baseTypeRef()))
-				field.Annotate("*")
-				return field
+				return arrayField(name, ArrayTypeReference(baseTypeRef()))
 			case [| $(ReferenceExpression(Name: name)) as $type |]:
 				return fieldWith(name, type)
 			case ReferenceExpression(Name: name):
 				return fieldWith(name, baseTypeRef())
+				
+	def arrayField(name as string, arrayType as ArrayTypeReference):
+		field = fieldWith(name, arrayType)
+		field.Annotate("*")
+		return field
 		
 	def baseTypeRef():
 		return TypeReference.Lift(_baseType)
