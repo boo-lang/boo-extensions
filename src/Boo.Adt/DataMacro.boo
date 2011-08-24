@@ -39,14 +39,20 @@ class DataMacroExpansion:
 				_baseType = createBaseType(left)
 				expandDataConstructors(right)
 				
+			case [| $(ctor=MethodInvocationExpression()) < $baseType |]:
+				_baseType = [|
+					class $baseType:
+						pass
+				|]
+				expandDataConstructor(ctor)
+				
 			case ctor=MethodInvocationExpression():
 				_baseType = [|
 					class object:
 						pass
 				|]
 				expandDataConstructor(ctor)
-				
-		
+	
 	def createBaseType(node as Expression):
 		type = baseTypeForExpression(node)
 		registerType(type)
