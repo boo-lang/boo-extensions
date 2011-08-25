@@ -55,6 +55,7 @@ class DataMacroExpansion:
 	
 	def createBaseType(node as Expression):
 		type = baseTypeForExpression(node)
+		type.LexicalInfo = node.LexicalInfo
 		registerType(type)
 		return type
 		
