@@ -59,6 +59,7 @@ class DataMacroTest:
 	def TestToString():
 		Assert.AreEqual("Const(42)", Const(42).ToString())
 		Assert.AreEqual("Add(Const(19), Const(22))", Add(Const(19), Const(22)).ToString())
+		Assert.AreEqual("Add(null, null)", Add(null, null).ToString())
 		
 	[Test]
 	def ToStringUsesBracketsForArrays():

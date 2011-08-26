@@ -180,7 +180,7 @@ class DataMacroExpansion:
 		comma = false
 		for field in fieldsIncludingBaseType(type):
 			if comma: items.Add([| ", " |])
-			items.Extend(toStringForField(field))
+			items.Add(toStringForField(field))
 			
 			comma = true
 		
@@ -191,13 +191,7 @@ class DataMacroExpansion:
 		|]
 		
 	def toStringForField(field as Field):
-		match field.Type:
-			case ArrayTypeReference():
-				yield [| "[" |]
-				yield [| join(self.$(field.Name), ', ') |]
-				yield [| "]" |]
-			otherwise:
-				yield [| self.$(field.Name) |]
+		return [| Boo.Adt.adtFieldToString(self.$(field.Name)) |]
 		
 	def fieldsIncludingBaseType(type as TypeDefinition):
 		return cat(fieldsOf(_baseType), fieldsOf(type))
@@ -255,3 +249,8 @@ class DataMacroExpansion:
 
 def enclosingModule(node as Node) as Module:
 	return node.GetAncestor(NodeType.Module)
+	
+def adtFieldToString(v):
+	if v is null: return "null"
+	if v isa System.Array: return "[$(join(v, ', '))]"
+	return v.ToString()
