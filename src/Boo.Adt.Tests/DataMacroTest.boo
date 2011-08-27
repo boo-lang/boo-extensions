@@ -83,3 +83,11 @@ class DataMacroTest:
 	[Test]
 	def TestProperties():
 		Assert.AreEqual(42, Const(42).value)
+		
+	[Test]
+	def OptionalArguments():
+		data OptArgs(A, B = "foo", C as string = "bar")
+		Assert.AreEqual(OptArgs("A", "foo", "bar"), OptArgs("A"))
+		Assert.AreEqual(OptArgs("A", "B", "bar"), OptArgs("A", "B"))
+		Assert.AreEqual(OptArgs("A", "B", "C"), OptArgs("A", "B", "C"))
+		
