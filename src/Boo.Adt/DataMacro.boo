@@ -36,6 +36,7 @@ class DataMacroExpansion:
 		
 		match node.Arguments[0]:
 			case [| $left = $right |]:
+				assert node.Body.IsEmpty
 				_superType = createBaseType(left)
 				expandDataConstructors(right)
 				
@@ -44,15 +45,18 @@ class DataMacroExpansion:
 					class $superType:
 						pass
 				|]
-				expandDataConstructor(ctor)
+				expandDataConstructorWithBody(ctor, node.Body)
 				
 			case ctor=MethodInvocationExpression():
 				_superType = [|
 					class object:
 						pass
 				|]
-				expandDataConstructor(ctor)
-	
+				expandDataConstructorWithBody(ctor, node.Body)
+				
+	def expandDataConstructorWithBody(ctor as Expression, body as Block):
+		expandDataConstructor(ctor).Members.Extend(TypeMember.Lift(body))
+		
 	def createBaseType(node as Expression):
 		type = superTypeForExpression(node)
 		type.LexicalInfo = node.LexicalInfo
@@ -126,6 +130,7 @@ class DataMacroExpansion:
 			type.Members.Add(ctor)
 		
 		registerType(type)
+		return type
 		
 	def addSuperInvocationTo(ctor as Constructor):
 		superInvocation = [| super() |]

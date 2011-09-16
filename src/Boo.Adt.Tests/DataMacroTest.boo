@@ -18,6 +18,12 @@ data Foo(Value as int)
 class DataMacroTest:
 	
 	[Test]
+	def Member():
+		data WithMember(Foo):
+			public final Bar = "bar"
+		Assert.AreEqual("bar", WithMember("foo").Bar)
+	
+	[Test]
 	def OmittedFieldTypeDefaultsToDataType():
 		for parameter in typeof(Add).GetConstructors()[0].GetParameters():
 			assert Expression is parameter.ParameterType 
