@@ -113,7 +113,7 @@ def newImport(qname as string, assembly, alias):
 	else:
 		importAlias =	ReferenceExpression(Name: alias) if alias is not null
 		
-	return Import(Namespace: qname, AssemblyReference: assemblyReference, Alias: importAlias)
+	return Import(qname, AssemblyReference: assemblyReference, Alias: importAlias)
 
 def newInteger(sign, t, style as NumberStyles, suffix):
 	s = tokenValue(sign) + tokenValue(t)
