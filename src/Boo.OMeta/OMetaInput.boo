@@ -14,7 +14,7 @@ class OMetaInput:
 	static def ForEnumerator(enumerator as IEnumerator, position as int) as OMetaInput:
 		if enumerator.MoveNext():
 			return EnumeratorInput(enumerator, position)
-		return Empty()
+		return EndOfEnumeratorInput(position)
 		
 	static def Prepend(argument, input as OMetaInput):
 		return OMetaInputCons(argument, input)
@@ -89,11 +89,14 @@ internal class OMetaInputWithMemo(DelegatingInput):
 		_value = value
 	
 	override Tail:
-		get:
-			if _tail is null:
-				_tail = OMetaInputMemoTail(self, _input.Tail)
-			return _tail
+		get: return _tail or _tail = OMetaInputMemoTail(self, _input.Tail)
 			
+	override def SetMemo(key as string, value) as OMetaInput:
+		if key is _key: 
+			return OMetaInputWithMemo(key, value, _input)
+		else:
+			return OMetaInputWithMemo(key, value, self)
+
 	override def GetMemo(key as string):
 		if key is _key: return _value
 		return super(key)
@@ -108,10 +111,9 @@ internal class OMetaInputMemoTail(DelegatingInput):
 		_parent = parent
 		
 	override Tail:
-		get:
-			if _tail is null:
-				_tail = OMetaInputMemoTail(self, _input.Tail)
-			return _tail
+		get: return _tail or _tail = OMetaInputMemoTail(self, _input.Tail)
+	override def SetMemo(key as string, value) as OMetaInput:
+		return _parent.SetMemo(key, value).Tail
 		
 	override def GetMemo(key as string):
 		return _parent.GetMemo(key)
@@ -149,10 +151,15 @@ internal class EnumeratorInput(OMetaInput):
 		get: return _head
 	
 	override Tail:
-		get:
-			if _tail is null:
-				_tail = ForEnumerator(_input, _position + 1)
-			return _tail
+		get: return _tail or _tail = ForEnumerator(_input, _position + 1)
 		
 	override def ToString():
 		return "OMetaInput(Head: ${Head}, Position: ${Position})"
+		
+internal class EndOfEnumeratorInput(OMetaInput):
+	
+	def constructor(position as int):
+		_position = position
+		
+	[getter(Position)]
+	_position as int

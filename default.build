@@ -8,6 +8,8 @@
 	
 	<include buildfile="build.properties" if="${file::exists('build.properties')}" />
 	
+	<property name="keyfile" value="${boo.dir}/../src/boo.snk" overwrite="false" />
+	
 	<target name="test" depends="build">
 		<nunit2>
 			<formatter type="Plain" />
@@ -36,13 +38,13 @@
 	
 	<target name="Boo.Pegs" depends="init">
 	
-		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.dll" keyfile="${keyfile}">
 			<sources basedir="src/Boo.Pegs">
 				<include name="*.boo" />
 			</sources>
 		</booc>
 		
-		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.Tests.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Pegs.Tests.dll" >
 			<sources basedir="src/Boo.Pegs.Tests">
 				<include name="*.boo" />
 			</sources>
@@ -55,7 +57,7 @@
 	</target>
 	
 	<target name="Boo.Adt" depends="init">
-		<booc failonerror="true" target="library" output="${build.dir}/Boo.Adt.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.Adt.dll" keyfile="${keyfile}">
 			<sources basedir="src/Boo.Adt">
 				<include name="*.boo" />
 			</sources>
@@ -73,7 +75,7 @@
 	</target>
 	
 	<target name="Boo.OMeta" depends="Boo.Adt">
-		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.dll" keyfile="${keyfile}">
 			<sources basedir="src/Boo.OMeta">
 				<include name="*.boo" />
 			</sources>
@@ -95,7 +97,7 @@
 	</target>
 	
 	<target name="Boo.OMeta.Parser" depends="Boo.Adt, Boo.OMeta">
-		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.Parser.dll">
+		<booc failonerror="true" target="library" output="${build.dir}/Boo.OMeta.Parser.dll" keyfile="${keyfile}">
 			<sources basedir="src/Boo.OMeta.Parser">
 				<include name="*.boo" />
 			</sources>

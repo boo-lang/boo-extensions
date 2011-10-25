@@ -30,12 +30,14 @@
     <ducky>false</ducky>
     <culture />
     <genwarnings>false</genwarnings>
+    <nostdlib>false</nostdlib>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <ducky>false</ducky>
     <culture />
     <genwarnings>false</genwarnings>
+    <nostdlib>false</nostdlib>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Boo.Lang, Version=2.0.9.4, Culture=neutral, PublicKeyToken=32c39770e9a21a67" />

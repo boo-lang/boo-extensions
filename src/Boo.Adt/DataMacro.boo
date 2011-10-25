@@ -21,13 +21,13 @@ Usage:
 	
 	data TypeWithMutableField(@MutableValue as int) // @ makes the field mutable
 """
-
+	
 	DataMacroExpansion(data)
 
 class DataMacroExpansion:
 	
 	_module as TypeDefinition
-	_baseType as TypeDefinition
+	_superType as TypeDefinition
 	
 	def constructor(node as MacroStatement):
 		
@@ -36,52 +36,63 @@ class DataMacroExpansion:
 		
 		match node.Arguments[0]:
 			case [| $left = $right |]:
-				_baseType = createBaseType(left)
+				assert node.Body.IsEmpty
+				_superType = createBaseType(left)
 				expandDataConstructors(right)
 				
+			case [| $(ctor=MethodInvocationExpression()) < $superType |]:
+				_superType = [|
+					class $superType:
+						pass
+				|]
+				expandDataConstructorWithBody(ctor, node.Body)
+				
 			case ctor=MethodInvocationExpression():
-				_baseType = [|
+				_superType = [|
 					class object:
 						pass
 				|]
-				expandDataConstructor(ctor)
+				expandDataConstructorWithBody(ctor, node.Body)
 				
+	def expandDataConstructorWithBody(ctor as Expression, body as Block):
+		expandDataConstructor(ctor).Members.Extend(TypeMember.Lift(body))
 		
 	def createBaseType(node as Expression):
-		type = baseTypeForExpression(node)
+		type = superTypeForExpression(node)
+		type.LexicalInfo = node.LexicalInfo
 		registerType(type)
 		return type
 		
 	def abstractType(name as string):
 		type = [|
-			abstract class $name:
+			partial abstract class $name:
 				pass
 		|]
 		return type
 		
-	def baseTypeForExpression(node as Expression):
+	def superTypeForExpression(node as Expression):
 		match node:
 			case ReferenceExpression(Name: name):
 				return abstractType(name)
 				
-			case [| $(ReferenceExpression(Name: name)) < $(ReferenceExpression(Name: baseType)) |]:
+			case [| $(ReferenceExpression(Name: name)) < $(ReferenceExpression(Name: superType)) |]:
 				type = [|
-					abstract class $name($baseType):
+					partial abstract class $name($superType):
 						pass
 				|]
 				return type
 				
 			case mie=MethodInvocationExpression(Target: ReferenceExpression(Name: name)):
 				type = abstractType(name)
-				for arg in mie.Arguments:
-					type.Members.Add(fieldForArg(arg))
-				type.Members.Add(constructorForInvocation(mie))
+				fields = fieldsFrom(mie)
+				type.Members.Extend(fields)
+				type.Members.Add(constructorForFields(fields))
 				return type
 				
 			case gre=SlicingExpression(
 						Target: ReferenceExpression(Name: name)):
 				type = [|
-					abstract class $name[of T]:
+					partial abstract class $name[of T]:
 						pass
 				|]
 				type.GenericParameters.Clear()
@@ -107,32 +118,37 @@ class DataMacroExpansion:
 	def expandDataConstructor(node as MethodInvocationExpression):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
-		for arg in node.Arguments:
-			type.Members.Add(fieldForArg(arg))	
+		type.Members.Extend(fields = fieldsFrom(node))
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type)) 
 		
-		ctor = constructorForInvocation(node)
-		if len(_baseType.Members):
-			superInvocation = [| super() |]
-			i = 0
-			for field as Field in fields(_baseType):
-				ctor.Parameters.Insert(i++, 
-					ParameterDeclaration(Name: field.Name, Type: field.Type))
-				superInvocation.Arguments.Add(ReferenceExpression(field.Name))
-			ctor.Body.Insert(0, superInvocation)
+		ctor = constructorForFields(fields)
+		addSuperInvocationTo ctor
+		
 		type.Members.Add(ctor)
+		for ctor in constructorsWithDefaultValues(fields):
+			type.Members.Add(ctor)
 		
 		registerType(type)
+		return type
+		
+	def addSuperInvocationTo(ctor as Constructor):
+		superInvocation = [| super() |]
+		i = 0
+		for field as Field in fieldsOf(_superType):
+			ctor.Parameters.Insert(i++, 
+				ParameterDeclaration(Name: field.Name, Type: field.Type))
+			superInvocation.Arguments.Add(ReferenceExpression(field.Name))
+		ctor.Body.Insert(0, superInvocation)
 		
 	def dataConstructorTypeForExpression(node as Expression):
 		match node:
 			case ReferenceExpression(Name: name):
 				type = [|
-					class $name($_baseType):
+					partial class $name($_superType):
 						pass
 				|]
-				for arg in _baseType.GenericParameters:
+				for arg in _superType.GenericParameters:
 					type.GenericParameters.Add(
 								GenericParameterDeclaration(Name: arg.Name))
 				return type
@@ -172,9 +188,10 @@ class DataMacroExpansion:
 		items.Add([| $("${type.Name}(") |])
 		
 		comma = false
-		for field as Field in fieldsIncludingBaseType(type):
+		for field in fieldsIncludingBaseType(type):
 			if comma: items.Add([| ", " |])
-			items.Add([| self.$(field.Name) |])
+			items.Add(toStringForField(field))
+			
 			comma = true
 		
 		items.Add([| $(")") |])
@@ -183,45 +200,97 @@ class DataMacroExpansion:
 				return $expression
 		|]
 		
-	def fieldsIncludingBaseType(type as TypeDefinition):
-		return cat(fields(_baseType), fields(type))
+	def toStringForField(field as Field):
+		return [| Boo.Adt.adtFieldToString(self.$(field.Name)) |]
 		
-	def fields(type as TypeDefinition):
+	def fieldsIncludingBaseType(type as TypeDefinition):
+		return cat(fieldsOf(_superType), fieldsOf(type))
+		
+	def fieldsOf(type as TypeDefinition):
 		return type.Members.Select(NodeType.Field)
 		
-	def constructorForInvocation(node as MethodInvocationExpression):
+	def constructorForFields(fields as (Field)):
+		ctor = constructorDeclarationFor(fields)
+		for p in ctor.Parameters:
+			ctor.Body.Add([| self.$(p.Name) = $p |])
+		return ctor
+		
+	def constructorDeclarationFor(fields as (Field)):
 		ctor = [|
 			def constructor():
 				pass
 		|]
-		for arg in node.Arguments:
-			match arg:
-				case [| $(ReferenceExpression(Name: name)) as $type |]:
-					name = fieldName(name)
-					ctor.Parameters.Add(
-						ParameterDeclaration(Name: name, Type: type))
-					ctor.Body.Add([|
-						self.$name = $(ReferenceExpression(name))
-					|])
+		for f in fields:
+			ctor.Parameters.Add(ParameterDeclaration(Name: f.Name, Type: f.Type))
+		ctor.Parameters.HasParamArray = len(fields) > 0 and fields[-1].ContainsAnnotation("*")
 		return ctor
+		
+	def constructorsWithDefaultValues(fields as (Field)):
+		
+		for i in range(len(fields)-1, -1):
+			if defaultValueOf(fields[i]) is null:
+				break
+				
+			requiredFields = fields[:i]
+			optionalFields = fields[i:]
+			
+			ctor = constructorDeclarationFor(requiredFields)
+			baseCtorInvocation = [| self() |]
+			for p in ctor.Parameters:
+				baseCtorInvocation.Arguments.Add([| $p |])
+			for f in optionalFields:
+				baseCtorInvocation.Arguments.Add(defaultValueOf(f))
+			ctor.Body.Add(baseCtorInvocation)
+			yield ctor
+			
+	def defaultValueOf(f as Field) as Expression:
+		return f["DefaultValue"]
+
+	def fieldsFrom(node as MethodInvocationExpression):
+		return array(fieldFrom(expression) for expression in node.Arguments)
 	
-	def fieldForArg(node as Expression):
+	def fieldFrom(node as Expression) as Field:
 		match node:
+			case [| *$(ReferenceExpression(Name: name)) as $(arrayType = ArrayTypeReference()) |]:
+				return arrayField(name, arrayType)
+			case [| *$(ReferenceExpression(Name: name)) |]:
+				return arrayField(name, ArrayTypeReference(superTypeRef()))
 			case [| $(ReferenceExpression(Name: name)) as $type |]:
-				if name.StartsWith("@"): // mutable field
-					return [|
-						public $(fieldName(name)) as $type
-					|]
-				return [|
-					public final $name as $type
-				|]
+				return fieldWith(name, type)
+			case [| $declaration = $defaultValue |]:
+				f = fieldFrom(declaration)
+				f.Annotate("DefaultValue", defaultValue)
+				return f
+			case ReferenceExpression(Name: name):
+				return fieldWith(name, superTypeRef())
+				
+	def arrayField(name as string, arrayType as ArrayTypeReference):
+		field = fieldWith(name, arrayType)
+		field.Annotate("*")
+		return field
+		
+	def superTypeRef():
+		return TypeReference.Lift(_superType)
+				
+	def fieldWith(name as string, type as TypeReference):
+		if name.StartsWith("@"): // mutable field
+			return [|
+				public $(fieldName(name)) as $type
+			|]
+		return [|
+			public final $name as $type
+		|]
 				
 	def fieldName(name as string):
-		if name.StartsWith("@"): return name[1:]
-		return name
+		return (name[1:] if name.StartsWith("@") else name)
 		
 	def registerType(type as TypeDefinition):
 		_module.Members.Add(type)
 
 def enclosingModule(node as Node) as Module:
 	return node.GetAncestor(NodeType.Module)
+	
+def adtFieldToString(v):
+	if v is null: return "null"
+	if v isa System.Array: return "[$(join(v, ', '))]"
+	return v.ToString()

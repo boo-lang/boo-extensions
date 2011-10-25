@@ -7,7 +7,7 @@ import Boo.Adt
 
 data Token(kind as string, value as string)
 	
-ometa WhitespaceSensitiveTokenizer(stack = [0]):
+ometa WhitespaceSensitiveTokenizer():
 	
 /*
 	Before the first line of the file is read, a single zero
@@ -34,9 +34,9 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 	scanner = (
 		(
 			  (((_ >> t) and (t isa Token)) ^ t) // token introduced by processDedent
-			| (((indentation >> i) and sameIndent(i)) ^ makeToken("eol"))
-			| (((indentation >> i) and largerIndent(i)) ^ makeToken("indent"))
-			| (((indentation >> i) and smallerIndent(i), $(processDedent(input, i)) >> value) ^ value)
+			| (((indentation >> i) and sameIndent(input, i)) ^ makeToken("eol"))
+			| (((indentation >> i) and largerIndent(input, i), $(processIndent(input, i))) >> value ^ value)			
+			| (((indentation >> i) and smallerIndent(input, i), $(processDedent(input, i)) >> value) ^ value)
 			| ((--space, tokens >> t) ^ t)
 		) >> value
 	) ^ value
@@ -58,7 +58,7 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 	leaveWhitespaceAgnosticRegion = $(leaveWSA(input))
 	
 	INDENT = token["indent"]
-	DEDENT = token["dedent"]
+	DEDENT = token["dedent"] | ~_
 	EOL = token["eol"]
 	
 	def inWSA(input as OMetaInput):
@@ -75,36 +75,54 @@ ometa WhitespaceSensitiveTokenizer(stack = [0]):
 		
 	def leaveWSA(input as OMetaInput):
 		return wsaLevel(input, wsaLevel(input) - 1)
-		
+
 	def success(input as OMetaInput):
 		return SuccessfulMatch(input, null)
-	
-	def sameIndent(i):
-		return currentIndent() == len(i)
+
+	def indentStack(input as OMetaInput) as List:
+		return input.GetMemo("indentStack") or [0]
+
+	def setIndentStack(input as OMetaInput, value as List):
+		return input.SetMemo("indentStack", value)
+
+	def sameIndent(input as OMetaInput, i):
+		return getIndent(input) == len(i)
 		
-	def largerIndent(i):
-		if len(i) > currentIndent():
-			stack.Push(len(i))
+	def largerIndent(input as OMetaInput, i):
+		if len(i) > getIndent(input):
 			return true
 			
 	def processDedent(input as OMetaInput, i):
-		while smallerIndent(i):
+		indent = List(indentStack(input))
+		while cast(int, indent[-1]) > len(i):
+			indent.Pop()
 			input = OMetaInput.Prepend(makeToken("dedent"), input)
-			stack.Pop()
-		assert sameIndent(i)
-		return SuccessfulMatch(input, makeToken("eol"))
-		
-	def smallerIndent(i):
-		return len(i) < currentIndent()
 
-	def currentIndent() as int:
-		return stack[-1]
+		input = setIndentStack(input, indent)		
+		assert sameIndent(input, i)
+		return SuccessfulMatch(input, makeToken("eol"))
+
+	def indentLevel(input as OMetaInput, indent as int, value as object):
+		return SuccessfulMatch(input.SetMemo("indentLevel", indent), value)
+
+
+	def processIndent(input as OMetaInput, i):
+		newStack = List(indentStack(input))
+		newStack.Push(len(i))
+		return SuccessfulMatch(setIndentStack(input, newStack), makeToken("indent"))
+
+	def smallerIndent(input as OMetaInput, i):
+		return len(i) < getIndent(input)
+
+	def getIndent(input as OMetaInput) as int:
+		return indentStack(input)[-1]
 
 		
 def tokenMatches(token as Token, expected):
 	return expected is token.kind
 		
 def tokenValue(token as Token):
+	return null if token is null
 	return token.value
 
 def makeToken(kind):
