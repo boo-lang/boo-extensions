@@ -15,7 +15,7 @@ From:
 	
 it generates:
 
-	keywords = "foo" | "bar"
+	keywords = FOO | BAR
 	FOO = keyword["foo"]
 	BAR = keyword["bar"]
 """
