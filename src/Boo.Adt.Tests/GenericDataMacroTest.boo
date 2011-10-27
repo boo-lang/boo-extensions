@@ -4,7 +4,7 @@ import NUnit.Framework
 import Boo.Adt
 
 data GExpression[T] = GConst(value as T) \
-			| GAdd(left as GExpression[of T], right as GExpression[of T])
+	| GAdd(left as GExpression[of T], right as GExpression[of T])
 
 [TestFixture]
 class GenericDataMacroTest:
