@@ -3,10 +3,10 @@
   <outputType>exe</outputType>
   <references>
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
-      <path>/boo-extensions/extensions/src/Boo.Adt</path>
+      <path>/boo-extensions/src/Boo.Adt</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
-      <path>/boo-extensions/extensions/src/Boo.OMeta</path>
+      <path>/boo-extensions/src/Boo.OMeta</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
   </references>
   <outputFolder>/boo-extensions/bin</outputFolder>
