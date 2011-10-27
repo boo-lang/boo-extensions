@@ -13,7 +13,7 @@ meaningful implementations for Equals, GetHashCode and ToString.
 
 Usage:
 
-	data Expression = Const(Value as int) | Add(Left as Expression, Right as Expression)
+	data Expression = Const(Value as int) | Add(Left, Right) // omitted types assumed to be Expression
 	
 	
 	data SingleValue(Value as int)
