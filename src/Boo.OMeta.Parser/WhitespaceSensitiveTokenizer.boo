@@ -3,9 +3,46 @@ namespace Boo.OMeta.Parser
 import System.Text
 import Boo.OMeta
 import Boo.Lang.PatternMatching
-import Boo.Adt
+//import Boo.Adt
 
-data Token(kind as string, value as string)
+public class Token(object):
+
+	public final kind as string
+
+	public final value as string
+	
+	public final start as OMetaInput
+	
+	public final end as OMetaInput
+
+	public override def ToString() as string:
+		return "Token($(self.kind), $(self.value))"
+
+	public override def Equals(o as object) as bool:
+		if o is null:
+			return false
+		if self.GetType() is not o.GetType():
+			return false
+		other as Token = o
+		if string.op_Inequality(self.kind, other.kind):
+			return false
+		if string.op_Inequality(self.value, other.value):
+			return false
+		return true
+
+	public def constructor(kind as string, value as string):
+		super()
+		self.kind = kind
+		self.value = value
+
+	public def constructor(kind as string, value as string, start as OMetaInput, end as OMetaInput):
+		super()
+		self.kind = kind
+		self.value = value
+		self.start = start
+		self.end = end
+
+
 	
 ometa WhitespaceSensitiveTokenizer():
 	
@@ -31,22 +68,19 @@ ometa WhitespaceSensitiveTokenizer():
 	http://docs.python.org/ref/indentation.html
 */
 	
-	scanner = (
-		(
-			  (((_ >> t) and (t isa Token)) ^ t) // token introduced by processDedent
+	scanner = ( (((_ >> t) and (t isa Token)) ^ t) // token introduced by processDedent
 			| (((indentation >> i) and sameIndent(input, i)) ^ makeToken("eol"))
-			| (((indentation >> i) and largerIndent(input, i), $(processIndent(input, i))) >> value ^ value)			
-			| (((indentation >> i) and smallerIndent(input, i), $(processDedent(input, i)) >> value) ^ value)
+			| ((indentation >> i) and largerIndent(input, i), $(processIndent(input, i)))
+			| ((indentation >> i) and smallerIndent(input, i), $(processDedent(input, i)))
 			| ((--space, tokens >> t) ^ t)
-		) >> value
-	) ^ value
+	)
 	
 	indentation = empty_lines, spaces
-	empty_lines = ~~empty_line, ++empty_line
+	empty_lines = ++empty_line
 	empty_line = spaces, newline
 	spaces = --space >> value ^ value
 	space = ' ' | '\t' | (newline and inWSA(input))
-	newline = '\n' | "\r\n" | "\r"
+	newline = '\n' | "\r\n" | "\r", $(newLine(input))
 	token[expected] = (scanner >> t and tokenMatches(t, expected)) ^ t
 	
 	wsa = ~~_ and inWSA(input)
@@ -77,7 +111,10 @@ ometa WhitespaceSensitiveTokenizer():
 		return wsaLevel(input, wsaLevel(input) - 1)
 
 	def success(input as OMetaInput):
-		return SuccessfulMatch(input, null)
+		return success(input, null)
+
+	def success(input as OMetaInput, value):
+		return SuccessfulMatch(input, value)
 
 	def indentStack(input as OMetaInput) as List:
 		return input.GetMemo("indentStack") or [0]
@@ -91,12 +128,16 @@ ometa WhitespaceSensitiveTokenizer():
 	def largerIndent(input as OMetaInput, i):
 		if len(i) > getIndent(input):
 			return true
-			
+
+	def smallerIndent(input as OMetaInput, i):
+		return len(i) < getIndent(input)
+
 	def processDedent(input as OMetaInput, i):
+		original = input
 		indent = List(indentStack(input))
 		while cast(int, indent[-1]) > len(i):
 			indent.Pop()
-			input = OMetaInput.Prepend(makeToken("dedent"), input)
+			input = OMetaInput.Prepend(makeToken("dedent"), input, original)
 
 		input = setIndentStack(input, indent)		
 		assert sameIndent(input, i)
@@ -105,19 +146,39 @@ ometa WhitespaceSensitiveTokenizer():
 	def indentLevel(input as OMetaInput, indent as int, value as object):
 		return SuccessfulMatch(input.SetMemo("indentLevel", indent), value)
 
-
 	def processIndent(input as OMetaInput, i):
 		newStack = List(indentStack(input))
 		newStack.Push(len(i))
 		return SuccessfulMatch(setIndentStack(input, newStack), makeToken("indent"))
 
-	def smallerIndent(input as OMetaInput, i):
-		return len(i) < getIndent(input)
-
 	def getIndent(input as OMetaInput) as int:
 		return indentStack(input)[-1]
 
+	def getLine(input as OMetaInput) as int:
+		return input.GetMemo("line") or 1
 		
+	def setLine(input as OMetaInput, value as int):
+		return input.SetMemo("line", value)
+
+	def setLineStart(input as OMetaInput, value as int):
+		return input.SetMemo("lineStart", value)
+	
+	def newLine(input as OMetaInput):		
+		input = setLineStart(input, input.Position)
+		return success(setLine(input, getLine(input) + 1))
+	
+def setMemoStart(input as OMetaInput, value):
+	return SuccessfulMatch(input.SetMemo("start", value), null)
+
+def getMemoStart(input as OMetaInput):
+	return input.GetMemo("start")
+
+def getMemoEnd(input as OMetaInput):
+	return input.GetMemo("end")
+	
+def getBack(value):
+	return value
+
 def tokenMatches(token as Token, expected):
 	return expected is token.kind
 		
@@ -125,12 +186,6 @@ def tokenValue(token as Token):
 	return null if token is null
 	return token.value
 
-def makeToken(kind):
-	return Token(kind, kind)
-		
-def makeToken(kind, value):
-	return Token(kind, flatString(value))
-	
 def makeString(*values):
 	buffer = StringBuilder()
 	for value in values:
@@ -154,3 +209,12 @@ def flatString(buffer as StringBuilder, value):
 		otherwise:
 			for item in value:
 				flatString buffer, item
+				
+def makeToken(kind):
+	return Token(kind, kind)
+		
+def makeToken(kind, value):
+	return Token(kind, flatString(value))
+
+def makeToken(kind, value, start, end):
+	return Token(kind, flatString(value), start, end)				

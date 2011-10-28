@@ -11,12 +11,12 @@ class OMetaInputTest:
 		
 		arg = "foo"
 		input = OMetaInput.Empty()
-		input1 = OMetaInput.Prepend(arg, input)
-		input2 = OMetaInput.Prepend(arg, input)
+		input1 = OMetaInput.Prepend(arg, input, null)
+		input2 = OMetaInput.Prepend(arg, input, null)
 		
 		assert input1 == input2
 		
-		input3 = OMetaInput.Prepend("bar", input)
+		input3 = OMetaInput.Prepend("bar", input, null)
 		assert input1 != input3
 		
 #	[Test]

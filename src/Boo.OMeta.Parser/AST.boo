@@ -358,10 +358,13 @@ def newStringInterpolation(items as List):
 def newConditionalExpression(condition, trueValue, falseValue):
 	return ConditionalExpression(Condition: condition, TrueValue: trueValue, FalseValue: falseValue)
 	
-def newBlockExpression(parameters as List, body):
+def newBlockExpression(start as OMetaInput, end as OMetaInput, parameters as List, body):
 	node = BlockExpression(Body: body)
 	for p in parameters[0]:
 		node.Parameters.Add(p)
+		
+	node.EndSourceLocation = LexicalInfo("", getLine(end), getColumn(end))
+		
 	return node
 	
 def newTypeofExpression(type):
@@ -440,7 +443,7 @@ def binaryOperatorFor(op):
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
 	
-def newBlock(contents, doc):
+def newBlock(start as OMetaInput, end as OMetaInput, contents, doc):
 	b = Block()
 	match contents:
 		case Statement():
@@ -450,7 +453,22 @@ def newBlock(contents, doc):
 				if item:
 					b.Statements.Add(item)
 	b.Documentation  = doc
+	end = findPrevCharInput(end)
+	b.EndSourceLocation = LexicalInfo("", getLine(end), getColumn(end) + 1)//EndSourceLocation is the next symbol after the expression
+	
 	return b
+	
+def findPrevCharInput(input as OMetaInput):
+	while input:		
+		if isCharInput(input): return input
+		input = input.Prev		
+	return null
+	
+def isCharInput(input as OMetaInput):
+	if input.IsEmpty or (not input.Head isa char): return false
+	if input.Head == char('\n') or input.Head == char('\r'): return false
+	return true
+	
 	
 def prepend(first, tail as List):
 	if first is null: return tail
@@ -501,4 +519,19 @@ def checkEnumerableTypeShortcut(type, stars as List):
 		(enumerable as GenericTypeReference).GenericArguments.Add(type)
 		type = enumerable
 	return enumerable
+
+def getLine(input as OMetaInput):
+	if input:
+		return input.GetMemo("line") or 1
+	else:
+		return -1
+
+def getColumn(input as OMetaInput):
+	if input:
+		return input.Position - getLineStart(input) + 1 //Columns enumeration starts from 1
+	else:
+		return -1
 	
+
+def getLineStart(input as OMetaInput):
+	return (input.GetMemo("lineStart") or 1) cast int

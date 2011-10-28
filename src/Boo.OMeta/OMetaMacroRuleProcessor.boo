@@ -171,22 +171,23 @@ class OMetaMacroRuleProcessor:
 		return e
 		
 	def expand(block as Block, e as Expression, input as Expression, lastMatch as ReferenceExpression):
+		lm as Expression = [| $lastMatch.Input |]
+		
 		match e:
-			case SpliceExpression(Expression: rule):
-				block.Add([| $lastMatch = $(processVariables(rule, input)) |])
-				
+			case SpliceExpression(Expression: rule):				
+				block.Add([| $lastMatch = $(processVariables(rule, lm)) |])				
 			case [| $rule[$arg] |]:
 				newInput = uniqueName()
 				effectiveArg = effectiveArgForRule(arg)
-				block.Add([| $newInput = OMetaInput.Prepend($effectiveArg, $input) |])
+				block.Add([| $newInput = OMetaInput.Prepend($effectiveArg, $input, null) |])
 				expand block, rule, newInput, lastMatch
 				
 			case [| $pattern and $predicate |]:
 				oldInput = uniqueName()
 				block.Add([| $oldInput = $input |])
-				expand block, pattern, input, lastMatch
+				expand block, pattern, input, lastMatch				
 				checkPredicate = [|
-					if $lastMatch isa SuccessfulMatch and not $(processVariables(predicate, input)):
+					if $lastMatch isa SuccessfulMatch and not $(processVariables(predicate, lm)):
 						$lastMatch = FailedMatch($oldInput, PredicateFailure($(predicate.ToCodeString())))
 				|]
 				block.Add(checkPredicate)
@@ -198,7 +199,7 @@ class OMetaMacroRuleProcessor:
 						block:
 							smatch = $lastMatch as SuccessfulMatch
 							if smatch is not null:
-								$lastMatch = SuccessfulMatch(smatch.Input, $(processVariables(value, input)))
+								$lastMatch = SuccessfulMatch(smatch.Input, $(processVariables(value, lm)))
 					|].Body
 					block.Add(code)
 				

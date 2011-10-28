@@ -22,7 +22,37 @@ partial class BooParserTestFixture:
 				assert m.Documentation is not null
 				Assert.AreEqual(normalize(m.Documentation), normalize(m.ToCodeString()))
 				assert input.IsEmpty, input.ToString()
-						
+
+
+	[Test]
+	def TestEndSourceLocationForInlineClosures():
+		code = """foo = { a = 3;
+return a; }"""
+		EnsureClosureEndSourceLocation(code, 2, 10)
+		
+		
+	[Test]
+	def TestEndSourceLocationForBlockClosures():
+		code = """
+foo = def():
+    return a
+"""
+		EnsureClosureEndSourceLocation(code, 3, 13)
+		
+
+	def EnsureClosureEndSourceLocation(code as string, line as int, column as int):		
+		parser = BooParser()
+		
+		match parser.module(code):
+			case SuccessfulMatch(Input: input, Value: m=Module()):
+				assert m is not null
+				assert input.IsEmpty, input.ToString()
+				e = (m.Globals.Statements[0] as ExpressionStatement).Expression
+				cbe = (e as BinaryExpression).Right as BlockExpression
+				esl = cbe.Body.EndSourceLocation
+				Assert.AreEqual(line, esl.Line)
+				Assert.AreEqual(column, esl.Column)
+
 	def normalize(s as string):
 		return s.Trim().Replace("\r\n", "\n")
 		

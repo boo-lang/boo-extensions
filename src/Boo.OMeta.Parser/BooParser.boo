@@ -100,6 +100,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 
 	space = line_continuation | multi_line_comment | line_comment | super
 	
+	here = "" ^ makeToken("here", null, input, input)
+	prev = "" ^ makeToken("prev", null, input.Prev, input.Prev)
+	
 	sqs = (SQ, --( sqs_esc | (~('\'' | '\\' | '\r' | '\n'), _)) >> s, SQ) ^ makeString(s)		
 
 	dqs = (DQ, --( dqs_esc | (~('"' | '\\' | '\r' | '\n'), _)) >> s, DQ) ^ makeString(s)		
@@ -335,15 +338,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	empty_block = (begin_block, (PASS, eol), end_block) ^ Block()
 	
-	multi_line_block = ((begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
+	multi_line_block = (here >> start, (begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(getStart(start), input, stmts, doc)
 	
 	macro_block = empty_block | multi_line_macro_block
 	
-	multi_line_macro_block = ((begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(stmts, doc)
+	multi_line_macro_block = (here >> start, (begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(getStart(start), input, stmts, doc)
 	
 	type_member_stmt = (type_def | method) >> tm ^ TypeMemberStatement(TypeMember: tm)
 
-	single_line_block = (COLON, stmt_line >> line) ^ newBlock(line, null)
+	single_line_block = (COLON >> start, stmt_line >> line) ^ newBlock(getStart(start), input, line, null)
 	
 	begin_block = COLON, INDENT
 	
@@ -416,7 +419,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	stmt_unless	= (UNLESS, assignment >> e, block >> condition) ^ newUnlessStatement(e, condition)
 	
-	false_block = ((ELIF, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(newIfStatement(e, trueBlock, falseBlock), null)) | \
+	false_block = ((ELIF >> start, assignment >> e, block >> trueBlock, false_block >> falseBlock) ^ newBlock(getStart(start), input, newIfStatement(e, trueBlock, falseBlock), null)) | \
 		((ELSE, block >> falseBlock) ^ falseBlock) | ( "" ^ null)
 	
 	stmt_return = (
@@ -430,12 +433,12 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	block_expression = invocation_with_block | closure_block | dsl_friendly_invocation
 	
 	invocation_with_block = (member_reference >> e and (e isa MethodInvocationExpression), \
-		(closure_block | (block >> b ^ newBlockExpression([[], null], b))) >> c ^ newInvocationWithBlock(e, c) ) 
+		(closure_block | (here >> start, block >> b ^ newBlockExpression(getStart(start), input, [[], null], b))) >> c ^ newInvocationWithBlock(e, c) ) 
 
 	dsl_friendly_invocation = (member_reference >> e and ((e isa MemberReferenceExpression) or (e isa ReferenceExpression)), \
 		(block) >> c) ^ newInvocation(e, [BlockExpression(Body: c)], null)
 	
-	closure_block = ((DEF | DO), optional_parameters >> parameters, block >> body) ^ newBlockExpression(parameters, body)
+	closure_block = ((DEF | DO) >> start, optional_parameters >> parameters, block >> body) ^ newBlockExpression(getStart(start), getMemoEnd(input), parameters, body)
 	
 	optional_parameters = method_parameters | ("" ^ [[], null])
 
@@ -598,7 +601,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
-	closure = (LBRACE, closure_parameters >> parameters, closure_stmt_list >> body, RBRACE) ^ newBlockExpression(parameters, newBlock(body, null))
+	closure = (LBRACE >> start, closure_parameters >> parameters, (closure_stmt_list >> body ), prev >> end, RBRACE ^ newBlock(getStart(start), getEnd(end), body, null)) >> body ^ newBlockExpression(getStart(start), input, parameters, body)
 	
 	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ [parameters, null]) | ("" ^ [[],null])
 	
@@ -709,4 +712,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	false_literal = FALSE ^ [| false |]
 	
 	eol = (++EOL | ~_) ^ null
+
+	def getStart(token as Token):
+		if token:
+			return token.start
+		else:
+			return null
+		
+	def getEnd(token as Token):
+		if token:
+			return token.end
+		else:
+			return null
+
+
 

@@ -36,6 +36,7 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
 					m0 = [|
 						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
+							lastMatch as OMetaMatch = SuccessfulMatch(input_, null)
 							$(OMetaMacroRuleProcessor(name, options, ruleNames).expand(pattern))
 					|]
 					type.Members.Add(m0)
@@ -53,17 +54,18 @@ class OMetaMacroProcessor:
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name))[$arg] = $pattern |]):
 					m0 = [|
 						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:
+							lastMatch as OMetaMatch = SuccessfulMatch(input_, null)
 							$(OMetaMacroRuleProcessor(name, options, ruleNames).expand(pattern, arg))
 					|]
 					type.Members.Add(m0)
 					m1 = [|
 						def $name(input as OMetaInput, $arg):
-							return Apply($name, OMetaInput.Prepend($arg, input))
+							return Apply($name, OMetaInput.Prepend($arg, input, null))
 					|]
 					type.Members.Add(m1)
 					m2 = [|
 						def $name(input as System.Collections.IEnumerable, $arg):
-							return Apply($name, OMetaInput.Prepend($arg, OMetaInput.For(input)))
+							return Apply($name, OMetaInput.Prepend($arg, OMetaInput.For(input), null))
 					|]
 					type.Members.Add(m2)
 					
