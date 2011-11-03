@@ -29,7 +29,7 @@ it generates:
 	for stmt in tokens.Body.Statements:
 		match stmt:
 			case ExpressionStatement(Expression: [| $name = $pattern |]):
-				e = [| $name = $pattern >> value ^ makeToken($(name.ToString()), value) |]
+				e = [| $name = (("" ^ makeToken("here", null, input, null)) >> start, $pattern >> value) ^ makeToken($(name.ToString()), value, (start as Token).start, null) |]
 				e.LexicalInfo = stmt.LexicalInfo
 				block.Add(e)
 				

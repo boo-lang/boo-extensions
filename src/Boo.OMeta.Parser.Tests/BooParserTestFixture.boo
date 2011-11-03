@@ -28,7 +28,7 @@ partial class BooParserTestFixture:
 	def TestEndSourceLocationForInlineClosures():
 		code = """foo = { a = 3;
 return a; }"""
-		EnsureClosureEndSourceLocation(code, 2, 10)
+		EnsureClosureEndSourceLocation(code, 2, 11)
 		
 		
 	[Test]

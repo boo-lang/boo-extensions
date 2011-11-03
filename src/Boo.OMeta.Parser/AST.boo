@@ -442,8 +442,12 @@ def binaryOperatorFor(op):
 	
 def newAssignment(l as Expression, r as Expression):
 	return [| $l = $r |]
-	
+
 def newBlock(start as OMetaInput, end as OMetaInput, contents, doc):
+/*
+start - first symbol of the block
+end - last symbol of the block
+*/
 	b = Block()
 	match contents:
 		case Statement():

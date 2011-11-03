@@ -601,7 +601,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	type_literal = (TYPEOF, LPAREN, type_reference >> type, RPAREN) ^ newTypeofExpression(type)
 		
-	closure = (LBRACE >> start, closure_parameters >> parameters, (closure_stmt_list >> body ), prev >> end, RBRACE ^ newBlock(getStart(start), getEnd(end), body, null)) >> body ^ newBlockExpression(getStart(start), input, parameters, body)
+	closure = (LBRACE >> start, closure_parameters >> parameters, (closure_stmt_list >> body ), RBRACE >> end ^ newBlock(getStart(start), getStart(end).Prev, body, null)) >> body ^ newBlockExpression(getStart(start), input, parameters, body)
 	
 	closure_parameters = ((optional_parameter_list >> parameters, BITWISE_OR) ^ [parameters, null]) | ("" ^ [[],null])
 	
