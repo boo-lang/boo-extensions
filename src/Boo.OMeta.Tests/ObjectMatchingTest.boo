@@ -39,11 +39,24 @@ class ObjectMatchingTest:
 		data Person(name)
 		
 		ometa JohnOrPaulMatcher:
+					
+			match = Person(name: string_matching[john_or_paul] >> _)
 			john = "John "
 			paul = "Paul "
 			john_or_paul = john | paul
-			match = Person(name: string[john_or_paul] >> _)
-			string[rule] = $(string_matching(rule, input, context))
+			
+			string_matching[rule] = $(string_matching(rule, input))
+			
+			def string_matching(rule as string, input as OMetaInput):
+				match input.Head:
+					case s = string():
+						match Apply(rule, OMetaInput.For(s)):
+							case SuccessfulMatch():
+								return SuccessfulMatch(input.Tail, input.Head)
+							case FailedMatch(Failure):
+								return FailedMatch(input, Failure)
+					otherwise:
+						return FailedMatch(input, ObjectPatternFailure("'$(input.Head)' is not a string"))
 		
 		def john_or_paul(person): 
 			return JohnOrPaulMatcher().match(OMetaInput.Singleton(person))
@@ -64,14 +77,3 @@ class ObjectMatchingTest:
 			case FailedMatch(Input, Failure: ObjectPatternFailure(Pattern)):
 				assert Input.Head == 42
 				assert Pattern == "'42' is not a string"
-				
-	static def string_matching(rule as string, input as OMetaInput, context as OMetaEvaluationContext):
-		match input.Head:
-			case s = string():
-				match context.Eval(rule, OMetaInput.For(s)):
-					case SuccessfulMatch():
-						return SuccessfulMatch(input.Tail, input.Head)
-					case FailedMatch(Failure):
-						return FailedMatch(input, Failure)
-			otherwise:
-				return FailedMatch(input, ObjectPatternFailure("'$(input.Head)' is not a string"))
