@@ -28,6 +28,7 @@ class DataMacroExpansion:
 	
 	_module as TypeDefinition
 	_superType as TypeDefinition
+	_superTypeRef as TypeReference
 	
 	def constructor(node as MacroStatement):
 		
@@ -41,10 +42,8 @@ class DataMacroExpansion:
 				expandDataConstructors(right)
 				
 			case [| $(ctor=MethodInvocationExpression()) < $superType |]:
-				_superType = [|
-					class $superType:
-						pass
-				|]
+				_superTypeRef = TypeReference.Lift(superType)
+				_superType = ClassDefinition()
 				expandDataConstructorWithBody(ctor, node.Body)
 				
 			case ctor=MethodInvocationExpression():
@@ -145,7 +144,7 @@ class DataMacroExpansion:
 		match node:
 			case ReferenceExpression(Name: name):
 				type = [|
-					partial class $name($_superType):
+					partial class $name($(superTypeRef())):
 						pass
 				|]
 				for arg in _superType.GenericParameters:
@@ -270,6 +269,8 @@ class DataMacroExpansion:
 		return field
 		
 	def superTypeRef():
+		if _superTypeRef is not null:
+			return _superTypeRef
 		return TypeReference.Lift(_superType)
 				
 	def fieldWith(name as string, type as TypeReference):

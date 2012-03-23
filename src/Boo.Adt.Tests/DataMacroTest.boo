@@ -14,8 +14,14 @@ data Foo(Value as int)
 
 #data Bar(Value as int, Count as int) < Foo(Value)
 
+data Struct(Value as int) < System.ValueType
+
 [TestFixture]
 class DataMacroTest:
+	
+	[Test]
+	def ValueTypeBaseType():
+		assert typeof(Struct).IsValueType
 	
 	[Test]
 	def Member():
