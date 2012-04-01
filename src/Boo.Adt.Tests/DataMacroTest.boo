@@ -12,12 +12,19 @@ data Result(Value as int) = Success() | Failure(Error as string)
 
 data Foo(Value as int)
 
-#data Bar(Value as int, Count as int) < Foo(Value)
+data Bar(Value as int, Count as int) < Foo(Value)
 
 data Struct(Value as int) < System.ValueType
 
 [TestFixture]
 class DataMacroTest:
+	
+	[Test]
+	def BaseTypeArguments():
+		bar = Bar(21, 42)
+		foo as Foo = bar
+		Assert.AreEqual(bar.Value, foo.Value)
+		Assert.AreEqual(42, bar.Count)
 	
 	[Test]
 	def ValueTypeBaseType():
