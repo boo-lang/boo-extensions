@@ -30,6 +30,7 @@ class DataMacroExpansion:
 	_module as TypeDefinition
 	_superType as TypeDefinition
 	_superTypeRef as TypeReference
+	_defaultTypeRef as TypeReference
 	
 	def constructor(node as MacroStatement):
 		
@@ -43,6 +44,7 @@ class DataMacroExpansion:
 				expandDataConstructors(right)
 				
 			case [| $(ctor=MethodInvocationExpression()) < $(superCtor=MethodInvocationExpression()) |]:
+				_defaultTypeRef = SimpleTypeReference("object")
 				_superType = ClassDefinition()
 				_superTypeRef = TypeReference.Lift(superCtor.Target)
 				expandDataConstructorWithSuperCtor(ctor, superCtor, node.Body)
@@ -278,7 +280,10 @@ class DataMacroExpansion:
 				f.Annotate("DefaultValue", defaultValue)
 				return f
 			case ReferenceExpression(Name: name):
-				return fieldWith(name, superTypeRef())
+				return fieldWith(name, defaultTypeRef())
+				
+	def defaultTypeRef():
+		return _defaultTypeRef or superTypeRef()
 				
 	def arrayField(name as string, arrayType as ArrayTypeReference):
 		field = fieldWith(name, arrayType)
