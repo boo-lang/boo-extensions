@@ -89,7 +89,7 @@ class DataMacroExpansion:
 			case mie=MethodInvocationExpression(Target: ReferenceExpression(Name: name)):
 				type = abstractType(name)
 				fields = fieldsFrom(mie)
-				type.Members.Extend(fields)
+				type.Members.AddRange(fields)
 				type.Members.Add(constructorForFields(fields))
 				return type
 				
@@ -120,14 +120,14 @@ class DataMacroExpansion:
 				expandDataConstructor(node)
 				
 	def expandDataConstructorWithBody(ctor as Expression, body as Block):
-		expandDataConstructor(ctor).Members.Extend(TypeMember.Lift(body))
+		expandDataConstructor(ctor).Members.AddRange(TypeMember.Lift(body))
 		
 	def expandDataConstructorWithSuperCtor(ctor as Expression, superCtor as Expression, body as Block):
 		superFields = fieldsFrom(superCtor)
 		superFieldNames = array(f.Name for f in superFields)
 		ctorFields = fieldsFrom(ctor)
 		fields = array(f for f in ctorFields if f.Name not in superFieldNames)
-		expandDataConstructorWithFields(ctor, ctorFields, fields, superFields).Members.Extend(TypeMember.Lift(body))
+		expandDataConstructorWithFields(ctor, ctorFields, fields, superFields).Members.AddRange(TypeMember.Lift(body))
 				
 	def expandDataConstructor(node as MethodInvocationExpression):
 		fields = fieldsFrom(node)
@@ -138,7 +138,7 @@ class DataMacroExpansion:
 	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as Field*):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
-		type.Members.Extend(fields)
+		type.Members.AddRange(fields)
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type)) 
 		
