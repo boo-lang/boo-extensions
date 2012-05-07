@@ -1,5 +1,6 @@
 namespace Boo.Adt
 
+import System.Linq
 import Boo.Lang.Compiler
 import Boo.Lang.Compiler.Ast
 import Boo.Lang.PatternMatching
@@ -13,7 +14,7 @@ meaningful implementations for Equals, GetHashCode and ToString.
 
 Usage:
 
-	data Expression = Const(Value as int) | Add(Left as Expression, Right as Expression)
+	data Expression = Const(Value as int) | Add(Left, Right) // omitted types assumed to be Expression
 	
 	
 	data SingleValue(Value as int)
@@ -28,6 +29,8 @@ class DataMacroExpansion:
 	
 	_module as TypeDefinition
 	_superType as TypeDefinition
+	_superTypeRef as TypeReference
+	_defaultTypeRef as TypeReference
 	
 	def constructor(node as MacroStatement):
 		
@@ -40,11 +43,15 @@ class DataMacroExpansion:
 				_superType = createBaseType(left)
 				expandDataConstructors(right)
 				
+			case [| $(ctor=MethodInvocationExpression()) < $(superCtor=MethodInvocationExpression()) |]:
+				_defaultTypeRef = SimpleTypeReference("object")
+				_superType = ClassDefinition()
+				_superTypeRef = TypeReference.Lift(superCtor.Target)
+				expandDataConstructorWithSuperCtor(ctor, superCtor, node.Body)
+				
 			case [| $(ctor=MethodInvocationExpression()) < $superType |]:
-				_superType = [|
-					class $superType:
-						pass
-				|]
+				_superTypeRef = TypeReference.Lift(superType)
+				_superType = ClassDefinition()
 				expandDataConstructorWithBody(ctor, node.Body)
 				
 			case ctor=MethodInvocationExpression():
@@ -54,9 +61,6 @@ class DataMacroExpansion:
 				|]
 				expandDataConstructorWithBody(ctor, node.Body)
 				
-	def expandDataConstructorWithBody(ctor as Expression, body as Block):
-		expandDataConstructor(ctor).Members.Extend(TypeMember.Lift(body))
-		
 	def createBaseType(node as Expression):
 		type = superTypeForExpression(node)
 		type.LexicalInfo = node.LexicalInfo
@@ -85,7 +89,7 @@ class DataMacroExpansion:
 			case mie=MethodInvocationExpression(Target: ReferenceExpression(Name: name)):
 				type = abstractType(name)
 				fields = fieldsFrom(mie)
-				type.Members.Extend(fields)
+				type.Members.AddRange(fields)
 				type.Members.Add(constructorForFields(fields))
 				return type
 				
@@ -115,15 +119,32 @@ class DataMacroExpansion:
 			case MethodInvocationExpression():
 				expandDataConstructor(node)
 				
+	def expandDataConstructorWithBody(ctor as Expression, body as Block):
+		expandDataConstructor(ctor).Members.AddRange(TypeMember.Lift(body))
+		
+	def expandDataConstructorWithSuperCtor(ctor as Expression, superCtor as Expression, body as Block):
+		superFields = fieldsFrom(superCtor)
+		superFieldNames = array(f.Name for f in superFields)
+		ctorFields = fieldsFrom(ctor)
+		fields = array(f for f in ctorFields if f.Name not in superFieldNames)
+		expandDataConstructorWithFields(ctor, ctorFields, fields, superFields).Members.AddRange(TypeMember.Lift(body))
+				
 	def expandDataConstructor(node as MethodInvocationExpression):
+		fields = fieldsFrom(node)
+		superFields = fieldsOf(_superType).ToArray()
+		ctorFields = superFields + fields
+		return expandDataConstructorWithFields(node, ctorFields, fields, superFields)
+		
+	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as Field*):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
-		type.Members.Extend(fields = fieldsFrom(node))
+		type.Members.AddRange(fields)
 		type.Members.Add(toStringForType(type))
 		type.Members.Add(equalsForType(type)) 
 		
-		ctor = constructorForFields(fields)
-		addSuperInvocationTo ctor
+		ctor = constructorDeclarationFor(ctorFields)
+		for field in fields: ctor.Body.Add([| self.$(field.Name) = $field |])
+		addSuperInvocationTo ctor, superFields
 		
 		type.Members.Add(ctor)
 		for ctor in constructorsWithDefaultValues(fields):
@@ -132,12 +153,9 @@ class DataMacroExpansion:
 		registerType(type)
 		return type
 		
-	def addSuperInvocationTo(ctor as Constructor):
+	def addSuperInvocationTo(ctor as Constructor, superFields as Field*):
 		superInvocation = [| super() |]
-		i = 0
-		for field as Field in fieldsOf(_superType):
-			ctor.Parameters.Insert(i++, 
-				ParameterDeclaration(Name: field.Name, Type: field.Type))
+		for field in superFields:
 			superInvocation.Arguments.Add(ReferenceExpression(field.Name))
 		ctor.Body.Insert(0, superInvocation)
 		
@@ -145,7 +163,7 @@ class DataMacroExpansion:
 		match node:
 			case ReferenceExpression(Name: name):
 				type = [|
-					partial class $name($_superType):
+					partial class $name($(superTypeRef())):
 						pass
 				|]
 				for arg in _superType.GenericParameters:
@@ -204,10 +222,10 @@ class DataMacroExpansion:
 		return [| Boo.Adt.adtFieldToString(self.$(field.Name)) |]
 		
 	def fieldsIncludingBaseType(type as TypeDefinition):
-		return cat(fieldsOf(_superType), fieldsOf(type))
+		return fieldsOf(_superType).Concat(fieldsOf(type))
 		
 	def fieldsOf(type as TypeDefinition):
-		return type.Members.Select(NodeType.Field)
+		return type.Members.OfType of Field()
 		
 	def constructorForFields(fields as (Field)):
 		ctor = constructorDeclarationFor(fields)
@@ -262,7 +280,10 @@ class DataMacroExpansion:
 				f.Annotate("DefaultValue", defaultValue)
 				return f
 			case ReferenceExpression(Name: name):
-				return fieldWith(name, superTypeRef())
+				return fieldWith(name, defaultTypeRef())
+				
+	def defaultTypeRef():
+		return _defaultTypeRef or superTypeRef()
 				
 	def arrayField(name as string, arrayType as ArrayTypeReference):
 		field = fieldWith(name, arrayType)
@@ -270,6 +291,8 @@ class DataMacroExpansion:
 		return field
 		
 	def superTypeRef():
+		if _superTypeRef is not null:
+			return _superTypeRef
 		return TypeReference.Lift(_superType)
 				
 	def fieldWith(name as string, type as TypeReference):

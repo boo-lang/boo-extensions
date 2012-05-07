@@ -3,6 +3,8 @@ namespace Boo.Adt.Tests
 import NUnit.Framework
 import Boo.Adt
 
+# algebraic data types dsl
+# omitted types default to base type (the type to the left of =)
 data Expression = Const(value as int) \
 			| Add(left as Expression, right)
 			
@@ -10,12 +12,35 @@ data ExpressionX < Expression = Mult(left as Expression, right as Expression)
 
 data Result(Value as int) = Success() | Failure(Error as string)
 
-data Foo(Value as int)
+# data extension dsl
+# omitted types default to object
+data Foo(Value)
 
-#data Bar(Value as int, Count as int) < Foo(Value)
+data Bar(Value, Count as int) < Foo(Value)
+
+data Struct(Value as int) < System.ValueType
 
 [TestFixture]
 class DataMacroTest:
+	
+	[Test]
+	def DataExtensionArguments():
+		bar = Bar(21, 42)
+		foo as Foo = bar
+		Assert.AreEqual(bar.Value, foo.Value)
+		Assert.AreEqual(42, bar.Count)
+		
+	[Test]
+	def DataExtensionOmittedParametersDefaultToObject():
+		Assert.AreEqual((object,), ConstructorParameterTypesOf(Foo))
+		Assert.AreEqual((object, int), ConstructorParameterTypesOf(Bar))
+		
+	def ConstructorParameterTypesOf(type as System.Type):
+		return array(p.ParameterType for p in type.GetConstructors()[0].GetParameters())
+	
+	[Test]
+	def ValueTypeBaseType():
+		assert typeof(Struct).IsValueType
 	
 	[Test]
 	def Member():

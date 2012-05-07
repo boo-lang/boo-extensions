@@ -16,4 +16,4 @@ class OMetaGrammarBase(OMetaGrammar):
 		return RuleMissing(context, rule, input)
 		
 	virtual def RuleMissing(context as OMetaEvaluationContext, rule as string, input as OMetaInput) as OMetaMatch:
-		raise "Rule '${rule}' missing!"
+		raise "Rule '$rule' missing!"

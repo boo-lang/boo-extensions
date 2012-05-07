@@ -8,6 +8,10 @@
     <monolipse.core.internal.AssemblySourceReference-Remembrance>
       <path>/boo-extensions/src/Boo.Adt</path>
     </monolipse.core.internal.AssemblySourceReference-Remembrance>
+    <monolipse.core.internal.BooAssemblyReference>
+      <assemblyName>Boo.Lang.PatternMatching</assemblyName>
+    </monolipse.core.internal.BooAssemblyReference>
+     
   </references>
   <outputFolder>/boo-extensions/bin</outputFolder>
   <additionalOptions></additionalOptions>

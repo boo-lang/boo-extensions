@@ -52,6 +52,3 @@ class ErrorReportingTest:
 					Input: OMetaInput(Position: 0),
 					Failure: PredicateFailure(Predicate: "(l == char('a'))")):
 				pass
-		
-		
-		
