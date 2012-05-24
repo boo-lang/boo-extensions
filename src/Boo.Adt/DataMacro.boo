@@ -135,7 +135,7 @@ class DataMacroExpansion:
 		ctorFields = superFields + fields
 		return expandDataConstructorWithFields(node, ctorFields, fields, superFields)
 		
-	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as Field*):
+	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as (Field)):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
 		type.Members.AddRange(fields)
@@ -153,7 +153,9 @@ class DataMacroExpansion:
 		registerType(type)
 		return type
 		
-	def addSuperInvocationTo(ctor as Constructor, superFields as Field*):
+	def addSuperInvocationTo(ctor as Constructor, superFields as (Field)):
+		if len(superFields) == 0:
+			return
 		superInvocation = [| super() |]
 		for field in superFields:
 			superInvocation.Arguments.Add(ReferenceExpression(field.Name))
