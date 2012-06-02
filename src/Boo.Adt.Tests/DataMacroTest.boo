@@ -122,3 +122,11 @@ class DataMacroTest:
 		Assert.AreEqual(OptArgs("A", "B", "bar"), OptArgs("A", "B"))
 		Assert.AreEqual(OptArgs("A", "B", "C"), OptArgs("A", "B", "C"))
 		
+	[Test]
+	def LetForConstants():
+		data Stack = EmptyStack() | NonEmptyStack(Top as object, Rest = Stack.Empty):
+			let Empty = EmptyStack()
+		
+		s = NonEmptyStack(42)
+		assert s.Rest is Stack.Empty
+		
