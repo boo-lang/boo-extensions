@@ -2,6 +2,18 @@ namespace Boo.OMeta
 
 import Boo.Lang.PatternMatching
 
+def position(input as OMetaInput):
+"""
+Captures the input position.
+"""
+	return SuccessfulMatch(input, input.Position)
+	
+def success(input as OMetaInput):
+	return success(input, null)
+	
+def success(input as OMetaInput, value):
+	return SuccessfulMatch(input, value)	
+
 def any(input as OMetaInput) as OMetaMatch:
 	if input.IsEmpty: return FailedMatch(input, EndOfInput)
 	return SuccessfulMatch(input.Tail, input.Head)
