@@ -1,8 +1,8 @@
-namespace Boo.OMeta
+namespace Boo.OMeta.Parser
 
-import Boo.Lang.Compiler
-import Boo.Lang.Compiler.Ast
-import Boo.Lang.PatternMatching
+import Compiler.Ast
+import PatternMatching
+import Boo.OMeta
 
 macro tokens:
 """
