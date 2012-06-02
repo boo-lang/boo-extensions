@@ -14,11 +14,10 @@ class OMetaMacroProcessor:
 	def constructor(ometa as MacroStatement):
 		self.ometa = ometa
 		self.options = ometa["options"] or []
-		self.ruleNames = array(ruleNameFor(rule) for rule in ometa.Body.Statements)
+		self.ruleNames = array(ruleNameFor(rule) for rule in ometa.Body.Statements unless rule isa TypeMemberStatement)
 		
 	def expandGrammarSetup():
 		block = Block()
-		
 		for e in expressions():
 			match e:
 				case [| $(ReferenceExpression(Name: name)) = $pattern |]:
@@ -33,6 +32,9 @@ class OMetaMacroProcessor:
 	def introduceRuleMethods(type as TypeDefinition):
 		for stmt in ometa.Body.Statements:
 			match stmt:
+				case TypeMemberStatement(TypeMember: tm):
+					type.Members.Add(tm)
+					
 				case ExpressionStatement(Expression: [| $(ReferenceExpression(Name: name)) = $pattern |]):
 					m0 = [|
 						private def $("${name}_rule")(context as OMetaEvaluationContext, input_ as OMetaInput) as OMetaMatch:

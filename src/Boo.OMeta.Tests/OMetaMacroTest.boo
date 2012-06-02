@@ -19,6 +19,14 @@ ometa E:
 class OMetaMacroTest:
 	
 	[Test]
+	def LetIntegration():
+		
+		ometa LI:
+			let C = 42
+		c = LI.C
+		assert c == 42
+	
+	[Test]
 	def GrammarAggregation():
 		
 		ometa X(e=E()):
