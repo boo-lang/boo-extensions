@@ -154,7 +154,7 @@ internal class EnumeratorInput(OMetaInput):
 		get: return _tail or _tail = ForEnumerator(_input, _position + 1)
 		
 	override def ToString():
-		return "OMetaInput(Head: ${Head}, Position: ${Position})"
+		return "OMetaInput(Head: $Head, Position: $Position)"
 		
 internal class EndOfEnumeratorInput(OMetaInput):
 	

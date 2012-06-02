@@ -99,7 +99,7 @@ class PegRuleState:
 		return PegRuleStateNested(_ctx, self)
 		
 	virtual def LeaveRule(rule as PegRule, success as bool) as PegRuleState:
-		assert false		
+		raise System.InvalidOperationException()		
 		
 class PegRuleStateNested(PegRuleState):
 
