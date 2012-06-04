@@ -133,6 +133,9 @@ internal class OMetaInputCons(OMetaInput):
 		
 	override IsEmpty:
 		get: return false
+		
+	override def ToString():
+		return "cons($_argument, $_tail)"
 
 internal class EnumeratorInput(OMetaInput):
 	
