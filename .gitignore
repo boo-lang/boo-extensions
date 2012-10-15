@@ -4,3 +4,4 @@ build.properties
 *.pidb
 *.userprefs
 test-results
+.gradle
