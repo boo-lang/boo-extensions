@@ -17,7 +17,7 @@ allprojects {
 
 project(':Boo.OMeta') {
 	dependencies {
-		editor project(path: ':Boo.Adt', configuration: 'editor')
+		'default' project(':Boo.Adt')
 	}
 }
 
