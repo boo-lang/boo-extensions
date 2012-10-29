@@ -1,0 +1,23 @@
+
+buildscript {
+	repositories {
+		ivy { url '../repository' }
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'kaizen:kaizen:0.2.0'
+	}
+}
+
+apply plugin: 'kaizen-bundle'
+
+allprojects {
+	version = '0.1.1'
+}
+
+project(':Boo.OMeta') {
+	dependencies {
+		'default' project(':Boo.Adt')
+	}
+}
+

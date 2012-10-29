@@ -1,0 +1,8 @@
+
+include 'Boo.Adt'
+include 'Boo.OMeta'
+
+rootProject.children.each {
+  it.projectDir = new File('src', it.name)
+  it.buildFileName = "${it.name}.gradle"
+}
