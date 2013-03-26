@@ -81,6 +81,7 @@
 			</sources>
 			<references basedir="${build.dir}">
 				<include name="Boo.Adt.dll" />
+				<include name="Boo.Lang.PatternMatching.dll" />
 			</references>
 		</booc>
 		
@@ -102,6 +103,7 @@
 				<include name="*.boo" />
 			</sources>
 			<references basedir="${build.dir}">
+				<include name="Boo.Lang.PatternMatching.dll" />
 				<include name="Boo.Adt.dll" />
 				<include name="Boo.OMeta.dll" />
 			</references>

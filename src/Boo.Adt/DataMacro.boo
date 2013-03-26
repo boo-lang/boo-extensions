@@ -39,9 +39,10 @@ class DataMacroExpansion:
 		
 		match node.Arguments[0]:
 			case [| $left = $right |]:
-				assert node.Body.IsEmpty
 				_superType = createBaseType(left)
 				expandDataConstructors(right)
+				unless node.Body.IsEmpty:
+					expandBodyInto _superType, node.Body
 				
 			case [| $(ctor=MethodInvocationExpression()) < $(superCtor=MethodInvocationExpression()) |]:
 				_defaultTypeRef = SimpleTypeReference("object")
@@ -120,14 +121,17 @@ class DataMacroExpansion:
 				expandDataConstructor(node)
 				
 	def expandDataConstructorWithBody(ctor as Expression, body as Block):
-		expandDataConstructor(ctor).Members.AddRange(TypeMember.Lift(body))
+		expandBodyInto expandDataConstructor(ctor), body
 		
 	def expandDataConstructorWithSuperCtor(ctor as Expression, superCtor as Expression, body as Block):
 		superFields = fieldsFrom(superCtor)
 		superFieldNames = array(f.Name for f in superFields)
 		ctorFields = fieldsFrom(ctor)
 		fields = array(f for f in ctorFields if f.Name not in superFieldNames)
-		expandDataConstructorWithFields(ctor, ctorFields, fields, superFields).Members.AddRange(TypeMember.Lift(body))
+		expandBodyInto expandDataConstructorWithFields(ctor, ctorFields, fields, superFields), body
+		
+	def expandBodyInto(type as TypeDefinition, body as Block):
+		type.Members.AddRange(TypeMember.Lift(body))
 				
 	def expandDataConstructor(node as MethodInvocationExpression):
 		fields = fieldsFrom(node)
@@ -135,7 +139,7 @@ class DataMacroExpansion:
 		ctorFields = superFields + fields
 		return expandDataConstructorWithFields(node, ctorFields, fields, superFields)
 		
-	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as Field*):
+	def expandDataConstructorWithFields(node as MethodInvocationExpression, ctorFields as (Field), fields as (Field), superFields as (Field)):
 		type = dataConstructorTypeForExpression(node.Target)
 		type.LexicalInfo = node.LexicalInfo
 		type.Members.AddRange(fields)
@@ -153,7 +157,9 @@ class DataMacroExpansion:
 		registerType(type)
 		return type
 		
-	def addSuperInvocationTo(ctor as Constructor, superFields as Field*):
+	def addSuperInvocationTo(ctor as Constructor, superFields as (Field)):
+		if len(superFields) == 0:
+			return
 		superInvocation = [| super() |]
 		for field in superFields:
 			superInvocation.Arguments.Add(ReferenceExpression(field.Name))

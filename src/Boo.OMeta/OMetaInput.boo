@@ -112,6 +112,7 @@ internal class OMetaInputMemoTail(DelegatingInput):
 		
 	override Tail:
 		get: return _tail or _tail = OMetaInputMemoTail(self, _input.Tail)
+		
 	override def SetMemo(key as string, value) as OMetaInput:
 		return _parent.SetMemo(key, value).Tail
 		
@@ -119,6 +120,7 @@ internal class OMetaInputMemoTail(DelegatingInput):
 		return _parent.GetMemo(key)
 		
 internal class OMetaInputCons(OMetaInput):
+	
 	[getter(Head)] _argument as object
 	[getter(Tail)] _tail as OMetaInput
 	
@@ -126,8 +128,14 @@ internal class OMetaInputCons(OMetaInput):
 		_argument = argument
 		_tail = tail
 		
+	override Position:
+		get: return Tail.Position
+		
 	override IsEmpty:
 		get: return false
+		
+	override def ToString():
+		return "cons($_argument, $_tail)"
 
 internal class EnumeratorInput(OMetaInput):
 	
@@ -154,7 +162,7 @@ internal class EnumeratorInput(OMetaInput):
 		get: return _tail or _tail = ForEnumerator(_input, _position + 1)
 		
 	override def ToString():
-		return "OMetaInput(Head: ${Head}, Position: ${Position})"
+		return "OMetaInput(Head: $Head, Position: $Position)"
 		
 internal class EndOfEnumeratorInput(OMetaInput):
 	

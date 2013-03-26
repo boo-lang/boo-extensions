@@ -6,7 +6,7 @@ import Boo.Lang.PatternMatching
 import Boo.Adt
 
 data Token(kind as string, value as string)
-	
+
 ometa WhitespaceSensitiveTokenizer():
 	
 /*
@@ -104,7 +104,6 @@ ometa WhitespaceSensitiveTokenizer():
 
 	def indentLevel(input as OMetaInput, indent as int, value as object):
 		return SuccessfulMatch(input.SetMemo("indentLevel", indent), value)
-
 
 	def processIndent(input as OMetaInput, i):
 		newStack = List(indentStack(input))
