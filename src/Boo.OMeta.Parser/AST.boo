@@ -382,8 +382,8 @@ def newSuffixExpression(op, e as Expression):
 	return UnaryExpression(Operator: unarySuffixOperatorFor(op), Operand: e)
 	
 def addSuffixUnaryOperator(e, postOp):
-	 return e if postOp is null
-	 return UnaryExpression(Operator: unarySuffixOperatorFor(postOp), Operand: e)
+	return e if postOp is null
+	return UnaryExpression(Operator: unarySuffixOperatorFor(postOp), Operand: e)
 
 def unaryOperatorFor(op):
 	match tokenValue(op):
