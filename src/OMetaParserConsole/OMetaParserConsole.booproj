@@ -28,16 +28,9 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Boo.Lang.Compiler">
-      <HintPath>..\..\..\..\boo\bin\Boo.Lang.Compiler.dll</HintPath>
-    </Reference>
-    <Reference Include="Boo.Lang.Parser">
-      <HintPath>..\..\..\..\boo\bin\Boo.Lang.Parser.dll</HintPath>
-    </Reference>
     <Reference Include="Boo.Lang.PatternMatching">
-      <HintPath>..\..\..\..\boo\bin\Boo.Lang.PatternMatching.dll</HintPath>
+      <HintPath>..\..\..\boo\build\Boo.Lang.PatternMatching.dll</HintPath>
     </Reference>
-    <Reference Include="Boo.Lang.Useful" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -65,9 +58,6 @@
       <Project>{EED6C932-8AEE-42CB-8837-C323DC74980B}</Project>
       <Name>Boo.OMeta</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
 </Project>
