@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-# SharpDevelop 4.0.0.7070
+# SharpDevelop 4.3
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta", "Boo.OMeta.booproj", "{EED6C932-8AEE-42CB-8837-C323DC74980B}"
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Tests", "..\Boo.OMeta.Tests\Boo.OMeta.Tests.booproj", "{39203C2D-10BB-4FD5-8B84-241908614FFA}"
