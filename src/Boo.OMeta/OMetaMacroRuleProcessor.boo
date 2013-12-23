@@ -245,6 +245,29 @@ class OMetaMacroRuleProcessor:
 				
 			case [| ~$rule |]:
 				expandNegation block, rule, input, lastMatch
+
+			case [| *$rule |]:
+				temp = uniqueName()
+				inputCode = [|
+					$temp = $input
+					if $temp.Head isa System.Collections.IEnumerable:
+						$input = OMetaInput.For($temp.Head)
+				|]
+				block.Add(inputCode)
+				expand block, rule, input, lastMatch
+				
+				code = [|
+					block:
+						smatch = $lastMatch as SuccessfulMatch
+						if $temp.Head isa System.Collections.IEnumerable: //If input was exploded
+							if smatch is not null:
+								$lastMatch = SuccessfulMatch($temp.Tail, smatch.Value)  //Move input to the next position if success
+							else:
+								$lastMatch = FailedMatch($temp, ($lastMatch as FailedMatch).Failure) //Restore input if rule failed
+				|].Body
+				
+				block.Add(code)
+				
 				
 			case MemberReferenceExpression(Target: t, Name: n):
 				block.Add([| $lastMatch = $t.$n($input) |])
