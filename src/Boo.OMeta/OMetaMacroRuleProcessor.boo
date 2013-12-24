@@ -247,12 +247,12 @@ class OMetaMacroRuleProcessor:
 				expandNegation block, rule, input, lastMatch
 
 			case [| *$rule |]:
-				temp = uniqueName()
+				initialInput = uniqueName()
 				inputCode = [|
-					$temp = $input
+					$initialInput = $input
 					exploded = false
-					if $temp.Head isa System.Collections.IEnumerable:
-						$input = OMetaInput.For($temp.Head)
+					if $initialInput.Head isa System.Collections.IEnumerable:
+						$input = OMetaInput.For($initialInput.Head)
 						exploded = true
 				|]
 				block.Add(inputCode)
@@ -263,9 +263,9 @@ class OMetaMacroRuleProcessor:
 						smatch = $lastMatch as SuccessfulMatch
 						if exploded: //If input was exploded
 							if smatch is not null:
-								$lastMatch = SuccessfulMatch($temp.Tail, smatch.Value)  //Move input to the next position if success
+								$lastMatch = SuccessfulMatch($initialInput.Tail, smatch.Value)  //Move input to the next position if success
 							else:
-								$lastMatch = FailedMatch($temp, ($lastMatch as FailedMatch).Failure) //Restore input if rule failed
+								$lastMatch = FailedMatch($initialInput, ($lastMatch as FailedMatch).Failure) //Restore input if rule failed
 				|].Body
 				
 				block.Add(code)
@@ -282,19 +282,31 @@ class OMetaMacroRuleProcessor:
 				block.Add([| $lastMatch = SuperApply(context, $_ruleName, $input) |])
 				
 			case [| $_() |]:
+				initialInput = uniqueName()
+				patternString = e.ToCodeString()
 				rules = processObjectPatternRules(e)
 				condition = Boo.Lang.PatternMatching.Impl.PatternExpander().Expand([| smatch.Value |], e)
 				code = [|
 					block:
+						$initialInput = $input
 						$lastMatch = any($input)
 						smatch = $lastMatch as SuccessfulMatch
 						if smatch is not null:
 							if $condition:
 								$(expandObjectPatternRules(rules, lastMatch))
 							else:
-								$lastMatch = FailedMatch($input, ObjectPatternFailure($(e.ToCodeString())))
+								$lastMatch = FailedMatch($input, ObjectPatternFailure($patternString))
+								
+							smatch = $lastMatch as SuccessfulMatch
+							if smatch is not null:
+								//Move input to the next position if success
+								//Return object itself
+								$lastMatch = SuccessfulMatch($initialInput.Tail, $initialInput.Head)  
+							else:
+								$lastMatch = FailedMatch($initialInput, ($lastMatch as FailedMatch).Failure) //Restore input if rule failed
+
 				|].Body
-				block.Add(code) 
+				block.Add(code)
 				
 			case ArrayLiteralExpression(Items: items):
 				match items[0]:
@@ -338,10 +350,10 @@ class OMetaMacroRuleProcessor:
 	def processObjectPatternRules(rules as List, pattern as MethodInvocationExpression):
 		for arg in pattern.NamedArguments:
 			match arg.Second:
-				case [| $_ >> $_ |]:
+				case MemberReferenceExpression():
+					pass
+				otherwise:
 					temp = uniqueName()
 					rules.Add((temp, arg.Second))
-					arg.Second = temp
-				otherwise:
-					pass
-			
+					arg.Second = temp	
+

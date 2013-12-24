@@ -4,6 +4,7 @@ import Boo.OMeta
 import Boo.Lang.PatternMatching
 import Boo.Adt
 import NUnit.Framework
+import Boo.Lang.Compiler.Ast
 
 data Exp = Const(value as int) | Sum(left as Exp, right as Exp)
 
@@ -71,9 +72,58 @@ class ObjectMatchingTest:
 				
 		match john_or_paul(Person("Eric")):
 			case FailedMatch(Input):
-				assert Input.Head == "Eric"
+				assert Input.Head == Person("Eric")
 				
 		match john_or_paul(Person(42)):
 			case FailedMatch(Input, Failure: ObjectPatternFailure(Pattern)):
-				assert Input.Head == 42
+				assert Input.Head == Person(42)
 				assert Pattern == "'42' is not a string"
+
+	[Test]
+	def UsingUnderscore():
+		data Employee(FirstName as string,  LastName as string)
+		
+		ometa EmployeeClassMatching2:
+			getFirstName = Employee(FirstName: _ >> f) ^ f
+		
+		match EmployeeClassMatching2().getFirstName(OMetaInput.Singleton(Employee("John", "Brown"))):
+			case SuccessfulMatch(Value, Input):
+				assert Value = "John"
+				assert Input.IsEmpty
+
+	[Test]
+	def UsingPredicate():
+		ometa EmployeeClassMatching3:
+			getNamesStartsWithJ = --(
+				nameStartsWithJ | 
+				(_ ^ null) //ignore if it doesn't start with J, continue.
+			) >> names ^ names			
+			nameStartsWithJ = Employee(FirstName: _ >> f as string and (f.StartsWith("J"))) ^ f
+	
+		a = (Employee("John", "Brown"),Employee("Paul", "White"), Employee("Jake", "Green"), Employee("Bill", "Red"))
+		match EmployeeClassMatching3().getNamesStartsWithJ(OMetaInput.For(a)):
+			case e = SuccessfulMatch(Value, Input):
+				assert Value == ["John", "Jake"]
+				assert Input.IsEmpty
+
+
+	[Test]
+	def ObjectMatchingInList():
+		
+		b = [|
+			block:
+				f1()
+				i = 1
+				f2()
+				j = 2
+				k += 3
+				l = 4
+		|].Body
+
+		ometa ObjectMatchingInList1:
+			assignmentVariables = --(assignmentVariable | (_ ^ null)) >> v ^ v
+			assignmentVariable = ExpressionStatement(Expression: BinaryExpression(Left: ReferenceExpression(Name: _ >> l), Operator: BinaryOperatorType.Assign)) ^ l
+
+		match ObjectMatchingInList1().assignmentVariables(b.Statements):
+			case SuccessfulMatch(Value: v)
+		assert v == ["i", "j", "l"]
