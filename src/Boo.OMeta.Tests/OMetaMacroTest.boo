@@ -285,4 +285,4 @@ class OMetaMacroTest:
 		match m:
 			case SuccessfulMatch(Value, Input):
 				assert Input.IsEmpty, "Unexpected ${Input.Head}"
-				Assert.IsTrue(expected.Equals(Value))
+				Assert.IsTrue(expected == Value)
