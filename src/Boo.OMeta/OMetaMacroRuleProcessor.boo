@@ -315,6 +315,7 @@ class OMetaMacroRuleProcessor:
 						if len(items) > 2:
 							expandSequence negation.TrueBlock, items.PopRange(1), input, lastMatch
 						else:
+							input = [| $lastMatch.Input |]
 							expand negation.TrueBlock, items[1], input, lastMatch
 					otherwise:
 						expandSequence block, items, input, lastMatch 
