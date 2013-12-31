@@ -248,15 +248,16 @@ class OMetaMacroRuleProcessor:
 
 			case [| *$rule |]:
 				initialInput = uniqueName()
+				newInput = uniqueName()
 				inputCode = [|
 					$initialInput = $input
 					exploded = false
 					if $initialInput.Head isa System.Collections.IEnumerable:
-						$input = OMetaInput.For($initialInput.Head)
+						$newInput = OMetaInput.For($initialInput.Head)
 						exploded = true
 				|]
 				block.Add(inputCode)
-				expand block, rule, input, lastMatch
+				expand block, rule, newInput, lastMatch
 				
 				code = [|
 					block:
@@ -315,7 +316,6 @@ class OMetaMacroRuleProcessor:
 						if len(items) > 2:
 							expandSequence negation.TrueBlock, items.PopRange(1), input, lastMatch
 						else:
-							input = [| $lastMatch.Input |]
 							expand negation.TrueBlock, items[1], input, lastMatch
 					otherwise:
 						expandSequence block, items, input, lastMatch 
