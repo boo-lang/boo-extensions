@@ -16,7 +16,8 @@ partial class BooParserTestFixture:
 		fullName = Path.Combine(booRoundtripTestCasesPath(), fname)
 		
 		parser = BooParser()
-		match parser.module(File.ReadAllText(fullName)):
+		text = File.ReadAllText(fullName)
+		match parser.module(text):
 			case SuccessfulMatch(Input: input, Value: m=Module()):
 				assert m is not null
 				assert m.Documentation is not null
@@ -34,7 +35,7 @@ partial class BooParserTestFixture:
 		
 	def findSiblingBooDirectory(dir as string) as string:
 		
-		booDir = Path.Combine(dir, "boo")
+		booDir = Path.Combine(dir, "Boo Local")
 		if Directory.Exists(booDir): return booDir
 		
 		parent = parentDirectory(dir)

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.4
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Parser", "Boo.OMeta.Parser.booproj", "{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}"
+EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Adt", "..\Boo.Adt\Boo.Adt.booproj", "{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Debug|x86.Build.0 = Debug|x86
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Debug|x86.ActiveCfg = Debug|x86
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Release|x86.Build.0 = Release|x86
+		{5A702DAA-43C7-45FF-9A9E-7A334FD75DD9}.Release|x86.ActiveCfg = Release|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|x86.Build.0 = Debug|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Debug|x86.ActiveCfg = Debug|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|x86.Build.0 = Release|x86
+		{18AF07E6-C62E-4CDC-8F58-5A0F9A872F7F}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+EndGlobal

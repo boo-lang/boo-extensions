@@ -138,10 +138,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	module = (
 		--EOL,
-		((tqs >> s , EOL) | ""),	
+		((tqs >> s , EOL) | ""),
 		--EOL,
-		((namespace_declaration >> ns , EOL) | ""),		
-		--import_declaration >> ids,
+		((namespace_declaration >> ns , EOL) | ""),
+		--(import_declaration | import_declaration_from) >> ids,
 		--module_member >> members,
 		--stmt >> stmts,
 		--EOL
@@ -149,11 +149,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
 	
-	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
+	namespace_expression = (qualified_name >> qn, ((LPAREN, expression_list >> exprs , RPAREN) | "")) ^ newNamespaceExpr(qn, exprs)
+	
+	import_declaration = ( (IMPORT, namespace_expression >> ns), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(ns, assembly, alias)
+	
+	import_declaration_from = (FROM, qualified_name >> qn, IMPORT, (STAR | expression_list >> exprs), eol) ^ newImportFrom(qn, exprs)
 	
 	qualified_name = (ID >> qualifier, --((DOT, id >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
-	module_member = assembly_attribute | type_def | method | (~(~~(ID, AS), stmt_declaration), ~stmt_expression, ~stmt_goto, stmt_macro)
+	module_member = assembly_attribute | module_attribute | type_def | method | (~(~~(ID, AS), stmt_declaration), ~stmt_expression, ~stmt_goto, stmt_macro)
 	
 	type_def = class_def | struct_def | interface_def | enum_def | callable_def
 	
@@ -321,6 +325,11 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		attribute_list >> value, 
 		RBRACK, eol) ^ value
 	
+	module_attribute = (
+		LBRACK, (ID >> name and (tokenValue(name) == "module")), COLON,
+		attribute_list >> value, 
+		RBRACK, eol) ^ ModuleAttribute(value)
+	
 	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
 	
 	attribute = (qualified_name >> name, optional_invocation_arguments >> args) ^ newAttribute(name, args)
@@ -337,7 +346,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	multi_line_block = ((begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
-	macro_block = empty_block | multi_line_macro_block
+	macro_block = empty_block | multi_line_macro_block | doc_only_macro
+	
+	doc_only_macro = (eos, tqs >> doc, eos) ^ newBlock(List(), doc)
 	
 	multi_line_macro_block = ((begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
@@ -371,6 +382,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
 	stmt_macro = (ID >> name, optional_assignment_list >> args, ((macro_block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
+	
+	eos = --(eol|SEMICOLON)
 	
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
