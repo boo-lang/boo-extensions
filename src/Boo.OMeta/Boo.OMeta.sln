@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-# SharpDevelop 4.3
+# SharpDevelop 4.4
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta", "Boo.OMeta.booproj", "{EED6C932-8AEE-42CB-8837-C323DC74980B}"
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Tests", "..\Boo.OMeta.Tests\Boo.OMeta.Tests.booproj", "{39203C2D-10BB-4FD5-8B84-241908614FFA}"
@@ -13,6 +13,8 @@ EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.OMeta.Parser.Tests", "..\Boo.OMeta.Parser.Tests\Boo.OMeta.Parser.Tests.booproj", "{6409B606-B2B6-4FC1-A960-ED9B171D5FE3}"
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "OMetaParserConsole", "..\OMetaParserConsole\OMetaParserConsole.booproj", "{49F3D03F-83E3-449C-99F5-209D5C25714D}"
+EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "Boo.Adt.Tests", "..\Boo.Adt.Tests\Boo.Adt.Tests.booproj", "{5AE81F05-B040-4C19-8F33-35996E44032C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,5 +46,9 @@ Global
 		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Debug|x86.ActiveCfg = Debug|x86
 		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Release|x86.Build.0 = Release|x86
 		{49F3D03F-83E3-449C-99F5-209D5C25714D}.Release|x86.ActiveCfg = Release|x86
+		{5AE81F05-B040-4C19-8F33-35996E44032C}.Debug|x86.Build.0 = Debug|Any CPU
+		{5AE81F05-B040-4C19-8F33-35996E44032C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5AE81F05-B040-4C19-8F33-35996E44032C}.Release|x86.Build.0 = Release|Any CPU
+		{5AE81F05-B040-4C19-8F33-35996E44032C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -93,14 +93,37 @@ def newModule(ns as string, doc, imports, members, stmts):
 	for member in flatten(members):
 		if member isa Ast.Attribute:
 			m.AssemblyAttributes.Add(member)
+		elif member isa ModuleAttribute:
+			for attr in (member as ModuleAttribute).Attr:
+				m.Attributes.Add(attr)
 		elif member isa MacroStatement:
 			m.Globals.Add(member as Statement)
 		else:
 			m.Members.Add(member)
 	for stmt as Statement in stmts: m.Globals.Add(stmt)
 	return m
-	
-def newImport(qname as string, assembly, alias):
+
+def newNamespaceExpr(qname as string, exprs as List) as Expression:
+	result as Expression = Ast.ReferenceExpression(qname)
+	if exprs:
+		mie = Ast.MethodInvocationExpression(result)
+		for arg in exprs:
+			mie.Arguments.Add(arg)
+		result = mie
+	return result
+
+def newImportFrom(qname as string, exprs) as Import:
+		ns = ReferenceExpression(qname)
+		mie = MethodInvocationExpression(ns)
+		result = Import(mie, null, null)
+		if exprs is null:
+			result.Expression = ns.CleanClone()
+		elif exprs:
+			for arg in exprs:
+				mie.Arguments.Add(arg)
+		return result
+
+def newImport(name as Expression, assembly, alias) as Import:
 	assemblyReference = null
 	if assembly isa Token:
 		assemblyReference = ReferenceExpression(Name: tokenValue(assembly))
@@ -109,11 +132,11 @@ def newImport(qname as string, assembly, alias):
 		
 	importAlias = null
 	if alias isa Token:
-		importAlias =	ReferenceExpression(Name: tokenValue(alias))
+		importAlias = ReferenceExpression(Name: tokenValue(alias))
 	else:
-		importAlias =	ReferenceExpression(Name: alias) if alias is not null
+		importAlias = ReferenceExpression(Name: alias) if alias is not null
 		
-	return Import(qname, AssemblyReference: assemblyReference, Alias: importAlias)
+	return Import(name, assemblyReference, importAlias)
 
 def newInteger(sign, t, style as NumberStyles, suffix):
 	s = tokenValue(sign) + tokenValue(t)
@@ -215,18 +238,26 @@ def newGenericParameterDeclaration(name, constraints):
 	
 	return node
 	
-def newParameterDeclaration(attributes, name, type):
+def newParameterDeclaration(attributes, modifiers, name, type):	
 	node = ParameterDeclaration(Name: tokenValue(name), Type: type)
+	if modifiers isa Token:
+		if tokenValue(modifiers) == 'ref':
+			node.Modifiers = ParameterModifiers.Ref
+		else: raise "Unknown modifier: $tokenValue(modifiers)"
+	elif modifiers == 'ref': raise 'misunderstood'
 	return setUpAttributes(node, attributes)
 	
 def newEnum(attributes, modifiers, name, members):
+	if members and not (members isa System.Collections.IEnumerable):
+		members = List() {members}
 	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
 def newCallableTypeReference(params, paramArray, type):
 	node = CallableTypeReference(ReturnType: type)
 	i = 0
-	for p in flatten(params):
-		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
+	for p as ParameterDeclaration in flatten(params):
+		p.Name = "arg${i++}"
+		node.Parameters.Add(p)
 		
 	if paramArray is not null:
 		node.Parameters.Add(paramArray)
@@ -502,3 +533,9 @@ def checkEnumerableTypeShortcut(type, stars as List):
 		type = enumerable
 	return enumerable
 	
+class ModuleAttribute:
+	[Getter(Attr)]
+	_attr as List
+	
+	def constructor(attr as List):
+		_attr = attr

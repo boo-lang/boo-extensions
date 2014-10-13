@@ -36,14 +36,14 @@ class OMetaMacroRuleProcessor:
 			block.Add(code)
 		
 		_ruleArgs = args
-		expand block, e, input, [| lastMatch |]
+		expand(block, e, input, [| lastMatch |])
 		block.Add([| return lastMatch |])
 		
 		return block
 		
 	def expand(e as Expression, input as Expression, lastMatch as ReferenceExpression) as Block:
 		block = Block()
-		expand block, e, input, lastMatch
+		expand(block, e, input, lastMatch)
 		return block
 		
 	def expandChoices(block as Block, choices as List, input as Expression, lastMatch as ReferenceExpression):
@@ -54,7 +54,7 @@ class OMetaMacroRuleProcessor:
 		currentBlock.Add([| $failureList = Boo.Lang.List[of FailedMatch]($(len(choices))) |])
 		currentBlock.Add([| $oldInput = $input |])
 		for choice in choices:
-			expand currentBlock, choice, oldInput, lastMatch
+			expand(currentBlock, choice, oldInput, lastMatch)
 			code = [|
 				if $lastMatch isa FailedMatch:
 					$failureList.Add($lastMatch)
@@ -121,7 +121,7 @@ class OMetaMacroRuleProcessor:
 		
 		currentBlock = block
 		for item in sequence.ToArray()[:-1]:
-			expand currentBlock, item, input, lastMatch
+			expand(currentBlock, item, input, lastMatch)
 			input = [| $lastMatch.Input |]
 			code = [|
 				if $lastMatch isa SuccessfulMatch:
@@ -129,7 +129,7 @@ class OMetaMacroRuleProcessor:
 			|]
 			currentBlock.Add(code)
 			currentBlock = code.TrueBlock
-		expand currentBlock, sequence[-1], input, lastMatch
+		expand(currentBlock, sequence[-1], input, lastMatch)
 		
 	def expandSequenceWithParseTree(block as Block, sequence as ExpressionCollection, input as Expression, lastMatch as ReferenceExpression):
 		
@@ -138,7 +138,7 @@ class OMetaMacroRuleProcessor:
 		currentBlock.Add([| $result = [] |])
 		
 		for item in sequence:
-			expand currentBlock, item, input, lastMatch
+			expand(currentBlock, item, input, lastMatch)
 			currentBlock.Add([| smatch = $lastMatch as SuccessfulMatch |])
 			code = [|
 				if smatch is not null:
@@ -155,7 +155,7 @@ class OMetaMacroRuleProcessor:
 		block.Add([| $oldInput = $input |])
 		
 		_collectingParseTree.With(false):
-			expand block, rule, input, lastMatch
+			expand(block, rule, input, lastMatch)
 		block.Add([| smatch = $lastMatch as SuccessfulMatch |])
 		code = [|
 			if smatch is null:
@@ -179,12 +179,12 @@ class OMetaMacroRuleProcessor:
 				newInput = uniqueName()
 				effectiveArg = effectiveArgForRule(arg)
 				block.Add([| $newInput = OMetaInput.Prepend($effectiveArg, $input) |])
-				expand block, rule, newInput, lastMatch
+				expand(block, rule, newInput, lastMatch)
 				
 			case [| $pattern and $predicate |]:
 				oldInput = uniqueName()
 				block.Add([| $oldInput = $input |])
-				expand block, pattern, input, lastMatch
+				expand(block, pattern, input, lastMatch)
 				checkPredicate = [|
 					if $lastMatch isa SuccessfulMatch and not $(processVariables(predicate, input)):
 						$lastMatch = FailedMatch($oldInput, PredicateFailure($(predicate.ToCodeString())))
@@ -193,7 +193,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $pattern ^ $value |]:
 				_collectingParseTree.With(false):
-					expand block, pattern, input, lastMatch
+					expand(block, pattern, input, lastMatch)
 					code = [|
 						block:
 							smatch = $lastMatch as SuccessfulMatch
@@ -204,7 +204,7 @@ class OMetaMacroRuleProcessor:
 				
 			case [| $pattern >> $variable |]:
 				_collectingParseTree.With(true):
-					expand block, pattern, input, lastMatch
+					expand(block, pattern, input, lastMatch)
 					match variable:
 						case [| $name as $typeref |]:
 							code = [|
@@ -278,7 +278,7 @@ class OMetaMacroRuleProcessor:
 						if len(items) > 2:
 							expandSequence negation.TrueBlock, items.PopRange(1), input, lastMatch
 						else:
-							expand negation.TrueBlock, items[1], input, lastMatch
+							expand(negation.TrueBlock, items[1], input, lastMatch)
 					otherwise:
 						expandSequence block, items, input, lastMatch 
 						
@@ -301,7 +301,7 @@ class OMetaMacroRuleProcessor:
 		currentBlock = block
 		for temp as Expression, rule as Expression in rules:
 			block.Add([| $input = OMetaInput.Singleton($temp) |])
-			expand block, rule, input, lastMatch
+			expand(block, rule, input, lastMatch)
 			code = [|
 				if $lastMatch isa SuccessfulMatch:
 					pass

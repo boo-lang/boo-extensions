@@ -131,17 +131,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	keywords "abstract", "and", "as", "callable", "cast", "class", "constructor", "def", "do", "elif", "else", \
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
 		"interface", "internal", "in", "isa", "is", "namespace", "new", "not", "null", "of", "or", "override", \
-		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
+		"pass", "private", "protected", "public", "raise", "ref", "return", "self", "static", "struct", "super", \
 		"then", "transient", "true", "try", "typeof", "unless", "virtual", "while", "yield"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
 	
 	module = (
 		--EOL,
-		((tqs >> s , EOL) | ""),	
+		((tqs >> s , EOL) | ""),
 		--EOL,
-		((namespace_declaration >> ns , EOL) | ""),		
-		--import_declaration >> ids,
+		((namespace_declaration >> ns , EOL) | ""),
+		--(import_declaration | import_declaration_from) >> ids,
 		--module_member >> members,
 		--stmt >> stmts,
 		--EOL
@@ -149,11 +149,15 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	namespace_declaration = (NAMESPACE, qualified_name)
 	
-	import_declaration = ( (IMPORT, qualified_name >> qn), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(qn, assembly, alias)
+	namespace_expression = (qualified_name >> qn, ((LPAREN, expression_list >> exprs , RPAREN) | "")) ^ newNamespaceExpr(qn, exprs)
+	
+	import_declaration = ( (IMPORT, namespace_expression >> ns), (((FROM, (dqs | sqs | qualified_name)) | "") >> assembly), ( (AS, ID) | "") >> alias, eol) ^ newImport(ns, assembly, alias)
+	
+	import_declaration_from = (FROM, qualified_name >> qn, IMPORT, (STAR | expression_list >> exprs), eol) ^ newImportFrom(qn, exprs)
 	
 	qualified_name = (ID >> qualifier, --((DOT, id >> n) ^ n) >> suffix)^ buildQName(qualifier, suffix) 
 	
-	module_member = assembly_attribute | type_def | method | (~(~~(ID, AS), stmt_declaration), ~stmt_expression, ~stmt_goto, stmt_macro)
+	module_member = assembly_attribute | module_attribute | type_def | method | (~(~~(ID, AS), stmt_declaration), ~stmt_expression, ~stmt_goto, stmt_macro)
 	
 	type_def = class_def | struct_def | interface_def | enum_def | callable_def
 	
@@ -181,7 +185,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	enum_def = (
 		attributes >> attrs, 
 		member_modifiers >> mod,
-		ENUM, ID >> name, begin_block, enum_body >> body, end_block
+		ENUM, ID >> name, begin_block, (enum_body | splice_type_definition_body) >> body, end_block
 	) ^ newEnum(attrs, mod, name, body)
 	
 	enum_body = (++enum_field >> fields ^ fields) | (PASS, eol ^ null)
@@ -289,12 +293,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		block >> body
 	) ^ newConstructor(attrs, mod, genericParameters, parameters, body)
 
+	param_modifier = (REF | "")
 
 	method_parameters = (LPAREN, \
 				((parameter_list >> parameters, COMMA, param_array >> paramArray) | (param_array >> paramArray) | (optional_parameter_list >> parameters) ), \
 				RPAREN) ^ [parameters, paramArray]
 	
-	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type))
+	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, "", name, type))
 	
 	optional_array_type = (AS, type_reference_array) | ""
 	
@@ -321,13 +326,18 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		attribute_list >> value, 
 		RBRACK, eol) ^ value
 	
+	module_attribute = (
+		LBRACK, (ID >> name and (tokenValue(name) == "module")), COLON,
+		attribute_list >> value, 
+		RBRACK, eol) ^ ModuleAttribute(value)
+	
 	attributes = --((LBRACK, attribute_list >> value, RBRACK, --EOL) ^ value) >> all ^ all
 	
 	attribute = (qualified_name >> name, optional_invocation_arguments >> args) ^ newAttribute(name, args)
 	
 	list_of attribute
 	
-	parameter = (attributes >> attrs, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, name, type)
+	parameter = (attributes >> attrs, param_modifier >> pm, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, pm, name, type)
 
 	optional_type = (AS, type_reference) | ""
 	
@@ -337,7 +347,9 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	multi_line_block = ((begin_block_with_doc >> doc | begin_block), ++stmt >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
-	macro_block = empty_block | multi_line_macro_block
+	macro_block = empty_block | multi_line_macro_block | doc_only_macro
+	
+	doc_only_macro = (eos, tqs >> doc, eos) ^ newBlock(List(), doc)
 	
 	multi_line_macro_block = ((begin_block_with_doc >> doc | begin_block), ++(stmt | type_member_stmt) >> stmts, end_block)  ^ newBlock(stmts, doc)
 	
@@ -371,6 +383,8 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	stmt_raise = (RAISE, expression >> e, stmt_modifier >> m) ^ RaiseStatement(Exception: e, Modifier: m)
 		
 	stmt_macro = (ID >> name, optional_assignment_list >> args, ((macro_block >> b) | (stmt_modifier >> m))) ^ newMacro(name, args, b, m)
+	
+	eos = --(eol|SEMICOLON)
 	
 	stmt_yield = (YIELD, assignment >> e, stmt_modifier >> m) ^ YieldStatement(Expression: e, Modifier: m)
 	
@@ -505,8 +519,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	cast_operator = ((cast_operator >> e, CAST, type_reference >> typeRef) ^ CastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = ((member_reference >> e, DOT, ID >> name ^ newMemberReference(e, name)) \
+	member_reference = ((member_reference >> e, DOT, member >> name ^ newMemberReference(e, name)) \
 		| slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
+	
+	member = (ID | INTERNAL | PUBLIC | PROTECTED | EVENT | REF | YIELD)
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 
@@ -577,13 +593,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	optional_generic_arguments = generic_arguments | ""
 	
+	callable_type_reference = (param_modifier >> pm, type_reference >> tr) ^ newParameterDeclaration(null, pm, null, tr)
+	
+	list_of callable_type_reference
+	
 	type_reference_callable = (
 		CALLABLE, LPAREN, \
-		((type_reference_list >> params, COMMA, param_array_reference >> paramArray) | (param_array_reference >> paramArray) | (optional_type_reference_list >> params) ), \
+		((callable_type_reference_list >> params, COMMA, param_array_reference >> paramArray) | (param_array_reference >> paramArray) | (optional_callable_type_reference_list >> params) ), \
 		RPAREN, optional_type >> type
 	) ^ newCallableTypeReference(params, paramArray, type) | ((CALLABLE)^ SimpleTypeReference("callable"))
 	
-	param_array_reference = ((STAR, type_reference >> type) ^ newParameterDeclaration(null, makeToken("arg0"), type))
+	param_array_reference = ((STAR, type_reference >> type) ^ newParameterDeclaration(null, "", makeToken("arg0"), type))
 	
 	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	
