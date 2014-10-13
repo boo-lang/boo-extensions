@@ -238,18 +238,26 @@ def newGenericParameterDeclaration(name, constraints):
 	
 	return node
 	
-def newParameterDeclaration(attributes, name, type):
+def newParameterDeclaration(attributes, modifiers, name, type):	
 	node = ParameterDeclaration(Name: tokenValue(name), Type: type)
+	if modifiers isa Token:
+		if tokenValue(modifiers) == 'ref':
+			node.Modifiers = ParameterModifiers.Ref
+		else: raise "Unknown modifier: $tokenValue(modifiers)"
+	elif modifiers == 'ref': raise 'misunderstood'
 	return setUpAttributes(node, attributes)
 	
 def newEnum(attributes, modifiers, name, members):
+	if members and not (members isa System.Collections.IEnumerable):
+		members = List() {members}
 	return setUpType(EnumDefinition(Name: tokenValue(name)), attributes, modifiers, null, null, members)
 	
 def newCallableTypeReference(params, paramArray, type):
 	node = CallableTypeReference(ReturnType: type)
 	i = 0
-	for p in flatten(params):
-		node.Parameters.Add(ParameterDeclaration(Name: "arg${i++}", Type: p))
+	for p as ParameterDeclaration in flatten(params):
+		p.Name = "arg${i++}"
+		node.Parameters.Add(p)
 		
 	if paramArray is not null:
 		node.Parameters.Add(paramArray)

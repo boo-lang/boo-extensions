@@ -131,7 +131,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	keywords "abstract", "and", "as", "callable", "cast", "class", "constructor", "def", "do", "elif", "else", \
 		"ensure", "enum", "event", "except", "failure", "false", "final", "for", "from", "goto", "if", "import", \
 		"interface", "internal", "in", "isa", "is", "namespace", "new", "not", "null", "of", "or", "override", \
-		"pass", "private", "protected", "public", "raise", "return", "self", "static", "struct", "super", \
+		"pass", "private", "protected", "public", "raise", "ref", "return", "self", "static", "struct", "super", \
 		"then", "transient", "true", "try", "typeof", "unless", "virtual", "while", "yield"
 	
 	keyword[expected] = ((KW >> t) and (expected is tokenValue(t))) ^ t
@@ -185,7 +185,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	enum_def = (
 		attributes >> attrs, 
 		member_modifiers >> mod,
-		ENUM, ID >> name, begin_block, enum_body >> body, end_block
+		ENUM, ID >> name, begin_block, (enum_body | splice_type_definition_body) >> body, end_block
 	) ^ newEnum(attrs, mod, name, body)
 	
 	enum_body = (++enum_field >> fields ^ fields) | (PASS, eol ^ null)
@@ -293,12 +293,13 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		block >> body
 	) ^ newConstructor(attrs, mod, genericParameters, parameters, body)
 
+	param_modifier = (REF | "")
 
 	method_parameters = (LPAREN, \
 				((parameter_list >> parameters, COMMA, param_array >> paramArray) | (param_array >> paramArray) | (optional_parameter_list >> parameters) ), \
 				RPAREN) ^ [parameters, paramArray]
 	
-	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, name, type))
+	param_array = ((attributes >> attrs, STAR, ID >> name, optional_array_type >> type) ^ newParameterDeclaration(attrs, "", name, type))
 	
 	optional_array_type = (AS, type_reference_array) | ""
 	
@@ -336,7 +337,7 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	list_of attribute
 	
-	parameter = (attributes >> attrs, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, name, type)
+	parameter = (attributes >> attrs, param_modifier >> pm, ID >> name, optional_type >> type) ^ newParameterDeclaration(attrs, pm, name, type)
 
 	optional_type = (AS, type_reference) | ""
 	
@@ -518,8 +519,10 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 	
 	cast_operator = ((cast_operator >> e, CAST, type_reference >> typeRef) ^ CastExpression(Target: e, Type: typeRef)) | member_reference
 	
-	member_reference = ((member_reference >> e, DOT, ID >> name ^ newMemberReference(e, name)) \
+	member_reference = ((member_reference >> e, DOT, member >> name ^ newMemberReference(e, name)) \
 		| slicing) >> e, (INCREMENT | DECREMENT | "") >> postOp ^ addSuffixUnaryOperator(e, postOp)
+	
+	member = (ID | INTERNAL | PUBLIC | PROTECTED | EVENT | REF | YIELD)
 	
 	slicing = ((member_reference >> e, LBRACK, slice_list >> indices, RBRACK) ^ newSlicing(e, indices)) | invocation
 
@@ -590,13 +593,17 @@ ometa BooParser < WhitespaceSensitiveTokenizer:
 		
 	optional_generic_arguments = generic_arguments | ""
 	
+	callable_type_reference = (param_modifier >> pm, type_reference >> tr) ^ newParameterDeclaration(null, pm, null, tr)
+	
+	list_of callable_type_reference
+	
 	type_reference_callable = (
 		CALLABLE, LPAREN, \
-		((type_reference_list >> params, COMMA, param_array_reference >> paramArray) | (param_array_reference >> paramArray) | (optional_type_reference_list >> params) ), \
+		((callable_type_reference_list >> params, COMMA, param_array_reference >> paramArray) | (param_array_reference >> paramArray) | (optional_callable_type_reference_list >> params) ), \
 		RPAREN, optional_type >> type
 	) ^ newCallableTypeReference(params, paramArray, type) | ((CALLABLE)^ SimpleTypeReference("callable"))
 	
-	param_array_reference = ((STAR, type_reference >> type) ^ newParameterDeclaration(null, makeToken("arg0"), type))
+	param_array_reference = ((STAR, type_reference >> type) ^ newParameterDeclaration(null, "", makeToken("arg0"), type))
 	
 	type_reference_array = (LPAREN, ranked_type_reference >> tr, RPAREN) ^ tr
 	

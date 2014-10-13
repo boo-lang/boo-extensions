@@ -35,7 +35,7 @@ partial class BooParserTestFixture:
 		
 	def findSiblingBooDirectory(dir as string) as string:
 		
-		booDir = Path.Combine(dir, "Boo Local")
+		booDir = Path.Combine(dir, "boo")
 		if Directory.Exists(booDir): return booDir
 		
 		parent = parentDirectory(dir)
